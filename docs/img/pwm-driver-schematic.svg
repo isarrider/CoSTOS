@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1030" height="430" viewBox="0 0 1030 430" font-family="Helvetica, Arial, sans-serif">
+  <title>OSCoST PWM pump driver, circuit diagram</title>
+  <defs>
+    <!-- ground symbol, anchor at its top -->
+    <g id="gnd">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#2e7d32" stroke-width="2"/>
+      <line x1="-12" y1="10" x2="12" y2="10" stroke="#2e7d32" stroke-width="2.5"/>
+      <line x1="-8" y1="15" x2="8" y2="15" stroke="#2e7d32" stroke-width="2"/>
+      <line x1="-4" y1="20" x2="4" y2="20" stroke="#2e7d32" stroke-width="2"/>
+    </g>
+    <!-- polarised capacitor, vertical, + on top, anchor top lead -->
+    <g id="elko">
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#222" stroke-width="2"/>
+      <line x1="-12" y1="16" x2="12" y2="16" stroke="#222" stroke-width="2.5"/>
+      <path d="M-12 25 Q0 19 12 25" stroke="#222" stroke-width="2.5" fill="none"/>
+      <line x1="0" y1="22" x2="0" y2="38" stroke="#222" stroke-width="2"/>
+      <text x="-16" y="14" font-size="12" fill="#c62828" font-weight="bold">+</text>
+    </g>
+    <!-- ceramic capacitor -->
+    <g id="cap">
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#222" stroke-width="2"/>
+      <line x1="-12" y1="16" x2="12" y2="16" stroke="#222" stroke-width="2.5"/>
+      <line x1="-12" y1="23" x2="12" y2="23" stroke="#222" stroke-width="2.5"/>
+      <line x1="0" y1="23" x2="0" y2="38" stroke="#222" stroke-width="2"/>
+    </g>
+    <!-- resistor, vertical -->
+    <g id="res">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#222" stroke-width="2"/>
+      <rect x="-7" y="10" width="14" height="36" fill="white" stroke="#222" stroke-width="2"/>
+      <line x1="0" y1="46" x2="0" y2="56" stroke="#222" stroke-width="2"/>
+    </g>
+  </defs>
+  <style>
+    .wire { stroke: #222; stroke-width: 2; fill: none; }
+    .v12  { stroke: #c62828; stroke-width: 2; fill: none; }
+    .v5   { stroke: #ef6c00; stroke-width: 2; fill: none; }
+    .sig  { stroke: #1565c0; stroke-width: 2; fill: none; }
+    .lbl  { font-size: 13px; fill: #222; font-weight: bold; }
+    .s    { font-size: 11px; fill: #444; }
+    .pin  { font-size: 11px; fill: #c62828; font-weight: bold; }
+  </style>
+  <rect width="1030" height="430" fill="white"/>
+
+  <!-- ===== J1: connector to the Raspberry Pi ===== -->
+  <rect x="20" y="150" width="76" height="120" rx="4" fill="#fafafa" stroke="#222" stroke-width="2"/>
+  <text x="58" y="142" text-anchor="middle" class="lbl">J1</text>
+  <text x="58" y="288" text-anchor="middle" class="s">to Raspberry Pi</text>
+  <text x="28" y="180" class="s">5V</text>
+  <text x="28" y="215" class="s">PWM</text>
+  <text x="28" y="250" class="s">GND</text>
+  <circle cx="96" cy="176" r="3" fill="#222"/>
+  <circle cx="96" cy="211" r="3" fill="#222"/>
+  <circle cx="96" cy="246" r="3" fill="#222"/>
+  <path class="wire" d="M96 246 H120"/>
+  <use href="#gnd" x="120" y="246"/>
+
+  <!-- ===== 5 V -> U2 DC/DC ===== -->
+  <path class="v5" d="M96 176 H160 V70 H210"/>
+  <text x="126" y="66" class="s" fill="#ef6c00">+5 V</text>
+  <use href="#elko" x="160" y="176"/>
+  <use href="#gnd" x="160" y="214"/>
+  <text x="172" y="196" class="s">C3 4.7 µF</text>
+
+  <rect x="210" y="50" width="140" height="90" rx="4" fill="#e3ecf7" stroke="#1f3a5f" stroke-width="2"/>
+  <text x="280" y="84" text-anchor="middle" class="lbl">U2</text>
+  <text x="280" y="101" text-anchor="middle" class="s">B0512S-1WR3</text>
+  <text x="280" y="116" text-anchor="middle" class="s">isolated DC/DC 5 V → 12 V</text>
+  <text x="216" y="74" class="s">+Vin (2)</text>
+  <text x="216" y="134" class="s">−Vin (1)</text>
+  <text x="344" y="74" text-anchor="end" class="s">+Vo (4)</text>
+  <text x="344" y="134" text-anchor="end" class="s">0V (3)</text>
+  <path class="wire" d="M210 130 H196 V150"/>
+  <use href="#gnd" x="196" y="150"/>
+  <path class="wire" d="M350 130 H364 V150"/>
+  <use href="#gnd" x="364" y="150"/>
+
+  <!-- ===== +12 V rail ===== -->
+  <path class="v12" d="M350 70 H700 V150"/>
+  <text x="520" y="62" class="s" fill="#c62828" font-weight="bold">+12 V</text>
+  <!-- C2 -->
+  <path class="v12" d="M410 70 V90"/>
+  <use href="#elko" x="410" y="90"/>
+  <use href="#gnd" x="410" y="128"/>
+  <text x="424" y="112" class="s">C2 2.2 µF</text>
+  <!-- R3 -->
+  <path class="v12" d="M500 70 V82"/>
+  <use href="#res" x="500" y="82"/>
+  <use href="#gnd" x="500" y="138"/>
+  <text x="512" y="106" class="s">R3 1.5 kΩ</text>
+  <text x="512" y="120" class="s">min. load for U2</text>
+  <!-- C1 -->
+  <path class="v12" d="M640 70 V90"/>
+  <use href="#cap" x="640" y="90"/>
+  <use href="#gnd" x="640" y="128"/>
+  <text x="628" y="160" class="s" text-anchor="end">C1 100 nF, next to U1</text>
+
+  <!-- ===== U1 TC4427 ===== -->
+  <rect x="640" y="150" width="130" height="150" rx="4" fill="#f0f0f0" stroke="#222" stroke-width="2"/>
+  <text x="705" y="222" text-anchor="middle" class="lbl">U1</text>
+  <text x="705" y="239" text-anchor="middle" class="s">TC4427</text>
+  <text x="705" y="253" text-anchor="middle" class="s">dual gate driver</text>
+  <text x="690" y="168" class="s">VDD</text><text x="708" y="146" class="pin">6</text>
+  <text x="646" y="196" class="s">IN A</text><text x="630" y="190" text-anchor="end" class="pin">2</text>
+  <text x="646" y="286" class="s">IN B</text><text x="630" y="280" text-anchor="end" class="pin">4</text>
+  <text x="764" y="196" text-anchor="end" class="s">OUT A</text><text x="780" y="190" class="pin">7</text>
+  <text x="764" y="286" text-anchor="end" class="s">OUT B</text><text x="780" y="280" class="pin">5</text>
+  <text x="690" y="294" class="s">GND</text><text x="708" y="318" class="pin">3</text>
+  <path class="wire" d="M705 300 V322"/>
+  <use href="#gnd" x="705" y="322"/>
+  <path class="wire" d="M640 280 H612 V300"/>
+  <use href="#gnd" x="612" y="300"/>
+  <text x="600" y="322" class="s" text-anchor="end">unused input to GND</text>
+  <path class="wire" d="M770 280 H790"/>
+  <text x="796" y="284" class="s">n.c.</text>
+  <text x="705" y="356" text-anchor="middle" class="s">pins 1 and 8: no internal connection</text>
+
+  <!-- ===== PWM input ===== -->
+  <path class="sig" d="M96 211 H260 V190 H640"/>
+  <text x="300" y="182" class="s" fill="#1565c0" font-weight="bold">PWM from Pi GPIO 18 (0 / 3.3 V)</text>
+  <path class="sig" d="M560 190 V210"/>
+  <circle cx="560" cy="190" r="3" fill="#1565c0"/>
+  <use href="#res" x="560" y="210"/>
+  <use href="#gnd" x="560" y="266"/>
+  <text x="548" y="236" class="s" text-anchor="end">R1 100 kΩ</text>
+  <text x="548" y="250" class="s" text-anchor="end">keeps the output low</text>
+  <text x="548" y="264" class="s" text-anchor="end">while the Pi boots</text>
+
+  <!-- ===== Output ===== -->
+  <path class="wire" d="M770 190 H790"/>
+  <rect x="790" y="183" width="40" height="14" fill="white" stroke="#222" stroke-width="2"/>
+  <text x="810" y="176" text-anchor="middle" class="s">R2 470 Ω 0.5 W</text>
+  <path class="wire" d="M830 190 H900"/>
+  <circle cx="860" cy="190" r="3" fill="#222"/>
+  <!-- D1 TVS: cathode up -->
+  <path class="wire" d="M860 190 V218"/>
+  <path class="wire" d="M848 218 H872 M848 218 l-4 -4 M872 218 l4 4"/>
+  <polygon points="848,238 872,238 860,218" fill="white" stroke="#222" stroke-width="2"/>
+  <path class="wire" d="M860 238 V250"/>
+  <use href="#gnd" x="860" y="250"/>
+  <text x="846" y="262" class="s" text-anchor="end">D1 P6KE15A</text>
+  <text x="846" y="276" class="s" text-anchor="end">band = top</text>
+
+  <!-- J2 -->
+  <rect x="900" y="160" width="30" height="110" rx="3" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="915" y="152" text-anchor="middle" class="lbl">J2</text>
+  <circle cx="900" cy="190" r="3" fill="#222"/>
+  <circle cx="900" cy="246" r="3" fill="#222"/>
+  <path class="wire" d="M900 246 H885 V262"/>
+  <use href="#gnd" x="885" y="262"/>
+  <text x="915" y="300" text-anchor="middle" class="s">to pump</text>
+  <text x="940" y="196" class="s">PWM (brown)</text>
+  <text x="940" y="252" class="s">GND (blue)</text>
+
+  <text x="20" y="400" class="s">All ground symbols are one common net: Pi GND, DC/DC −Vin and 0V, driver GND and the pump's signal ground.</text>
+  <text x="20" y="418" class="s">U2's isolation is deliberately bridged: the driver needs the same ground as the Pi's GPIO.</text>
+</svg>

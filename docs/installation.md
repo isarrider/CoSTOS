@@ -38,9 +38,9 @@ Consequences for OSCoST:
 - OSCoST preset **"Wilo PWM2"**: stop = 0 %, start at ≥ 20 %, regulate
   between 15 % (minimum) and 100 % (maximum). The 7–12 % hysteresis band is
   never used, so start and stop are unambiguous.
-- Output stage: 12 V gate driver as described in
-  [PWM pump outputs](ARCHITECTURE.md#53-pwm-pump-outputs). 12 V is within
-  the 15 V maximum.
+- Output stage: the driver board or optocoupler module from
+  [Hardware needed](HARDWARE.md#pwm-pump-output). 12 V is within the 15 V
+  maximum.
 - Frequency: 500 Hz (the RESOL controller uses 512 Hz).
 - No feedback, so pump faults have to be detected through temperature
   plausibility, a flowmeter or the pump's mains current.

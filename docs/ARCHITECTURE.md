@@ -270,6 +270,10 @@ the feedback signal can confirm the pump reacts.
 
 #### Output circuit (per pump)
 
+Build instructions, parts lists and layouts for the two practical options
+(a TC4427 driver board, or a ready-made optocoupler module) are in
+[Hardware needed](HARDWARE.md#pwm-pump-output).
+
 ```
  3.3 V GPIO (HW PWM) ──► gate driver (e.g. MCP1402/TC4427, 12 V supply) ──► 100 Ω ──┬──► pump PWM in (brown)
                                                                                     TVS

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="440" viewBox="0 0 980 440" font-family="Helvetica, Arial, sans-serif">
+  <title>Option 2 wiring: Raspberry Pi, optocoupler module, 12 V supply and pump</title>
+  <style>
+    .lbl { font-size: 14px; font-weight: bold; fill: #222; }
+    .s { font-size: 12px; fill: #333; }
+    .xs { font-size: 10.5px; fill: #555; }
+  </style>
+  <rect width="980" height="440" fill="white"/>
+
+  <!-- Pi -->
+  <rect x="20" y="70" width="190" height="170" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="115" y="60" text-anchor="middle" class="lbl">Raspberry Pi</text>
+  <circle cx="190" cy="120" r="10" fill="#1565c0"/>
+  <text x="174" y="124" text-anchor="end" class="s" font-weight="bold">pin 12  GPIO 18</text>
+  <circle cx="190" cy="190" r="10" fill="#2e7d32"/>
+  <text x="174" y="194" text-anchor="end" class="s" font-weight="bold">pin 6  GND</text>
+
+  <!-- module -->
+  <rect x="330" y="60" width="300" height="200" rx="6" fill="#1b5e20" stroke="#0d3311" stroke-width="2"/>
+  <text x="480" y="50" text-anchor="middle" class="lbl">Optocoupler level-shifter module (PC817)</text>
+  <line x1="480" y1="70" x2="480" y2="250" stroke="#a5d6a7" stroke-dasharray="6 5" stroke-width="2"/>
+  <text x="405" y="245" text-anchor="middle" class="xs" fill="#c8e6c9">input side (Pi)</text>
+  <text x="555" y="245" text-anchor="middle" class="xs" fill="#c8e6c9">output side (12 V)</text>
+  <rect x="455" y="135" width="50" height="40" rx="3" fill="#222"/>
+  <text x="480" y="160" text-anchor="middle" font-size="11" fill="#eee">PC817</text>
+  <!-- input terminals -->
+  <rect x="330" y="105" width="34" height="100" fill="#2f7d32" stroke="#0d3311"/>
+  <circle cx="347" cy="120" r="7" fill="#cfd8dc"/><text x="372" y="124" class="s" fill="white" font-weight="bold">IN+</text>
+  <circle cx="347" cy="190" r="7" fill="#cfd8dc"/><text x="372" y="194" class="s" fill="white" font-weight="bold">IN−</text>
+  <!-- output terminals -->
+  <rect x="596" y="90" width="34" height="140" fill="#2f7d32" stroke="#0d3311"/>
+  <circle cx="613" cy="105" r="7" fill="#cfd8dc"/><text x="588" y="109" text-anchor="end" class="s" fill="white" font-weight="bold">V+</text>
+  <circle cx="613" cy="160" r="7" fill="#cfd8dc"/><text x="588" y="164" text-anchor="end" class="s" fill="white" font-weight="bold">OUT</text>
+  <circle cx="613" cy="215" r="7" fill="#cfd8dc"/><text x="588" y="219" text-anchor="end" class="s" fill="white" font-weight="bold">V−</text>
+
+  <!-- Pi -> module -->
+  <path d="M200 120 H340" stroke="#1565c0" stroke-width="4"/>
+  <path d="M200 190 H340" stroke="#222" stroke-width="4"/>
+
+  <!-- 12V supply -->
+  <rect x="720" y="20" width="240" height="70" rx="6" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+  <text x="840" y="45" text-anchor="middle" class="lbl">12 V supply</text>
+  <text x="840" y="63" text-anchor="middle" class="xs">plug-in PSU or 5→12 V module</text>
+  <text x="736" y="82" class="s" fill="#c62828" font-weight="bold">+12 V</text>
+  <text x="944" y="82" text-anchor="end" class="s" font-weight="bold">0 V</text>
+  <path d="M620 105 H760 V90" stroke="#c62828" stroke-width="4" fill="none"/>
+  <path d="M620 215 H690 V310 H955 V90" stroke="#222" stroke-width="4" fill="none"/>
+
+  <!-- pump -->
+  <circle cx="880" cy="210" r="62" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+  <text x="880" y="205" text-anchor="middle" class="lbl">Pump</text>
+  <text x="880" y="222" text-anchor="middle" class="xs">PWM2</text>
+  <path d="M620 160 H720 V190 H818" stroke="#8d6e63" stroke-width="5" fill="none"/>
+  <text x="760" y="182" class="s" fill="#6d4c41">brown</text>
+  <path d="M690 230 H818" stroke="#1565c0" stroke-width="5" fill="none"/>
+  <circle cx="690" cy="230" r="4" fill="#222"/>
+  <text x="760" y="248" class="s" fill="#1565c0">blue</text>
+
+  <text x="20" y="350" class="s">Pi GPIO 18 (pin 12) → IN+   ·   Pi GND (pin 6) → IN−   ·   +12 V → V+   ·   0 V → V−   ·   OUT → brown   ·   V− → blue</text>
+  <text x="20" y="372" class="xs">Terminal names differ between modules (IN/SIG, G/GND, VCC/V2, OUT, GND/G2). Check the silkscreen and the steps in the text.</text>
+  <text x="20" y="390" class="xs">The Pi's GND is not connected to the 12 V side: the optocoupler isolates the Pi from the pump wiring.</text>
+</svg>

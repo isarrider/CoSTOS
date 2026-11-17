@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420" font-family="Helvetica, Arial, sans-serif">
+  <title>Option 1 wiring: Raspberry Pi, driver board and pump</title>
+  <style>
+    .lbl { font-size: 14px; font-weight: bold; fill: #222; }
+    .s { font-size: 12px; fill: #333; }
+    .xs { font-size: 10.5px; fill: #555; }
+  </style>
+  <rect width="980" height="420" fill="white"/>
+
+  <!-- Raspberry Pi header (pins 1-14 shown) -->
+  <rect x="20" y="40" width="250" height="300" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="145" y="30" text-anchor="middle" class="lbl">Raspberry Pi, 40-pin header</text>
+  <text x="145" y="330" text-anchor="middle" class="xs">pin 1 = square pad, next to the SD card side</text>
+  <!-- wires Pi -> J1 (jumper wires, female-female), drawn under the labels -->
+  <path d="M160 71 C 300 71, 330 128, 430 128" stroke="#c62828" stroke-width="4" fill="none"/>
+  <path d="M160 131 C 300 131, 330 158, 430 158" stroke="#222" stroke-width="4" fill="none"/>
+  <path d="M160 221 C 300 221, 330 188, 430 188" stroke="#1565c0" stroke-width="4" fill="none"/>
+  <!-- two columns of pins: odd left, even right -->
+  <g font-size="11">
+    <!-- row 1 -->
+    <rect x="100" y="60" width="22" height="22" fill="#222"/><text x="94" y="76" text-anchor="end" class="xs">3V3  1</text>
+    <circle cx="160" cy="71" r="11" fill="#c62828"/><rect x="174" y="63" width="51.5" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="76" class="s" font-weight="bold">2  5V</text>
+    <!-- row 2 -->
+    <circle cx="111" cy="101" r="11" fill="#999"/><text x="94" y="106" text-anchor="end" class="xs">GPIO2  3</text>
+    <circle cx="160" cy="101" r="11" fill="#999"/><text x="176" y="106" class="xs">4  5V</text>
+    <!-- row 3 -->
+    <circle cx="111" cy="131" r="11" fill="#999"/><text x="94" y="136" text-anchor="end" class="xs">GPIO3  5</text>
+    <circle cx="160" cy="131" r="11" fill="#2e7d32"/><rect x="174" y="123" width="59.0" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="136" class="s" font-weight="bold">6  GND</text>
+    <!-- row 4 -->
+    <circle cx="111" cy="161" r="11" fill="#999"/><text x="94" y="166" text-anchor="end" class="xs">GPIO4  7</text>
+    <circle cx="160" cy="161" r="11" fill="#999"/><text x="176" y="166" class="xs">8  GPIO14</text>
+    <!-- row 5 -->
+    <circle cx="111" cy="191" r="11" fill="#999"/><text x="94" y="196" text-anchor="end" class="xs">GND  9</text>
+    <circle cx="160" cy="191" r="11" fill="#999"/><text x="176" y="196" class="xs">10  GPIO15</text>
+    <!-- row 6 -->
+    <circle cx="111" cy="221" r="11" fill="#999"/><text x="94" y="226" text-anchor="end" class="xs">GPIO17  11</text>
+    <circle cx="160" cy="221" r="11" fill="#1565c0"/><rect x="174" y="213" width="89.0" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="226" class="s" font-weight="bold">12  GPIO18</text>
+    <!-- row 7 -->
+    <circle cx="111" cy="251" r="11" fill="#999"/><text x="94" y="256" text-anchor="end" class="xs">GPIO27  13</text>
+    <circle cx="160" cy="251" r="11" fill="#999"/><text x="176" y="256" class="xs">14  GND</text>
+    <text x="135" y="290" text-anchor="middle" class="xs">… pins 15–40</text>
+  </g>
+
+  <!-- driver board -->
+  <rect x="420" y="90" width="260" height="190" rx="8" fill="#f3e3c3" stroke="#8a6d3b" stroke-width="2"/>
+  <text x="550" y="80" text-anchor="middle" class="lbl">Driver board (option 1)</text>
+  <text x="550" y="190" text-anchor="middle" class="s">TC4427 + DC/DC</text>
+  <text x="550" y="208" text-anchor="middle" class="xs">see layout drawing</text>
+  <!-- J1 -->
+  <rect x="420" y="110" width="30" height="96" fill="#222"/>
+  <text x="458" y="132" class="s">5V</text>
+  <text x="458" y="162" class="s">GND</text>
+  <text x="458" y="192" class="s">PWM</text>
+  <text x="435" y="226" text-anchor="middle" class="xs">J1</text>
+  <circle cx="435" cy="128" r="5" fill="#e6c200"/>
+  <circle cx="435" cy="158" r="5" fill="#e6c200"/>
+  <circle cx="435" cy="188" r="5" fill="#e6c200"/>
+  <!-- J2 -->
+  <rect x="650" y="140" width="30" height="80" fill="#2f7d32"/>
+  <text x="642" y="166" text-anchor="end" class="s">PWM</text>
+  <text x="642" y="206" text-anchor="end" class="s">GND</text>
+  <text x="665" y="240" text-anchor="middle" class="xs">J2</text>
+  <circle cx="665" cy="162" r="7" fill="#cfd8dc"/>
+  <circle cx="665" cy="202" r="7" fill="#cfd8dc"/>
+
+  <text x="300" y="300" text-anchor="middle" class="xs">3 jumper wires (female–female),</text>
+  <text x="300" y="314" text-anchor="middle" class="xs">keep them short (&lt; 20 cm)</text>
+
+  <!-- pump -->
+  <circle cx="870" cy="190" r="70" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+  <text x="870" y="180" text-anchor="middle" class="lbl">Pump</text>
+  <text x="870" y="198" text-anchor="middle" class="xs">Wilo Yonos PARA ST</text>
+  <text x="870" y="212" text-anchor="middle" class="xs">15/7.0-PWM2</text>
+  <path d="M672 162 C 740 162, 760 175, 812 175" stroke="#8d6e63" stroke-width="5" fill="none"/>
+  <path d="M672 202 C 740 202, 760 205, 812 205" stroke="#1565c0" stroke-width="5" fill="none"/>
+  <text x="742" y="152" text-anchor="middle" class="s" fill="#6d4c41">brown</text>
+  <text x="742" y="226" text-anchor="middle" class="s" fill="#1565c0">blue</text>
+  <text x="745" y="260" text-anchor="middle" class="xs">pump signal cable, max. 3 m</text>
+
+  <text x="870" y="300" text-anchor="middle" class="xs">230 V supply of the pump:</text>
+  <text x="870" y="314" text-anchor="middle" class="xs">unchanged, via relay (electrician)</text>
+
+  <text x="20" y="380" class="s">Pi 5V (pin 2) → J1 5V   ·   Pi GND (pin 6) → J1 GND   ·   Pi GPIO 18 (pin 12) → J1 PWM   ·   J2 PWM → brown   ·   J2 GND → blue</text>
+  <text x="20" y="400" class="xs">Pin numbers are the same on Raspberry Pi 2/3/4/5. Rock 5C: the 40-pin header has the same 5V and GND pins; the PWM pin differs (see text).</text>
+</svg>

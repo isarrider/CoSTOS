@@ -60,6 +60,10 @@ Mains wiring belongs in the hands of a qualified electrician.
 - [Architecture](docs/ARCHITECTURE.md): goals, safety concept, hardware,
   software structure, web interface, data export, testing and the
   migration plan.
+- [Hardware needed](docs/HARDWARE.md): parts lists and build instructions,
+  starting with the PWM pump output.
+- [Reference installation](docs/installation.md): the system OSCoST is
+  built to control first.
 
 ## Related
 
