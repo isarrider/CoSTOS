@@ -353,6 +353,11 @@ terminal blocks** on **two edges**, as in the [mockup](#mockup):
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
 
+Pluggable means a fixed socket on the board and a removable screw plug
+for each cable: the HAT can be pulled off the Pi without unscrewing any
+wire. Fixed screw terminals (one part, soldered in) would cost about €4
+less per board, but every wire would have to be undone to remove the HAT.
+
 All labelled on the silkscreen:
 
 | Connector | Pins | Function |
@@ -384,6 +389,38 @@ All labelled on the silkscreen:
   against the stripboard circuits, footprints of the MAX31865, DS2482 and
   DC/DC checked against their datasheets, a 1:1 paper print to check
   connector and mounting-hole positions on the real Pi.
+
+### 8.1 Cost estimate (rev A as fitted, per board)
+
+Single-quantity distributor prices without VAT, at the time of writing.
+Only the MAX31865 price is checked (DigiKey, €8.76 for one); the rest are
+estimates until the BOM exists. Unfitted positions are not counted, nor
+are the Pi, the DIN-rail supply, the SSR and the sensors.
+
+| Part | Qty | ≈ € |
+|---|---|---|
+| MAX31865AAP+ (Pt1000 converter) | 1 | 8.80 |
+| 3.5 mm pluggable terminals, socket and plug (J1, J2, J4, J6, J8, J9) | 6 | 7.00 |
+| PCB, ⅓ of an AISLER set of 3 (≈ €19) | — | 6.50 |
+| B0512S-1WR3 DC/DC | 1 | 3.00 |
+| 40-pin stacking header and 4 spacers | 1 | 3.00 |
+| Ideal diode: LM74700-Q1 + CSD17575Q3 | 2 | 2.50 |
+| Resistors and capacitors, about 25 (the 0.1 % 4.3 kΩ is about €0.80 of it) | — | 2.50 |
+| TC4427 | 1 | 1.30 |
+| 5 A SMD fuse | 1 | 1.00 |
+| TPS22918 | 1 | 0.60 |
+| LEDs | 3 | 0.50 |
+| 74LVC1G123 | 1 | 0.40 |
+| SMBJ13A, SMBJ5.0A | 2 | 0.40 |
+| PESD5V0 ESD diodes | 4 | 0.40 |
+| 74LVC1G08 | 1 | 0.20 |
+| 100 mA polyfuse | 1 | 0.20 |
+| AO3400A, 1N4148W | 2 | 0.20 |
+| **Total** | | **≈ 39** |
+
+The watchdog with AND gate and relay supply switch is about €1.50–2 of
+this (D8). Fixed screw terminals instead of pluggable ones would save
+about €4 (see section 7).
 
 ## 9. Bring-up plan (rev A)
 
@@ -419,3 +456,4 @@ All labelled on the silkscreen:
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
 | D7 | Hand assembly or AISLER assembly? | **Decide on the AISLER quote** once the BOM exists; all parts are hand-solderable |
 | D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts for a second, independent way to stop the pump, e.g. when the SSR fails short-circuited |
+| D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
