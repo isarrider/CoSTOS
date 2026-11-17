@@ -62,6 +62,8 @@ Mains wiring belongs in the hands of a qualified electrician.
   migration plan.
 - [Hardware needed](docs/HARDWARE.md): parts lists and build instructions,
   starting with the PWM pump output.
+- [HAT specification](docs/HAT.md): the planned plug-on board that
+  combines all of it (draft).
 - [Reference installation](docs/installation.md): the system OSCoST is
   built to control first.
 

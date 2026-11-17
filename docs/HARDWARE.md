@@ -13,6 +13,9 @@ designed. Right now it covers:
 > [Safety](ARCHITECTURE.md#4-safety)). Leave mains wiring to a qualified
 > electrician.
 
+The stripboard circuits here are the tested basis for a single plug-on
+board that combines everything: see the [HAT specification](HAT.md).
+
 Hole positions on stripboard are given as **row letter + column number**,
 as seen from the component side: `D8` is row D, column 8.
 
