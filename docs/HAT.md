@@ -75,6 +75,29 @@ layout is done in KiCad.
  └─────────────────────────────────────────────────────────────────────────┘
 ```
 
+### Circuit diagrams (rev A)
+
+Drawn from this specification as a reference for the KiCad project; the
+KiCad schematic will be the reference for the board itself. Faded parts
+are footprints that are not fitted in rev A. Regenerate with
+`python3 tools/hw/hat_schematic.py docs/img`.
+
+![Power input, 12 V supply and header](img/hat-sch-power.svg)
+
+![Watchdog, PWM pump outputs and feedback inputs](img/hat-sch-pwm.svg)
+
+![Relay supply and relay outputs](img/hat-sch-relay.svg)
+
+![Pt1000 and 1-Wire inputs](img/hat-sch-sensors.svg)
+
+Part choices the drawings add to the text below (all to be confirmed
+when the BOM is made): ideal diode LM74700-Q1 with an N-MOSFET such as
+CSD17575Q3; relay supply switch TPS22918; AND gates 74LVC1G08; relay
+MOSFETs AO3400A with 1N4148W flyback diodes; ESD diodes PESD5V0 on the
+sensor inputs; 100 mA polyfuse for the 1-Wire sensor supply; a 1.5 kΩ
+minimum load on the 12 V output, which keeps the unregulated DC/DC below
+the 13 V TVS standoff at light load.
+
 ## 4. Functions
 
 ### 4.1 PWM pump outputs
@@ -164,7 +187,9 @@ layout is done in KiCad.
 - A **retriggerable monostable** (e.g. 74LVC1G123) keeps `WD_OK` high as
   long as edges keep arriving; about 2–3 s without an edge and `WD_OK`
   drops. A GPIO stuck high or stuck low counts as "no heartbeat", because
-  only edges retrigger it.
+  only edges retrigger it. The 74LVC1G123 retriggers on rising edges
+  only: with one toggle per 1 s control cycle a rising edge arrives every
+  2 s, so the timeout is set to about 3 s.
 - `WD_OK` switches the relay supply (high-side load switch) and gates the
   PWM signals (4.1).
 - After power-up `WD_OK` is low until the software starts sending

@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="690" viewBox="0 0 1180 690" font-family="Helvetica, Arial, sans-serif">
+<title>OSCoST HAT rev A: Pt1000 and 1-Wire inputs</title>
+<desc>MAX31865 RTD-to-digital converter on SPI0 for the Pt1000 collector sensor in 2-wire connection with 4.3 kilo-ohm reference; two 1-Wire buses on GPIO 4 and 17 with pull-ups, ESD protection and a fused 3.3 V sensor supply.</desc>
+<style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
+<rect width="1180" height="690" fill="white"/>
+<text x="20" y="30" class="h" text-anchor="start">9 · Pt1000 input (collector)</text>
+<rect x="420" y="90" width="170" height="330" rx="3" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
+<text x="505.0" y="253.0" class="r" text-anchor="middle">U8</text>
+<text x="505.0" y="268.0" class="v" text-anchor="middle">MAX31865</text>
+<text x="505.0" y="282.0" class="n" text-anchor="middle">SSOP-20</text>
+<text x="425" y="114" class="pn" text-anchor="start">BIAS</text>
+<text x="416" y="106" class="num" text-anchor="end">4</text>
+<path class="w" d="M420 110 L400 110"/>
+<text x="425" y="144" class="pn" text-anchor="start">REFIN+</text>
+<text x="416" y="136" class="num" text-anchor="end">5</text>
+<path class="w" d="M420 140 L400 140"/>
+<text x="425" y="174" class="pn" text-anchor="start">REFIN−</text>
+<text x="416" y="166" class="num" text-anchor="end">6</text>
+<path class="w" d="M420 170 L400 170"/>
+<text x="425" y="204" class="pn" text-anchor="start">ISENSOR</text>
+<text x="416" y="196" class="num" text-anchor="end">7</text>
+<path class="w" d="M420 200 L400 200"/>
+<text x="425" y="244" class="pn" text-anchor="start">FORCE+</text>
+<text x="416" y="236" class="num" text-anchor="end">8</text>
+<path class="w" d="M420 240 L400 240"/>
+<text x="425" y="294" class="pn" text-anchor="start">RTDIN+</text>
+<text x="416" y="286" class="num" text-anchor="end">10</text>
+<path class="w" d="M420 290 L400 290"/>
+<text x="425" y="334" class="pn" text-anchor="start">RTDIN−</text>
+<text x="416" y="326" class="num" text-anchor="end">11</text>
+<path class="w" d="M420 330 L400 330"/>
+<text x="425" y="384" class="pn" text-anchor="start">FORCE−</text>
+<text x="416" y="376" class="num" text-anchor="end">12</text>
+<path class="w" d="M420 380 L400 380"/>
+<text x="585" y="134" class="pn" text-anchor="end">SDI</text>
+<text x="594" y="126" class="num" text-anchor="start">14</text>
+<path class="w" d="M590 130 L610 130"/>
+<text x="585" y="174" class="pn" text-anchor="end">SCLK</text>
+<text x="594" y="166" class="num" text-anchor="start">15</text>
+<path class="w" d="M590 170 L610 170"/>
+<text x="585" y="214" class="pn" text-anchor="end">CS</text>
+<text x="594" y="206" class="num" text-anchor="start">16</text>
+<path class="w" d="M590 210 L610 210"/>
+<text x="585" y="254" class="pn" text-anchor="end">SDO</text>
+<text x="594" y="246" class="num" text-anchor="start">17</text>
+<path class="w" d="M590 250 L610 250"/>
+<text x="585" y="294" class="pn" text-anchor="end">DRDY</text>
+<text x="594" y="286" class="num" text-anchor="start">1</text>
+<path class="w" d="M590 290 L610 290"/>
+<text x="470" y="104" class="pn" text-anchor="middle">VDD</text>
+<text x="474" y="84" class="num" text-anchor="start">3</text>
+<path class="w" d="M470 90 L470 70"/>
+<text x="540" y="104" class="pn" text-anchor="middle">DVDD</text>
+<text x="544" y="84" class="num" text-anchor="start">2</text>
+<path class="w" d="M540 90 L540 70"/>
+<text x="450" y="414" class="pn" text-anchor="middle">FORCE2</text>
+<text x="454" y="434" class="num" text-anchor="start">9</text>
+<path class="w" d="M450 420 L450 440"/>
+<text x="500" y="414" class="pn" text-anchor="middle">GND1</text>
+<text x="504" y="434" class="num" text-anchor="start">19</text>
+<path class="w" d="M500 420 L500 440"/>
+<text x="535" y="414" class="pn" text-anchor="middle">GND2</text>
+<text x="539" y="434" class="num" text-anchor="start">13</text>
+<path class="w" d="M535 420 L535 440"/>
+<text x="570" y="414" class="pn" text-anchor="middle">DGND</text>
+<text x="574" y="434" class="num" text-anchor="start">18</text>
+<path class="w" d="M570 420 L570 440"/>
+<path class="w" d="M400 110 L380 110 L380 140"/>
+<path class="w" d="M400 140 L340 140"/>
+<circle cx="380" cy="140" r="3.5" fill="#222"/>
+<g transform="translate(340 140) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="324.0" y="168.0" class="r" text-anchor="end">R21</text>
+<text x="324.0" y="182.0" class="v" text-anchor="end">4.3 kΩ 0.1 %</text>
+<path class="w" d="M400 170 L380 170 L380 200"/>
+<path class="w" d="M400 200 L340 200"/>
+<circle cx="380" cy="200" r="3.5" fill="#222"/>
+<rect x="60" y="222" width="34" height="176" rx="3" style="fill:#E9E2CC;stroke:#8A7F5F;stroke-width:1.5"/>
+<circle cx="77" cy="240" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M73 244 L81 236" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="52" y="244" class="pn" text-anchor="end">A</text>
+<circle cx="77" cy="380" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M73 384 L81 376" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="52" y="384" class="pn" text-anchor="end">B</text>
+<text x="77" y="200" class="r" text-anchor="middle">J6</text>
+<text x="77" y="214" class="v" text-anchor="middle">PT1</text>
+<path class="w" d="M94 240 L400 240"/>
+<path class="w" d="M94 380 L400 380"/>
+<circle cx="300" cy="240" r="3.5" fill="#222"/>
+<path class="w" d="M300 240 L300 250"/>
+<g transform="translate(300 250) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -7 A7 7 0 0 0 12 7 Z M28 -7 A7 7 0 0 1 28 7 Z" style="fill:#888;stroke:#222;stroke-width:1.5"/></g>
+<text x="284.0" y="268.0" class="r" text-anchor="end">JP2</text>
+<text x="284.0" y="282.0" class="v" text-anchor="end">closed</text>
+<path class="w" d="M300 290 L400 290"/>
+<circle cx="300" cy="290" r="3.5" fill="#222"/>
+<circle cx="300" cy="380" r="3.5" fill="#222"/>
+<g transform="translate(300 380) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -7 A7 7 0 0 0 12 7 Z M28 -7 A7 7 0 0 1 28 7 Z" style="fill:#888;stroke:#222;stroke-width:1.5"/></g>
+<text x="284.0" y="358.0" class="r" text-anchor="end">JP3</text>
+<text x="284.0" y="372.0" class="v" text-anchor="end">closed</text>
+<path class="w" d="M300 340 L300 330 L400 330"/>
+<circle cx="360" cy="290" r="3.5" fill="#222"/>
+<circle cx="360" cy="330" r="3.5" fill="#222"/>
+<rect x="380" y="300" width="0" height="0"/>
+<g transform="translate(360 290) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="376.0" y="308.0" class="r" text-anchor="start">C13</text>
+<text x="376.0" y="322.0" class="v" text-anchor="start">10 nF</text>
+<circle cx="320" cy="290" r="3.5" fill="#222"/>
+<path class="w" d="M320 290 L320 310 L282 310"/>
+<circle cx="277" cy="310" r="5" style="fill:white;stroke:#222;stroke-width:2"/>
+<text x="268" y="314" class="r" text-anchor="end">TP2</text>
+<circle cx="150" cy="240" r="3.5" fill="#222"/>
+<g transform="translate(150 240) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
+<text x="166.0" y="258.0" class="r" text-anchor="start">D10</text>
+<text x="166.0" y="272.0" class="v" text-anchor="start">PESD5V0</text>
+<path d="M150 280 V290 M138 290 H162 M142 295 H158 M146 300 H154" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<circle cx="200" cy="380" r="3.5" fill="#222"/>
+<g transform="translate(200 380) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
+<text x="216.0" y="398.0" class="r" text-anchor="start">D11</text>
+<text x="216.0" y="412.0" class="v" text-anchor="start">PESD5V0</text>
+<path d="M200 420 V430 M188 430 H212 M192 435 H208 M196 440 H204" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M470 70 L470 50 L540 50 L540 70"/>
+<path d="M505 50 V38 M493 38 H517" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="505" y="28" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<text x="560" y="58" class="n" text-anchor="start">C14, C15: 100 nF at VDD, DVDD</text>
+<path class="w" d="M500 440 L500 460"/>
+<path class="w" d="M535 440 L535 460"/>
+<path class="w" d="M570 440 L570 460"/>
+<path class="w" d="M500 460 L570 460"/>
+<path d="M535 460 V470 M523 470 H547 M527 475 H543 M531 480 H539" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M450 440 L450 445"/>
+<g transform="translate(450 445) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -7 A7 7 0 0 0 12 7 Z M28 -7 A7 7 0 0 1 28 7 Z" style="fill:#888;stroke:#222;stroke-width:1.5"/></g>
+<text x="434.0" y="463.0" class="r" text-anchor="end">JP4</text>
+<text x="434.0" y="477.0" class="v" text-anchor="end">to GND</text>
+<path d="M450 485 V495 M438 495 H462 M442 500 H458 M446 505 H454" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<polygon points="610,130 618,121 654,121 654,139 618,139" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="636.0" y="134" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">MOSI</text>
+<text x="660" y="134" class="n" text-anchor="start">GPIO10 (pin 19)</text>
+<polygon points="610,170 618,161 654,161 654,179 618,179" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="636.0" y="174" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">SCLK</text>
+<text x="660" y="174" class="n" text-anchor="start">GPIO11 (pin 23)</text>
+<polygon points="610,210 618,201 668,201 668,219 618,219" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="643.0" y="214" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">CS_PT1</text>
+<text x="674" y="214" class="n" text-anchor="start">GPIO8 / CE0 (pin 24)</text>
+<polygon points="610,250 618,241 654,241 654,259 618,259" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="636.0" y="254" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">MISO</text>
+<text x="660" y="254" class="n" text-anchor="start">GPIO9 (pin 21)</text>
+<path class="w" d="M605 285 L615 295 M605 295 L615 285"/>
+<text x="20" y="545" class="n" text-anchor="start">2-wire (default): JP2 and JP3 closed (FORCE+ = RTDIN+, RTDIN− = FORCE−), JP4 ties FORCE2 to GND.</text>
+<text x="20" y="560" class="n" text-anchor="start">3-wire: open JP2, third wire to TP2, move JP4 to FORCE+. Not needed with the 2-wire roof cable.</text>
+<text x="20" y="575" class="n" text-anchor="start">R21 (0.1 %) sets the Pt1000 range; C13 across the RTD as the datasheet gives for 1 kΩ RTDs.</text>
+<text x="20" y="590" class="n" text-anchor="start">U9 with J7 (PT2): identical, CS = CE1 = GPIO7 (pin 26); not fitted.</text>
+<text x="20" y="605" class="n" text-anchor="start">DRDY is not used: OSCoST polls once per second.</text>
+<text x="840" y="30" class="h" text-anchor="start">10 · 1-Wire buses (DS18x20, powered)</text>
+<path d="M860 90 V78 M848 78 H872" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="860" y="68" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<path class="w" d="M860 90 L880 90"/>
+<g transform="translate(880 90) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/><path class="w" d="M8 10 L16 10 L44 -12" style="stroke-width:1.5"/></g>
+<text x="910.0" y="116.0" class="v" text-anchor="middle"><tspan class="r">F2</tspan> polyfuse 100 mA</text>
+<path class="w" d="M940 90 L980 90"/>
+<polygon points="980,90 988,81 1059,81 1059,99 988,99" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="1023.5" y="94" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">+3V3_SENS</text>
+<polygon points="890,250 882,241 846,241 846,259 882,259" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="864.0" y="254" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">1W_A</text>
+<text x="890" y="276" class="n" text-anchor="end">GPIO4 (pin 7)</text>
+<path class="w" d="M890 250 L1110 250"/>
+<circle cx="930" cy="250" r="3.5" fill="#222"/>
+<circle cx="1000" cy="250" r="3.5" fill="#222"/>
+<g transform="translate(930 250) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="914.0" y="218.0" class="r" text-anchor="end">R22</text>
+<text x="914.0" y="232.0" class="v" text-anchor="end">4.7 kΩ</text>
+<path d="M930 190 V178 M918 178 H942" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="930" y="168" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(1000 250) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
+<text x="1016.0" y="268.0" class="r" text-anchor="start">D12</text>
+<text x="1016.0" y="282.0" class="v" text-anchor="start">PESD5V0</text>
+<path d="M1000 290 V300 M988 300 H1012 M992 305 H1008 M996 310 H1004" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<rect x="1110" y="192" width="34" height="116" rx="3" style="fill:#E9E2CC;stroke:#8A7F5F;stroke-width:1.5"/>
+<circle cx="1127" cy="210" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 214 L1131 206" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="214" class="pn" text-anchor="start">3V3</text>
+<circle cx="1127" cy="250" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 254 L1131 246" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="254" class="pn" text-anchor="start">DQ</text>
+<circle cx="1127" cy="290" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 294 L1131 286" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="294" class="pn" text-anchor="start">GND</text>
+<text x="1127" y="170" class="r" text-anchor="middle">J8</text>
+<text x="1127" y="184" class="v" text-anchor="middle">1W-A</text>
+<path class="w" d="M1110 210 L1100 210"/>
+<polygon points="1100,210 1092,201 1021,201 1021,219 1092,219" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="1056.5" y="214" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">+3V3_SENS</text>
+<path class="w" d="M1110 290 L1095 290 L1095 295"/>
+<path d="M1095 295 V305 M1083 305 H1107 M1087 310 H1103 M1091 315 H1099" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<polygon points="890,430 882,421 846,421 846,439 882,439" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="864.0" y="434" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">1W_B</text>
+<text x="890" y="456" class="n" text-anchor="end">GPIO17 (pin 11)</text>
+<path class="w" d="M890 430 L1110 430"/>
+<circle cx="930" cy="430" r="3.5" fill="#222"/>
+<circle cx="1000" cy="430" r="3.5" fill="#222"/>
+<g transform="translate(930 430) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="914.0" y="398.0" class="r" text-anchor="end">R23</text>
+<text x="914.0" y="412.0" class="v" text-anchor="end">4.7 kΩ</text>
+<path d="M930 370 V358 M918 358 H942" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="930" y="348" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(1000 430) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
+<text x="1016.0" y="448.0" class="r" text-anchor="start">D13</text>
+<text x="1016.0" y="462.0" class="v" text-anchor="start">PESD5V0</text>
+<path d="M1000 470 V480 M988 480 H1012 M992 485 H1008 M996 490 H1004" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<rect x="1110" y="372" width="34" height="116" rx="3" style="fill:#E9E2CC;stroke:#8A7F5F;stroke-width:1.5"/>
+<circle cx="1127" cy="390" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 394 L1131 386" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="394" class="pn" text-anchor="start">3V3</text>
+<circle cx="1127" cy="430" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 434 L1131 426" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="434" class="pn" text-anchor="start">DQ</text>
+<circle cx="1127" cy="470" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 474 L1131 466" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="474" class="pn" text-anchor="start">GND</text>
+<text x="1127" y="350" class="r" text-anchor="middle">J9</text>
+<text x="1127" y="364" class="v" text-anchor="middle">1W-B</text>
+<path class="w" d="M1110 390 L1100 390"/>
+<polygon points="1100,390 1092,381 1021,381 1021,399 1092,399" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="1056.5" y="394" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">+3V3_SENS</text>
+<path class="w" d="M1110 470 L1095 470 L1095 475"/>
+<path d="M1095 475 V485 M1083 485 H1107 M1087 490 H1103 M1091 495 H1099" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<text x="840" y="560" class="n" text-anchor="start">F2 feeds both buses' sensors: a shorted sensor</text>
+<text x="840" y="575" class="n" text-anchor="start">cable cannot pull down the Pi's 3.3 V rail.</text>
+<text x="840" y="590" class="n" text-anchor="start">DS2482-100 footprint (U10, n.f.) on SDA/SCL</text>
+<text x="840" y="605" class="n" text-anchor="start">(pins 3/5) can take over the buses later.</text>
+<g opacity="0.42"><rect x="928" y="662" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
+<text x="962" y="674" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
+</svg>

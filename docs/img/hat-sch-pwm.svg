@@ -1,0 +1,266 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="800" viewBox="0 0 1180 800" font-family="Helvetica, Arial, sans-serif">
+<title>OSCoST HAT rev A: watchdog, PWM pump outputs and feedback inputs</title>
+<desc>Retriggerable monostable watchdog producing WD_OK; two PWM channels gated by WD_OK through AND gates into a TC4427 driver at 12 V with series resistor and TVS; pump feedback inputs with pull-up and RC filter.</desc>
+<style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
+<rect width="1180" height="800" fill="white"/>
+<text x="20" y="30" class="h" text-anchor="start">4 · Hardware watchdog</text>
+<rect x="170" y="150" width="160" height="140" rx="3" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
+<text x="250.0" y="218.0" class="r" text-anchor="middle">U3</text>
+<text x="250.0" y="233.0" class="v" text-anchor="middle">74LVC1G123</text>
+<text x="250.0" y="247.0" class="n" text-anchor="middle">retriggerable monostable</text>
+<text x="175" y="184" class="pn" text-anchor="start">A</text>
+<path class="w" d="M170 180 L150 180"/>
+<text x="175" y="224" class="pn" text-anchor="start">B</text>
+<path class="w" d="M170 220 L150 220"/>
+<text x="200" y="164" class="pn" text-anchor="middle">VCC</text>
+<path class="w" d="M200 150 L200 130"/>
+<text x="250" y="164" class="pn" text-anchor="middle">REXT/CEXT</text>
+<path class="w" d="M250 150 L250 130"/>
+<text x="305" y="164" class="pn" text-anchor="middle">CEXT</text>
+<path class="w" d="M305 150 L305 130"/>
+<text x="325" y="224" class="pn" text-anchor="end">Q</text>
+<path class="w" d="M330 220 L350 220"/>
+<text x="325" y="264" class="pn" text-anchor="end">Q̄</text>
+<path class="w" d="M330 260 L350 260"/>
+<text x="210" y="284" class="pn" text-anchor="middle">CLR</text>
+<path class="w" d="M210 290 L210 310"/>
+<text x="280" y="284" class="pn" text-anchor="middle">GND</text>
+<path class="w" d="M280 290 L280 310"/>
+<path class="w" d="M150 220 L130 220"/>
+<polygon points="130,220 122,211 51,211 51,229 122,229" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="86.5" y="224" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">HEARTBEAT</text>
+<text x="51" y="246" class="n" text-anchor="start">GPIO24 (pin 18)</text>
+<path class="w" d="M150 180 L135 180 L135 185"/>
+<path d="M135 185 V195 M123 195 H147 M127 200 H143 M131 205 H139" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M345 255 L355 265 M345 265 L355 255"/>
+<path class="w" d="M200 130 L200 110"/>
+<path d="M200 110 V98 M188 98 H212" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="200" y="88" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<path d="M250 50 V38 M238 38 H262" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="250" y="28" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(250 50) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="266.0" y="78.0" class="r" text-anchor="start">R3</text>
+<text x="266.0" y="92.0" class="v" text-anchor="start">300 kΩ</text>
+<path class="w" d="M250 110 L250 130"/>
+<circle cx="250" cy="120" r="3.5" fill="#222"/>
+<path class="w" d="M250 120 L262 120"/>
+<g transform="translate(262 120) rotate(0)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="282.0" y="106.0" class="v" text-anchor="middle"><tspan class="r">C5</tspan> 10 µF</text>
+<path class="w" d="M302 120 L305 120 L305 130"/>
+<path class="w" d="M280 310 L280 320"/>
+<path d="M280 320 V330 M268 330 H292 M272 335 H288 M276 340 H284" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M210 310 L210 340"/>
+<circle cx="210" cy="340" r="3.5" fill="#222"/>
+<path class="w" d="M210 340 L190 340"/>
+<g transform="translate(190 340) rotate(180)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="160.0" y="366.0" class="v" text-anchor="middle"><tspan class="r">R4</tspan> 100 kΩ</text>
+<path d="M130 340 V328 M118 328 H142" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="130" y="318" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(210 340) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="226.0" y="358.0" class="r" text-anchor="start">C6</text>
+<text x="226.0" y="372.0" class="v" text-anchor="start">1 µF</text>
+<path d="M210 380 V390 M198 390 H222 M202 395 H218 M206 400 H214" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M350 220 L400 220"/>
+<circle cx="400" cy="220" r="3.5" fill="#222"/>
+<g transform="translate(400 220) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="416.0" y="248.0" class="r" text-anchor="start">R5</text>
+<text x="416.0" y="262.0" class="v" text-anchor="start">1 kΩ</text>
+<g transform="translate(400 280) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/><path class="w" d="M14 -12 L21 -20" style="stroke-width:1.5"/><path d="M21 -20 L16 -18 L20 -15 Z" fill="#222"/><path class="w" d="M22 -12 L29 -20" style="stroke-width:1.5"/><path d="M29 -20 L24 -18 L28 -15 Z" fill="#222"/></g>
+<text x="430.0" y="298.0" class="r" text-anchor="start">D3</text>
+<text x="430.0" y="312.0" class="v" text-anchor="start">WD OK green</text>
+<path d="M400 320 V330 M388 330 H412 M392 335 H408 M396 340 H404" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M400 220 L420 220"/>
+<g transform="translate(420 220) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="450.0" y="206.0" class="v" text-anchor="middle"><tspan class="r">R6</tspan> 1 kΩ</text>
+<path class="w" d="M480 220 L590 220"/>
+<circle cx="500" cy="220" r="3.5" fill="#222"/>
+<g transform="translate(500 220) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -7 A7 7 0 0 0 12 7 Z M28 -7 A7 7 0 0 1 28 7 Z" style="fill:#888;stroke:#222;stroke-width:1.5"/></g>
+<text x="516.0" y="198.0" class="r" text-anchor="start">JP1</text>
+<text x="516.0" y="212.0" class="v" text-anchor="start">open</text>
+<path d="M500 180 V168 M488 168 H512" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="500" y="158" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<path class="w" d="M500 220 L500 234"/>
+<circle cx="500" cy="239" r="5" style="fill:white;stroke:#222;stroke-width:2"/>
+<text x="510" y="252" class="r" text-anchor="start">TP1</text>
+<polygon points="590,220 598,211 641,211 641,229 598,229" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="619.5" y="224" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
+<text x="20" y="430" class="n" text-anchor="start">Timeout ≈ R3 · C5 ≈ 3 s (tuned at bring-up). Only rising</text>
+<text x="20" y="445" class="n" text-anchor="start">edges on B retrigger U3: OSCoST toggles HEARTBEAT once per</text>
+<text x="20" y="460" class="n" text-anchor="start">control cycle (1 s), so an edge arrives every 2 s. A line</text>
+<text x="20" y="475" class="n" text-anchor="start">stuck high or low lets WD_OK drop.</text>
+<text x="20" y="490" class="n" text-anchor="start">Power-up: R4/C6 hold CLR low; Q then stays low until the</text>
+<text x="20" y="505" class="n" text-anchor="start">first heartbeat, so nothing runs while the Pi boots.</text>
+<text x="20" y="520" class="n" text-anchor="start">JP1 forces WD_OK high for bench tests (open by default).</text>
+<text x="20" y="535" class="n" text-anchor="start">D3 shows U3's state, not the JP1 override.</text>
+<text x="640" y="30" class="h" text-anchor="start">5 · PWM pump outputs (12 V)</text>
+<rect x="860" y="70" width="100" height="300" rx="3" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
+<text x="910.0" y="218.0" class="r" text-anchor="middle">U6</text>
+<text x="910.0" y="233.0" class="v" text-anchor="middle">TC4427</text>
+<text x="910.0" y="247.0" class="n" text-anchor="middle">dual driver</text>
+<text x="865" y="124" class="pn" text-anchor="start">IN A</text>
+<text x="856" y="116" class="num" text-anchor="end">2</text>
+<path class="w" d="M860 120 L840 120"/>
+<text x="865" y="334" class="pn" text-anchor="start">IN B</text>
+<text x="856" y="326" class="num" text-anchor="end">4</text>
+<path class="w" d="M860 330 L840 330"/>
+<text x="955" y="124" class="pn" text-anchor="end">OUT A</text>
+<text x="964" y="116" class="num" text-anchor="start">7</text>
+<path class="w" d="M960 120 L980 120"/>
+<text x="955" y="334" class="pn" text-anchor="end">OUT B</text>
+<text x="964" y="326" class="num" text-anchor="start">5</text>
+<path class="w" d="M960 330 L980 330"/>
+<text x="910" y="84" class="pn" text-anchor="middle">VDD</text>
+<text x="914" y="64" class="num" text-anchor="start">6</text>
+<path class="w" d="M910 70 L910 50"/>
+<text x="910" y="364" class="pn" text-anchor="middle">GND</text>
+<text x="914" y="384" class="num" text-anchor="start">3</text>
+<path class="w" d="M910 370 L910 390"/>
+<path class="w" d="M910 50 L910 45"/>
+<path d="M910 45 V33 M898 33 H922" style="stroke:#c62828;stroke-width:2.5;fill:none"/>
+<text x="910" y="23" class="r" text-anchor="middle" style="fill:#c62828">+12V</text>
+<text x="925" y="62" class="n" text-anchor="start">C7 1 µF, C8 100 nF</text>
+<path class="w" d="M910 390 L910 395"/>
+<path d="M910 395 V405 M898 405 H922 M902 410 H918 M906 415 H914" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M700 110 L720 110"/>
+<path class="w" d="M700 130 L720 130"/>
+<path d="M720 100 H740 A20 20 0 0 1 740 140 H720 Z" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
+<path class="w" d="M760 120 L780 120"/>
+<text x="740" y="92" class="v" text-anchor="middle"><tspan class="r">U4</tspan> 74LVC1G08</text>
+<path class="w" d="M690 110 L700 110"/>
+<polygon points="690,110 682,101 646,101 646,119 682,119" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="664.0" y="114" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">PWM1</text>
+<text x="640" y="114" class="n" text-anchor="end">GPIO18 (pin 12)</text>
+<path class="w" d="M690 130 L700 130"/>
+<polygon points="690,130 682,121 639,121 639,139 682,139" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="660.5" y="134" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
+<path class="w" d="M780 120 L800 120"/>
+<path class="w" d="M800 120 L840 120"/>
+<circle cx="810" cy="120" r="3.5" fill="#222"/>
+<g transform="translate(810 120) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="794.0" y="148.0" class="r" text-anchor="end">R7</text>
+<text x="794.0" y="162.0" class="v" text-anchor="end">100 kΩ</text>
+<path d="M810 180 V190 M798 190 H822 M802 195 H818 M806 200 H814" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M980 120 L990 120"/>
+<g transform="translate(990 120) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="1020.0" y="106.0" class="v" text-anchor="middle"><tspan class="r">R9</tspan> 470 Ω</text>
+<path class="w" d="M1050 120 L1110 120"/>
+<circle cx="1070" cy="120" r="3.5" fill="#222"/>
+<path class="w" d="M1070 120 L1070 130"/>
+<g transform="translate(1070 170) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M24 -12 L28 -9 V9 L32 12"/></g>
+<text x="1054.0" y="148.0" class="r" text-anchor="end">D4</text>
+<text x="1054.0" y="162.0" class="v" text-anchor="end">SMBJ13A</text>
+<path d="M1070 170 V180 M1058 180 H1082 M1062 185 H1078 M1066 190 H1074" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<rect x="1110" y="102" width="34" height="126" rx="3" style="fill:#E9E2CC;stroke:#8A7F5F;stroke-width:1.5"/>
+<circle cx="1127" cy="120" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 124 L1131 116" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="124" class="pn" text-anchor="start">PWM</text>
+<circle cx="1127" cy="165" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 169 L1131 161" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="169" class="pn" text-anchor="start">GND</text>
+<circle cx="1127" cy="210" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 214 L1131 206" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="214" class="pn" text-anchor="start">FB</text>
+<text x="1127" y="80" class="r" text-anchor="middle">J2</text>
+<text x="1127" y="94" class="v" text-anchor="middle">PUMP1</text>
+<path class="w" d="M1110 165 L1100 165 L1100 170"/>
+<path d="M1100 170 V180 M1088 180 H1112 M1092 185 H1108 M1096 190 H1104" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M1110 210 L1095 210"/>
+<polygon points="1095,210 1087,201 1044,201 1044,219 1087,219" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="1065.5" y="214" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">P1_FB</text>
+<g opacity="0.42">
+<path class="w" d="M700 320 L720 320"/>
+<path class="w" d="M700 340 L720 340"/>
+<path d="M720 310 H740 A20 20 0 0 1 740 350 H720 Z" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
+<path class="w" d="M760 330 L780 330"/>
+<text x="740" y="302" class="v" text-anchor="middle"><tspan class="r">U5</tspan> 74LVC1G08 (n.f.)</text>
+<path class="w" d="M690 320 L700 320"/>
+<polygon points="690,320 682,311 646,311 646,329 682,329" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="664.0" y="324" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">PWM2</text>
+<text x="640" y="324" class="n" text-anchor="end">GPIO19 (pin 35)</text>
+<path class="w" d="M690 340 L700 340"/>
+<polygon points="690,340 682,331 639,331 639,349 682,349" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="660.5" y="344" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
+<path class="w" d="M780 330 L800 330"/>
+</g>
+<path class="w" d="M800 330 L840 330"/>
+<circle cx="810" cy="330" r="3.5" fill="#222"/>
+<g transform="translate(810 330) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="794.0" y="358.0" class="r" text-anchor="end">R8</text>
+<text x="794.0" y="372.0" class="v" text-anchor="end">100 kΩ</text>
+<path d="M810 390 V400 M798 400 H822 M802 405 H818 M806 410 H814" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<g opacity="0.42">
+<path class="w" d="M980 330 L990 330"/>
+<g transform="translate(990 330) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="1020.0" y="316.0" class="v" text-anchor="middle"><tspan class="r">R10</tspan> 470 Ω</text>
+<path class="w" d="M1050 330 L1110 330"/>
+<circle cx="1070" cy="330" r="3.5" fill="#222"/>
+<path class="w" d="M1070 330 L1070 340"/>
+<g transform="translate(1070 380) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M24 -12 L28 -9 V9 L32 12"/></g>
+<text x="1054.0" y="358.0" class="r" text-anchor="end">D5</text>
+<text x="1054.0" y="372.0" class="v" text-anchor="end">SMBJ13A</text>
+<path d="M1070 380 V390 M1058 390 H1082 M1062 395 H1078 M1066 400 H1074" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<rect x="1110" y="312" width="34" height="126" rx="3" style="fill:#E9E2CC;stroke:#8A7F5F;stroke-width:1.5"/>
+<circle cx="1127" cy="330" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 334 L1131 326" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="334" class="pn" text-anchor="start">PWM</text>
+<circle cx="1127" cy="375" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 379 L1131 371" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="379" class="pn" text-anchor="start">GND</text>
+<circle cx="1127" cy="420" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 424 L1131 416" style="stroke:#5F6468;stroke-width:1.5"/>
+<text x="1152" y="424" class="pn" text-anchor="start">FB</text>
+<text x="1127" y="290" class="r" text-anchor="middle">J3</text>
+<text x="1127" y="304" class="v" text-anchor="middle">PUMP2</text>
+<path class="w" d="M1110 375 L1100 375 L1100 380"/>
+<path d="M1100 380 V390 M1088 390 H1112 M1092 395 H1108 M1096 400 H1104" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M1110 420 L1095 420"/>
+<polygon points="1095,420 1087,411 1044,411 1044,429 1087,429" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="1065.5" y="424" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">P2_FB</text>
+</g>
+<text x="640" y="470" class="n" text-anchor="start">U4/U5: the PWM reaches the driver only while WD_OK is high;</text>
+<text x="640" y="485" class="n" text-anchor="start">otherwise the output is 0 % = stop (PWM2 solar profile).</text>
+<text x="640" y="500" class="n" text-anchor="start">R7/R8 hold the driver inputs low; R8 is fitted although</text>
+<text x="640" y="515" class="n" text-anchor="start">channel 2 is not, so IN B never floats.</text>
+<text x="640" y="530" class="n" text-anchor="start">R9 limits the current into a shorted cable; D4 clamps</text>
+<text x="640" y="545" class="n" text-anchor="start">spikes from the pump cable. Terminal order = cable colours</text>
+<text x="640" y="560" class="n" text-anchor="start">brown (PWM), blue (GND), black (FB).</text>
+<text x="20" y="610" class="h" text-anchor="start">6 · Pump feedback inputs (open collector, 75 Hz)</text>
+<polygon points="120,710 112,701 69,701 69,719 112,719" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="90.5" y="714" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">P1_FB</text>
+<path class="w" d="M120 710 L160 710"/>
+<circle cx="160" cy="710" r="3.5" fill="#222"/>
+<g transform="translate(160 710) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="144.0" y="678.0" class="r" text-anchor="end">R11</text>
+<text x="144.0" y="692.0" class="v" text-anchor="end">4.7 kΩ</text>
+<path d="M160 650 V638 M148 638 H172" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="160" y="628" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(160 710) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="190.0" y="736.0" class="v" text-anchor="middle"><tspan class="r">R12</tspan> 10 kΩ</text>
+<path class="w" d="M220 710 L320 710"/>
+<circle cx="260" cy="710" r="3.5" fill="#222"/>
+<g transform="translate(260 710) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="276.0" y="728.0" class="r" text-anchor="start">C9</text>
+<text x="276.0" y="742.0" class="v" text-anchor="start">1 nF</text>
+<path d="M260 750 V760 M248 760 H272 M252 765 H268 M256 770 H264" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<polygon points="320,710 328,701 357,701 357,719 328,719" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="342.5" y="714" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">FB1</text>
+<text x="320" y="738" class="n" text-anchor="start">GPIO23 (pin 16)</text>
+<g opacity="0.42">
+<polygon points="640,710 632,701 589,701 589,719 632,719" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="610.5" y="714" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">P2_FB</text>
+<path class="w" d="M640 710 L680 710"/>
+<circle cx="680" cy="710" r="3.5" fill="#222"/>
+<g transform="translate(680 710) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="664.0" y="678.0" class="r" text-anchor="end">R13</text>
+<text x="664.0" y="692.0" class="v" text-anchor="end">4.7 kΩ</text>
+<path d="M680 650 V638 M668 638 H692" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="680" y="628" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(680 710) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="710.0" y="736.0" class="v" text-anchor="middle"><tspan class="r">R14</tspan> 10 kΩ</text>
+<path class="w" d="M740 710 L840 710"/>
+<circle cx="780" cy="710" r="3.5" fill="#222"/>
+<g transform="translate(780 710) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="796.0" y="728.0" class="r" text-anchor="start">C10</text>
+<text x="796.0" y="742.0" class="v" text-anchor="start">1 nF</text>
+<path d="M780 750 V760 M768 760 H792 M772 765 H788 M776 770 H784" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<polygon points="840,710 848,701 877,701 877,719 848,719" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="862.5" y="714" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">FB2</text>
+<text x="840" y="738" class="n" text-anchor="start">GPIO16 (pin 36)</text>
+</g>
+<g opacity="0.42"><rect x="928" y="772" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
+<text x="962" y="784" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
+</svg>
