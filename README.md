@@ -38,7 +38,7 @@ installation, so that's the reference for which functions come first.
   Status pages are readable without login, any change needs one.
 - **Data**: every value pushed to VictoriaMetrics once per second, buffered
   on disk while the database is unreachable and backfilled afterwards.
-  MQTT with Home Assistant discovery.
+  Optional (off by default): MQTT with Home Assistant discovery.
 - **Safety first**: outputs off by default, hardware and software
   watchdogs, plausibility checks on every sensor, and a safety layer that
   can only switch things off, never on. See

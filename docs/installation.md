@@ -239,6 +239,12 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
   through the collector" function of flat-plate systems would barely work
   here.
 
+## Integrations
+
+- VictoriaMetrics: yes (the existing instance vbus2influx writes to).
+- MQTT / Home Assistant: **not used**. It stays an option in OSCoST,
+  disabled by default.
+
 ## Open points
 
 - Flow calibration: is there a float-type flow indicator to read the flow at a few pump speeds?

@@ -27,8 +27,8 @@ OSCoST without risking the system.
   so it can run against a simulator, against recorded data and in CI.
 - Be **observable**: every input, decision and output is pushed to
   **VictoriaMetrics** once per second, and buffered locally while the
-  database is unreachable, so no data is lost (section 6.5). MQTT and the
-  HTTP API expose the live state too.
+  database is unreachable, so no data is lost (section 6.5). The HTTP API
+  and, optionally, MQTT expose the live state too.
 - Make **everything configurable in the web interface**: status, sensors,
   outputs, control functions, integrations and users. No config files to
   edit by hand. Sensors, outputs and functions are wired up in config, not
@@ -38,8 +38,8 @@ OSCoST without risking the system.
 
 - Space-heating circuits, mixers, heat pump or boiler demand. The BX Plus
   can do these. OSCoST starts with the solar side only.
-- A display and buttons on the device. The UI is a web page, plus Home
-  Assistant over MQTT.
+- A display and buttons on the device. The UI is a web page, plus (optional)
+  Home Assistant over MQTT.
 - Certification. OSCoST is a hobby project. Mains wiring is done by a
   qualified electrician, and the hardware safety devices described in
   section 4 are not optional.
@@ -456,7 +456,7 @@ config:
 |---|---|
 | **Web interface + HTTP API** (axum) | Status, configuration, manual mode, history, events. See section 7. |
 | **VictoriaMetrics** | All values pushed every second, with a local buffer for outages. See section 6.5. |
-| **MQTT** with Home Assistant discovery | Sensors, outputs and alarms appear in HA automatically. Writes (manual mode) are optional and off by default. |
+| **MQTT** with Home Assistant discovery (**optional, off by default**) | Sensors, outputs and alarms appear in HA automatically once enabled. Writes (manual mode) are a separate option, also off by default. The reference installation doesn't use it. |
 | **Logs** | `tracing` to journald. Every state change and every safety intervention is logged as a structured event. |
 
 Not planned: emulating VBus to be read by other RESOL tools.
@@ -718,10 +718,10 @@ come first.
    revisions, JSON API, VictoriaMetrics push with buffering.
 5. Web interface: overview, setup wizard, all settings pages, users/login,
    manual mode.
-6. MQTT + Home Assistant discovery.
-7. Shadow mode on the real system.
-8. Heat quantity, optional functions (cooling, tube collector, frost).
-9. Switch over.
+6. Shadow mode on the real system.
+7. Heat quantity, optional functions (cooling, tube collector, frost).
+8. Switch over.
+9. Optional: MQTT + Home Assistant discovery (off by default).
 
 ---
 
