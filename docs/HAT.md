@@ -1,8 +1,8 @@
 # OSCoST HAT: specification
 
-Status: **draft, rev A not yet designed**. This page defines what the HAT
-has to do before anything is drawn in KiCad. Decisions still open are
-listed at the end; everything else is the proposal.
+Status: **specification agreed, rev A not yet designed**. This page
+defines what the HAT has to do before anything is drawn in KiCad. The
+decisions behind it are listed at the end.
 
 The HAT combines the circuits from [Hardware needed](HARDWARE.md) on one
 board that plugs onto the 40-pin header. It is designed once the
@@ -19,6 +19,8 @@ untested circuit goes into a manufactured board.
 - Pt1000 temperature inputs
 - 1-Wire bus for DS18x20 sensors
 - Control outputs for external relays / SSRs
+- The **5 V power input for the whole controller**: the DIN-rail supply
+  feeds the HAT, and the HAT powers the Pi through the header
 - Hardware watchdog that switches all relay outputs off when the software
   stops
 - Protection on every connection that leaves the board, status LEDs
@@ -28,10 +30,7 @@ untested circuit goes into a manufactured board.
 - **Anything with 230 V.** The SSR or relay that switches the pump, the
   5 V power supply and the fuse sit on a DIN rail in the enclosure, wired
   by an electrician. The HAT only sends the relay a low-voltage control
-  signal.
-- **Powering the Pi.** The Pi gets its power from its own USB-C input
-  (from the DIN-rail supply). The HAT takes 5 V and 3.3 V from the
-  header. See open decision D5.
+  signal and receives the supply's 5 V output.
 
 ## 2. Target boards and form factor
 
@@ -50,6 +49,7 @@ untested circuit goes into a manufactured board.
                 40-pin header
  ┌──────────────────┼──────────────────────────────────────────────────────┐
  │                  │                                                      │
+ │  PWR 5 V in ─► fuse, TVS, ideal diode ─► 5 V ─► Pi (pins 2/4) + HAT     │
  │  5 V ──► DC/DC 5→12 V ──► 12 V ─┐                                       │
  │                                 ▼                                       │
  │  PWM1 ─► AND ─► TC4427 ch A ─► R ─► TVS ─────────────────────► Pump 1   │ PWM / GND / FB
@@ -145,16 +145,46 @@ untested circuit goes into a manufactured board.
   [Safety](ARCHITECTURE.md#41-hardware-layer-independent-of-software); the
   SoC watchdog and the systemd watchdog remain in addition.
 
-### 4.7 Power
+### 4.7 Power input (powers the Pi)
+
+The DIN-rail 5 V supply connects to a terminal on the HAT. The HAT feeds
+its own circuits and, through header pins 2 and 4, the Pi. The Pi's USB-C
+input stays unused in operation.
+
+Feeding 5 V into the header **bypasses the Pi's own input protection**, so
+the HAT has to provide it:
+
+- **Fuse** at the input (5 A slow-blow or a polyfuse of similar rating).
+- **TVS diode** against overvoltage spikes from the supply (e.g. SMBJ5.0A).
+- **Ideal diode** (a controller with an external MOSFET, low drop at 5 A):
+  protects against reversed polarity at the terminal, and prevents
+  back-feeding when the Pi's USB-C is also plugged in, for example on the
+  bench. A plain Schottky diode would drop too much voltage.
+- **Power LED** after the protection.
+
+Limits and settings:
+
+- The header's 5 V connections carry about **4.5 A**. That is enough for
+  the Pi, the HAT and light USB use; OSCoST needs no power-hungry USB
+  devices.
+- **Raspberry Pi 5:** without USB power negotiation it assumes a 3 A
+  supply, limits the USB ports to 600 mA and refuses to boot from USB.
+  With a 5 A supply, set `PSU_MAX_CURRENT=5000` in the bootloader EEPROM
+  configuration (`sudo rpi-eeprom-config --edit`); some Pi 5 boards don't
+  boot from GPIO power at all until this is set. The OSCoST install
+  instructions must include this step.
+- **Raspberry Pi 4:** no setting needed.
+- Supply: a regulated **5.1 V** DIN-rail supply, 3 A for a Pi 4 and 5 A
+  for a Pi 5, so the voltage at the Pi stays above 5 V after the
+  protection circuit.
+
+### 4.8 Power budget
 
 | Rail | Source | Users | Estimated current |
 |---|---|---|---|
-| 5 V | Pi header pins 2/4 | DC/DC, relay supply, LEDs | < 300 mA with two relay coils, < 100 mA with SSRs |
+| 5 V | HAT power input (from the DIN-rail supply) | **the Pi**, DC/DC, relay supply, LEDs | Pi 4 up to 3 A, Pi 5 up to 5 A; HAT itself < 300 mA with two relay coils, < 100 mA with SSRs |
 | 12 V | DC/DC on the HAT (1 W) | TC4427, PWM outputs | < 30 mA |
 | 3.3 V | Pi header pins 1/17 | MAX31865 × 2, DS2482, DS18x20 sensors, pull-ups | < 30 mA |
-
-The Pi's own supply has to cover this on top of the board itself: a
-5 V / 3 A supply for a Pi 4, 5 V / 5 A for a Pi 5.
 
 ## 5. Pin assignment
 
@@ -175,7 +205,7 @@ numbers behind GPIO 18/19 differ, which is software configuration.
 | Relay 1 | 22 | GPIO 25 | GPIO 25 |
 | Relay 2 | 29 | GPIO 5 | GPIO 5 |
 | ID EEPROM | 27 / 28 | ID_SD / ID_SC | ID_SD / ID_SC |
-| 5 V | 2, 4 | | |
+| 5 V (HAT → Pi) | 2, 4 | | |
 | 3.3 V | 1, 17 | | |
 | GND | 6, 9, 14, 20, 25, 30, 34, 39 | | |
 
@@ -190,6 +220,7 @@ silkscreen:
 
 | Connector | Pins | Function |
 |---|---|---|
+| PWR | +5V, GND | from the DIN-rail 5 V supply; powers HAT and Pi |
 | PUMP1 | PWM, GND, FB | pump 1 signal cable (brown, blue, black) |
 | PUMP2 | PWM, GND, FB | pump 2 signal cable |
 | PT1 | +, − | Pt1000 sensor 1 (collector) |
@@ -220,26 +251,31 @@ silkscreen:
 ## 8. Bring-up plan (rev A)
 
 1. Visual check, then resistance checks between all rails before power.
-2. Power from the Pi without any field devices: 5 V, 12 V, 3.3 V.
-3. Watchdog: `WD_OK` low after boot, high while a test script toggles the
+2. Power input on its own, without the Pi: a lab supply with current
+   limit at the PWR terminal; check 5 V after the ideal diode, then
+   reversed polarity (nothing may conduct).
+3. With the Pi, powered only through the HAT: Pi boots (Pi 5 with
+   `PSU_MAX_CURRENT=5000`), 12 V and 3.3 V present. Then additionally plug
+   in the Pi's USB-C: no current may flow back into the PWR terminal.
+4. Watchdog: `WD_OK` low after boot, high while a test script toggles the
    heartbeat, low again 2–3 s after it stops.
-4. Relay outputs with an LED/resistor as dummy load, with and without
+5. Relay outputs with an LED/resistor as dummy load, with and without
    heartbeat.
-5. PWM outputs into a 1 kΩ dummy load, then the real pump (as in
+6. PWM outputs into a 1 kΩ dummy load, then the real pump (as in
    [Connecting the pump](HARDWARE.md#connecting-the-pump)).
-6. Pt1000 inputs with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C),
+7. Pt1000 inputs with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C),
    then real sensors.
-7. 1-Wire bus scan with one, then several DS18x20.
-8. Repeat steps 2–7 on the other board (Pi 4 ↔ Pi 5).
+8. 1-Wire bus scan with one, then several DS18x20.
+9. Repeat steps 3–8 on the other board (Pi 4 ↔ Pi 5).
 
-## 9. Open decisions
+## 9. Decisions
 
-| # | Question | Proposal |
+| # | Question | Decision |
 |---|---|---|
 | D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
-| D2 | One or two PWM outputs? | **Two**: the TC4427 has two channels anyway, the second costs a few parts |
-| D3 | How many Pt1000 inputs? | **Two** (collector + one spare). More would need more chip selects |
+| D2 | One or two PWM outputs? | **Two**: the TC4427 has two channels anyway |
+| D3 | How many Pt1000 inputs? | **Two** (collector + one spare), on the two hardware chip selects |
 | D4 | DS2482 or plain `w1-gpio`? | **DS2482-100**: robust with long cables and many sensors |
-| D5 | Power the Pi from the HAT (5 V terminal + ideal diode)? | **No** for rev A: the Pi keeps its USB-C supply. Back-powering needs protection, and the Pi 5 then limits USB current without extra configuration |
-| D6 | Fit the HAT ID EEPROM? | Footprint only; fit later if automatic configuration on the Pi is wanted |
-| D7 | Hand assembly or AISLER assembly? | Decide when the BOM exists and AISLER quotes the assembly |
+| D5 | Power the Pi from the HAT? | **Yes**: one supply cable for everything, with fuse, TVS and ideal diode on the HAT (4.7) |
+| D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
+| D7 | Hand assembly or AISLER assembly? | **Decide on the AISLER quote** once the BOM exists; all parts are hand-solderable |
