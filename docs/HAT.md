@@ -508,16 +508,10 @@ For installations that keep their Pt1000 sensors: a controller such as
 the RESOL BX Plus measures every sensor as a 2-wire Pt1000, and those
 sensors already sit in their sleeves with their cables in place.
 
-Status: **specified, not scheduled.** The reference installation uses
-the 1-Wire edition; the PT edition gets designed when someone needs it.
-At that point, measuring with **2 × ADS124S08** instead of 8 × MAX31865
-is worth evaluating: 10 channels, about €20 less per assembled board and
-more room on the board, at the cost of a new analog circuit (force and
-sense pin per sensor so the input protection doesn't distort the
-reading, one shared 0.1 % reference resistor per chip) and a more
-complex driver.
-
-![OSCoST HAT PT edition mockup](img/hat-pt-mockup.svg)
+Status: **planned as the second board**, after the 1-Wire edition (whose
+PT1 channel proves the MAX31865 circuit on the real system first). The
+measuring chip is still open (11.6); sections 11.1–11.5 describe it with
+8 × MAX31865.
 
 ### 11.1 What differs from the 1-Wire edition
 
@@ -590,4 +584,21 @@ Raspberry Pi configuration: as in section 6, without the two
 The MAX31865 is the cost driver (€8.80 at DigiKey, about €4 at LCSC for
 assembled boards). Fitting only 4 channels saves about 4 × €5 per board
 when assembled.
+
+### 11.6 Choice of measuring chip (open)
+
+Chips that measure several Pt1000s exist; they differ in price and in how
+much of the analog design they do themselves. Prices are single quantity
+at the time of writing.
+
+| Chip | Pt1000s per chip (2-wire) | Price per chip | For 8 sensors | Notes |
+|---|---|---|---|---|
+| **MAX31865** | 1 | ≈ €8.80 (DigiKey), ≈ $4.30 (LCSC) | 8 chips + 1-of-8 decoder | ±45 V inputs and fault register built in; the 1-Wire edition's PT1 circuit, already drawn |
+| **ADS124S08** (TI) | 5 (force + sense pin per sensor, shared reference resistor) | ≈ €9.90 (DigiKey), ≈ $6.50 (LCSC) | 2 chips, 10 channels | Cheapest; protection, open/short detection and linearisation done outside the chip and in software |
+| **AD7124-8** (Analog Devices) | 7 (16 analog pins) | ≈ $10.50 (LCSC) | 2 chips | Like the ADS124S08, with a channel sequencer and more built-in diagnostics (burnout detection) |
+| **LTC2986** (Analog Devices) | several, sharing one sense resistor (exact count per the datasheet's channel rules) | ≈ €34 (Farnell), ≈ $53 (LCSC) | 1 chip, 10 inputs | A complete temperature measurement system: excitation, fault detection, linearisation, result directly in °C; buffered inputs allow external protection. Simplest design, most expensive chip. LTC2983/LTC2984: 20 inputs |
+
+Leaning: **8 × MAX31865 for the first PT edition** (lowest risk: the circuit
+is proven on the 1-Wire edition first, and the software driver already
+exists), with 2 × ADS124S08 as the cost-down option for a later revision.
 
