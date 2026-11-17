@@ -141,6 +141,29 @@ the hardware layer turns everything off.
 
 ### 5.1 Temperature measurement
 
+Two sensor types are supported, and can be mixed freely: **Pt1000** (the
+existing RESOL sensors) and **DS18x20** 1-Wire sensors. Both implement the
+same `TemperatureInput` trait, so the control core doesn't know or care
+which type a reading came from. A reading is always `Ok(°C)` or a typed
+fault (`OpenCircuit`, `ShortCircuit`, `OutOfRange`, `Stale`, `CrcError`,
+`Missing`, …), never a magic number.
+
+| | Pt1000 | DS18x20 |
+|---|---|---|
+| Principle | Platinum resistor, 1000 Ω at 0 °C, +3.85 Ω/K | Digital sensor with its own ADC, 1-Wire bus |
+| Range | −50 … +250 °C in practice (sensor and cable decide) | **−55 … +125 °C** |
+| Use for | **Collector** (stagnation can exceed 200 °C), anything hot | Store, return, heating circuits, room, outdoor |
+| Wiring | One input (2 wires) per sensor | Many sensors on one bus (3 wires), each with a unique 64-bit ID |
+| Interface | MAX31865 per channel, on SPI | Kernel `w1` bus via GPIO, or a DS2482 I²C bridge |
+| Identification | By input number | By ROM ID, found with a bus scan |
+
+The controller enforces the range: a function role has a maximum expected
+temperature (the collector up to 250 °C, for example), and the web interface
+refuses to assign a sensor whose range is too small for that role. A
+DS18x20 can't be the collector sensor.
+
+#### Pt1000
+
 The existing Pt1000 sensors are reused.
 
 - **Recommended: MAX31865** RTD-to-digital converter, one per channel, on SPI.
@@ -154,7 +177,46 @@ The existing Pt1000 sensors are reused.
 - Collector sensor cables are long and outdoors, so add surge protection on
   that input (RESOL sells an SP10 for exactly this).
 - Calibration: a per-channel offset in config, checked against the RESOL
-  readings during shadow mode (section 9).
+  readings during shadow mode (section 9). With 2-wire sensors the cable
+  resistance adds to the reading (roughly 0.25 K for 20 m of 0.75 mm²), and
+  the offset compensates for that.
+- Faults: the MAX31865 detects open and short circuits directly. Values
+  outside the plausible range count as faults too.
+
+#### DS18x20 (1-Wire)
+
+- **Supported chips**: the whole family — DS18S20/DS1820 (9-bit, family
+  code `10`), DS18B20 (9–12-bit, `28`) and DS1822 (`22`). The family code
+  in the ROM ID tells the driver which chip it is talking to.
+- **Bus master**, choose one per bus:
+  - **Kernel `w1-gpio`** on a GPIO pin with a 4.7 kΩ pull-up (`dtoverlay=w1-gpio`
+    on the Pi, the equivalent overlay on the Rock 5C). Simple, no extra
+    chip. OSCoST reads `/sys/bus/w1/devices/<id>/temperature`.
+  - **DS2482-100/-800** I²C-to-1-Wire bridge (1 or 8 buses). Active pull-up
+    and proper timing in hardware, so it copes much better with long cables
+    and many sensors. Recommended for anything beyond a few metres. OSCoST
+    talks to it directly over `/dev/i2c-N`.
+- **Powered mode only** (VDD connected). Parasite power is not supported:
+  it is unreliable at high temperatures and with several sensors converting
+  at once.
+- **Timing**: a 12-bit conversion takes up to 750 ms per sensor. Sensors
+  are read in a separate task with **one simultaneous conversion for all
+  sensors on a bus** ("Convert T" to all, wait once, then read each), so
+  the whole bus refreshes about once per second regardless of the number of
+  sensors. 11-bit (0.125 K, 375 ms) is the default; that is more than
+  precise enough and halves the conversion time. The control loop uses the
+  latest reading, and a reading older than a few seconds counts as `Stale`.
+- **Faults** specific to 1-Wire, all treated as sensor faults:
+  - CRC error on the scratchpad (one retry, then fault).
+  - Sensor missing from the bus (cable, connector).
+  - **85.0 °C power-on value**: the DS18x20 reports exactly 85 °C if it was
+    reset and never converted (typically a power glitch). OSCoST checks the
+    scratchpad state and treats this reading as a fault instead of a real
+    85 °C. This matters, because 85 °C is a realistic store temperature.
+  - −127 °C / all bits set: bus read failure.
+- Clone chips are common and sometimes behave differently (conversion
+  time, power-on value). The bus scan shows the chip type, and the driver
+  is tested against a few known clones.
 
 ### 5.2 Switching outputs
 
@@ -186,6 +248,8 @@ only:
 |---|---|
 | GPIO | GPIO character device (`/dev/gpiochipN`, libgpiod / `gpio-cdev`) |
 | SPI | `spidev` |
+| I²C (DS2482) | `/dev/i2c-N` |
+| 1-Wire (kernel master) | `/sys/bus/w1/` (`w1-gpio` + `w1_therm`) |
 | PWM | sysfs PWM (`/sys/class/pwm`) |
 | Watchdog | `/dev/watchdog` |
 
@@ -203,7 +267,7 @@ oscost/
 │  ├─ oscost-core/       # control logic: pure, no I/O, no async, no clock (time is an input)
 │  ├─ oscost-safety/     # safety supervisor: pure, can only reduce outputs
 │  ├─ oscost-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
-│  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, sysfs PWM, MAX31865 driver
+│  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; MAX31865, DS18x20, DS2482 drivers
 │  ├─ oscost-sim/        # thermal model of collector + store, used for tests and dry runs
 │  ├─ oscost-config/     # config schema, validation, migrations between schema versions, revision store
 │  └─ oscostd/           # daemon: scheduler, tasks, HTTP API, MQTT, VictoriaMetrics push + buffer, systemd
@@ -279,9 +343,27 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
 - **Protocol**: VictoriaMetrics' Prometheus import endpoint
   (`/api/v1/import/prometheus`), text format with explicit millisecond
   timestamps, optional basic auth or bearer token. One request per second in
-  normal operation. Metric names follow Prometheus conventions, for example
-  `oscost_temperature_celsius{sensor="collector"}`,
-  `oscost_output_speed_percent{output="solar_pump"}`.
+  normal operation.
+- **Metric names are compatible with vbus2influx**, so the existing
+  dashboards keep working unchanged after the switch-over. vbus2influx
+  writes Influx line protocol with measurement `<prefix>` (default
+  `vbus2influx`) and fields like `temperature_01`, without tags.
+  VictoriaMetrics turns that into series named `<prefix>_<field>` with no
+  labels. OSCoST writes exactly those names (over the Prometheus endpoint,
+  which gives the same series):
+  - every sensor gets a **VBus channel number** in the web interface, so the
+    collector sensor that was `S1` on the RESOL is still
+    `vbus2influx_temperature_01`. Same for `relay_01` … `relay_05` (speed in
+    %), `PWM_0_10V_A`/`_B`, `flow_rate_*`, `irradiation_10`, `pressure_*`.
+    Units stay the same (°C, %).
+  - values the RESOL never had (ΔT, heat output, active function, fault and
+    safety flags, buffer state) get new names under the same prefix, for
+    example `vbus2influx_delta_t`, `vbus2influx_sensor_fault_01`.
+  - A sensor with a fault is **not written** for that second (a gap in the
+    chart), instead of writing a fake value.
+  - The prefix is configurable. **During shadow mode it must differ** from
+    the one vbus2influx uses (for example `oscost`), otherwise both write
+    to the same series. At the switch-over it is changed to `vbus2influx`.
 - **Buffering**: a sender task reads from a queue, so a slow or unreachable
   database never affects the control loop.
   - Samples go into an in-memory queue first. If a push fails, the queue
@@ -333,7 +415,7 @@ should ever need to edit a file or open a shell to run OSCoST.
 | **History** | Charts of temperatures, pump speed and heat quantity, queried from VictoriaMetrics (its Prometheus query API), so any time range is available. If VictoriaMetrics is unreachable, the last 24 h are shown from memory. |
 | **Manual mode** | Per output OFF / AUTO / ON / speed %, with a mandatory timeout after which it returns to AUTO. Clearly shows that the safety limits still apply. |
 | **Events** | Log of state changes, sensor faults, safety interventions and config changes (who, when, what). |
-| **Settings → Hardware** | Board, sensor inputs (type, name, live reading, calibration offset), outputs (relay/SSR/PWM, PWM profile and frequency, **test button**), flowmeter. |
+| **Settings → Hardware** | Board, Pt1000 inputs and 1-Wire buses with a **bus scan** (lists every DS18x20 found with ROM ID, chip type and live reading; new or missing sensors are highlighted), per sensor: name, VBus channel number, calibration offset, live reading; outputs (relay/SSR/PWM, PWM profile and frequency, **test button**), flowmeter. |
 | **Settings → System** | Hydraulic layout (which sensor is collector/store bottom/store top, which output is the solar pump) and the control functions with their parameters (ΔT on/off, setpoint, store max, optional functions). Each parameter has a short explanation, unit, allowed range and default. |
 | **Settings → Integrations** | VictoriaMetrics (URL, auth, buffer size), MQTT + Home Assistant discovery, with a "test connection" button. |
 | **Settings → Users & access** | Users, passwords, API tokens. |
@@ -347,9 +429,11 @@ outputs stay OFF and the interface opens a wizard:
 
 1. Create the admin user.
 2. Choose the board (Pi / Rock 5C) and the sensor/output hardware.
-3. **Assign sensors**: every input shows its live temperature, so you can
-   identify the collector sensor by its reading (or by warming a sensor in
-   your hand) instead of guessing.
+3. **Assign sensors**: every Pt1000 input and every DS18x20 found by the
+   bus scan shows its live temperature, so you can identify each sensor by
+   its reading (or by warming it in your hand: the one that rises is
+   highlighted) instead of guessing ROM IDs. Each sensor gets a name, a
+   role and its VBus channel number.
 4. **Assign and test outputs**: switch each output on for a few seconds and
    check that the right pump or valve runs. PWM pumps: test a few speeds.
 5. Choose a system layout (single store first; templates for more later)
@@ -483,9 +567,8 @@ measurement in phase 2. To be decided.
   both. The answer decides the pin map and the HAT/board layout.)
 - Off-the-shelf boards (MAX31865 breakouts, DIN-rail SSRs) or a custom HAT?
   Breakouts first is the faster way to the bench milestone.
-- Metric names: new Prometheus-style names (proposed), or the vbus2influx
-  names (`vbus2influx_temperature_01`, …) so the existing dashboards work
-  unchanged?
+- 1-Wire master: kernel `w1-gpio` or DS2482? Depends on cable lengths and
+  how many DS18x20 sensors are planned.
 - Web frontend: Svelte (proposed), or an all-Rust frontend (Leptos/WASM), or
   server-rendered HTML with htmx? Svelte is the most practical for a
   form-heavy, live-updating interface. All-Rust avoids a Node toolchain in
