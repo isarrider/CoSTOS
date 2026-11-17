@@ -12,6 +12,35 @@ Status: **incomplete**. Open points are listed at the end.
 - RESOL DeltaSol BX Plus, read over VBus by
   [vbus2influx](https://github.com/isarrider/vbus2influx).
 
+## Sensors and outputs in use
+
+From the existing Grafana dashboard on the vbus2influx data. The input
+numbers are the vbus2influx field numbers (`temperature_01` …), assumed to
+be BX Plus inputs S1–S8.
+
+| Input | Name in the dashboard | Position | Role |
+|---|---|---|---|
+| S1 | Temp_1_Kollektor | Collector | **Control**: pump start/stop (ΔT), collector protection |
+| S2 | Temp_2_Boiler_u | Store, bottom | **Control**: ΔT reference, store maximum |
+| S3 | Temp_3_Boiler_o | Store, top | Display |
+| S4 | Temp_4_Vorlauf | Solar flow (collector → store), at the store | Display; heat quantity once a flow value exists |
+| S5 | Temp_5_Rücklauf | Solar return (store → collector), at the store | Display; heat quantity once a flow value exists |
+| S6 | nach Heizung / vor Boiler | Heating circuit: after the heat generator, before the store | Measurement only |
+| S7 | nach Boiler / vor Haus | Heating circuit: after the store, before the house | Measurement only |
+| S8 | nach Haus / vor Heizung | Heating circuit: after the house, back to the heat generator | Measurement only |
+
+- The heat generator ("Heizung") is a **heat pump** today; it was a gas
+  boiler when the system was installed. S6–S8 are only measured, nothing
+  acts on them.
+
+| Output | vbus2influx field | Use |
+|---|---|---|
+| Relay 1 | `relay_01` | Solar pump, mains |
+| PWM A | `PWM_0_10V_A` | Solar pump, speed (PWM2) |
+
+No other relays or outputs are in use, which matches the HAT rev A
+(REL1 + PUMP1).
+
 ## Solar pump
 
 | | |
@@ -81,9 +110,7 @@ stopped, 5–75 % when running) before OSCoST relies on them.
 
 ## Open points
 
-- Sensors: which BX Plus inputs are used, where each sensor sits
-  (collector, store bottom, store top, …), sensor type.
-- Other outputs: further pumps or valves on the BX Plus relays.
+- Sensor types (Pt1000 on every input?).
 - Store: one or several, volume.
 - Collector: flat-plate or evacuated tube, area.
 - Heat transfer fluid: glycol or water, glycol percentage.
