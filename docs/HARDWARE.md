@@ -170,7 +170,8 @@ in its socket, measure with the multimeter:
 
 1. Shut down the Pi and unplug it. Connect the three jumper wires: **Pi
    pin 2 (5V) → J1 5V**, **Pi pin 6 (GND) → J1 GND**, **Pi pin 12 (GPIO 18)
-   → J1 PWM**.
+   → J1 PWM**. On a **Rock 5C** the PWM wire goes to **pin 13** instead
+   (see [Testing the output](#testing-the-output)).
 
    ![Wiring: Pi, driver board, pump](img/pwm-driver-wiring.svg)
 
@@ -182,30 +183,66 @@ in its socket, measure with the multimeter:
 
 #### Testing the output
 
-Enable hardware PWM on GPIO 18. On a Raspberry Pi 4 or older, add this line
-to `/boot/firmware/config.txt` (`/boot/config.txt` on older systems) and
-reboot:
+The PWM pin and how to switch it on depend on the board. 5V (pin 2) and
+GND (pin 6) are the same on all of them.
 
-```
-dtoverlay=pwm,pin=18,func=2
-```
+| Board | PWM pin on the header | PWM hardware | sysfs channel |
+|---|---|---|---|
+| Raspberry Pi 4 and older | **pin 12** (GPIO 18) | PWM0 in the main chip | `0` |
+| Raspberry Pi 5 | **pin 12** (GPIO 18) | PWM0 in the RP1 I/O chip, channel 2 | `2` |
+| Radxa Rock 5C | **pin 13** (GPIO4_B2) | PWM14 (`PWM14_M1`) | `0` |
 
-On a Raspberry Pi 5 the PWM hardware is in the RP1 chip and the overlay
-parameters are different: check the `pwm` section in
-`/boot/firmware/overlays/README`. On the Rock 5C the PWM pins are enabled as
-overlays with `rsetup`; which header pin to use will be added here once it
-has been tested.
+**Rock 5C: use pin 13, not pin 12.** Pin 12 has no PWM function on the
+Rock 5C. Of the header pins that do (3, 5, 11, 13, 15, 23, 24, 27, 28),
+pins 3/5 are I²C, 23/24 are SPI (needed for the MAX31865 temperature
+boards) and 27/28 are the HAT ID-EEPROM pins in the Raspberry Pi layout, so
+**pin 13** is the natural choice. It is on the left (odd) row, directly below pin 11. Move J1's PWM
+jumper wire there; 5V and GND stay on pins 2 and 6.
 
-Then set the PWM by hand (500 Hz = 2 000 000 ns period). If the folder
-names differ on your system, `ls /sys/class/pwm/` shows them:
+**1. Switch the PWM output on** (once, then reboot):
+
+- **Raspberry Pi 4 and older**: add this line to `/boot/firmware/config.txt`
+  (`/boot/config.txt` on older systems):
+
+  ```
+  dtoverlay=pwm,pin=18,func=2
+  ```
+
+- **Raspberry Pi 5**: add this line to `/boot/firmware/config.txt`:
+
+  ```
+  dtoverlay=pwm
+  ```
+
+  On the Pi 5 the PWM hardware sits in the RP1 chip, and GPIO 18 is
+  channel **2** of its PWM0 block, not channel 0 as on older Pis. Guides
+  for older Pis often use `pwm-2chan`; that has been reported not to work
+  on the Pi 5, so stick to `pwm`. After the
+  reboot, `pinctrl get 18` should show `a3 … PWM0_CHAN2`.
+
+- **Rock 5C**: run `sudo rsetup`, go to *Overlays → Manage overlays*,
+  enable the **PWM14-M1** entry, save and reboot.
+
+**2. Find the PWM chip.** Each board numbers them differently, and the
+Pi 5 already has one for its fan. Run `ls /sys/class/pwm/` before and after
+step 1: the `pwmchipN` that appeared is yours. (If you didn't check before:
+`ls -l /sys/class/pwm/` shows which hardware each one belongs to.)
+
+**3. Set the PWM by hand** (500 Hz = 2 000 000 ns period). Fill in your
+chip and the channel from the table:
 
 ```sh
-cd /sys/class/pwm/pwmchip0
-echo 0       | sudo tee export
-echo 2000000 | sudo tee pwm0/period       # 500 Hz
-echo 0       | sudo tee pwm0/duty_cycle   # 0 %
-echo 1       | sudo tee pwm0/enable
+CHIP=/sys/class/pwm/pwmchip0   # from step 2
+CH=0                            # Pi 4 and Rock 5C: 0, Pi 5: 2
+
+echo $CH     | sudo tee $CHIP/export
+echo 2000000 | sudo tee $CHIP/pwm$CH/period       # 500 Hz
+echo 0       | sudo tee $CHIP/pwm$CH/duty_cycle   # 0 %
+echo 1       | sudo tee $CHIP/pwm$CH/enable
 ```
+
+To change the duty cycle later: `echo 1000000 | sudo tee
+$CHIP/pwm$CH/duty_cycle` (50 %).
 
 With the multimeter on DC volts between J2 PWM and J2 GND (the meter
 averages the PWM):
@@ -255,7 +292,7 @@ cable. The trade-off is slow edges (see [Limits](#limits)).
 
 | From | To |
 |---|---|
-| Pi pin 12 (GPIO 18) | module **IN+** (also called IN, SIG) |
+| Pi pin 12 (GPIO 18); Rock 5C: pin 13 | module **IN+** (also called IN, SIG) |
 | Pi pin 6 (GND) | module **IN−** (also called G, GND on the input side) |
 | 12 V supply + | module **V+** (also called VCC, V2) |
 | 12 V supply 0 V | module **V−** (also called GND, G2 on the output side) |

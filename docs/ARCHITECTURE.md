@@ -280,9 +280,11 @@ Build instructions, parts lists and layouts for the two practical options
  GND ───────────────────────────────────────────────────────────────────────────────┴──► signal GND (blue)
 ```
 
-- **Hardware PWM** only (Pi: GPIO12/13/18/19 via `dtoverlay=pwm-2chan`;
-  Rock 5C: its PWM pins), never software PWM: the timing must not depend on
-  the Linux scheduler.
+- **Hardware PWM** only, never software PWM: the timing must not depend on
+  the Linux scheduler. Pi 4 and older: GPIO 18 (header pin 12), PWM0
+  channel 0. Pi 5: GPIO 18 too, but the PWM is in the RP1 chip, channel 2.
+  Rock 5C: header pin 13 (PWM14_M1), since its pin 12 has no PWM. The pin,
+  PWM chip and channel are part of the per-board config.
 - **Driver**: a small low-side MOSFET gate driver IC as level shifter. It
   accepts 3.3 V logic, outputs 0/12 V push-pull with edges far below a
   microsecond, and sources plenty of current. A plain transistor with a
