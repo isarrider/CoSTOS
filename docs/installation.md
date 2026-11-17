@@ -173,18 +173,40 @@ tubes are in place.
 
 - **Heat pipes:** each tube carries its heat to a condenser in the
   manifold; the collector sensor sits in a sleeve in that manifold. The
-  manifold therefore heats up without flow, and the "tube collector
-  function" (short pump runs to bring heat to the sensor) is normally not
-  needed. To be checked: whether it is switched on in the BX Plus.
+  manifold therefore heats up without flow, so the "tube collector
+  function" (short pump runs to bring heat to the sensor) is **off** in the
+  BX Plus, as expected.
+- **Daily pump kick:** the BX Plus runs the pump once a day for a short
+  pulse so it doesn't seize. OSCoST does the same (anti-seize run,
+  configurable time and duration).
 - **208 °C stagnation:** far above a DS18x20's range, so S1 stays Pt1000
   (as planned), and OSCoST's collector emergency shutdown and cooling
   functions matter on hot summer days with a full store.
 - A broken tube just lowers the output; a heat pipe has no fluid
   connection to the solar circuit, so there is no leak.
 
+## Solar fluid
+
+**SOLTHERM 5P (F)** (Alpha Thermotec): ready-mixed 1,2-propylene glycol and
+demineralised water with corrosion inhibitors, frost protection to −32 °C.
+
+| Property (20 °C) | Value |
+|---|---|
+| Density | 1.046 kg/l |
+| Specific heat | 3.49 kJ/(kg·K) |
+| Heat per litre and kelvin (ρ · c) | ≈ 3.65 kJ/(l·K), about 87 % of water (4.18) |
+| Dynamic viscosity | 6.2 mPa·s |
+| Boiling point at 1013 mbar | > 102 °C (higher under system pressure) |
+
+- OSCoST's heat quantity uses this fluid (propylene glycol, −32 °C mix);
+  its density and specific heat change with temperature, so the fluid
+  type is a setting and the calculation uses temperature-dependent values.
+- Frost protection to −32 °C: no pump runs for frost protection are
+  needed.
+- Maintenance from the manufacturer's instructions: check frost
+  protection and pH at least once a year.
+
 ## Open points
 
-- Collector: is the tube collector function switched on in the BX Plus?
-- Heat transfer fluid: glycol or water, glycol percentage.
 - Flowmeter (V40 or similar) present?
 - Independent store overtemperature cut-out present?
