@@ -29,6 +29,7 @@ be BX Plus inputs S1–S8.
 | S7 | nach Boiler / vor Haus | Heating circuit: after the store, before the house | Measurement only |
 | S8 | nach Haus / vor Heizung | Heating circuit: after the house, back to the heat generator | Measurement only |
 
+- **All eight sensors are Pt1000, each on its own 2-wire cable.**
 - The heat generator ("Heizung") is a **heat pump** today; it was a gas
   boiler when the system was installed. S6–S8 are only measured, nothing
   acts on them.
@@ -139,7 +140,6 @@ store on its overview page from the same data (see
 
 ## Open points
 
-- Sensor types (Pt1000 on every input?).
 - Store: coil and sleeve assignment (see [Store](#store)).
 - Collector: flat-plate or evacuated tube, area.
 - Heat transfer fluid: glycol or water, glycol percentage.
