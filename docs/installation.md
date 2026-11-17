@@ -16,17 +16,16 @@ Status: **incomplete**. Open points are listed at the end.
 
 | | |
 |---|---|
-| Pump | **Wilo Para ST 15/7-50/iPWM2**, part no. 4531811 |
-| Power | 1~230 V, 1–50 W, I<sub>max</sub> 0.44 A |
+| Pump | **Wilo Yonos PARA ST 15/7-50/iPWM2** (from the type plate) |
 | Control | External PWM, profile **PWM2 (solar)** |
 | Signal cable | 3 cores: **1 brown = PWM input**, **2 blue or grey = signal ground**, **3 black = PWM output (feedback from the pump)** |
-| Input signal | 100–5000 Hz (1000 Hz nominal), min. 3.6 V at 3 mA up to 24 V at 7.5 mA |
+| Input signal | 100–5000 Hz (1000 Hz nominal), high level from about 4 V; max. 15 V for Yonos PARA (24 V on the newer Para series). 12 V fits both. |
 | Feedback output | open collector, 75 Hz, duty cycle = pump status (see below) |
 | Cable break | Pump stops (active stop mode) |
 
-Earlier versions of this page listed a Yonos PARA ST 15/7.0-PWM2. The pump
-installed is the Para iPWM2 above, identified from its type plate; the main
-difference is the feedback output.
+Earlier versions of this page listed a Yonos PARA ST 15/7.0-PWM2. The type
+plate says **iPWM2**: the same solar profile, plus a feedback output on a
+third wire.
 
 ### PWM2 input characteristic
 
@@ -56,7 +55,10 @@ operation. 75 Hz, duty cycle accurate to ±1 %:
 | 100 % | pump has no power, or feedback interface damaged |
 
 Source: Wilo, *Wilo-Para iPWM Communication Protocol*, technical guide V1.01.
-Dry running and the deblocking routine show up as 5 % while running.
+Dry running and the deblocking routine show up as 5 % while running. Wilo
+documents this table for its Para series; the Yonos PARA iPWM uses the same
+VDMA 24224 interface, but **verify the values on the real pump** (2 % when
+stopped, 5–75 % when running) before OSCoST relies on them.
 
 ### Consequences for OSCoST
 
@@ -64,8 +66,8 @@ Dry running and the deblocking routine show up as 5 % while running.
   between 15 % (minimum) and 100 % (maximum). The 7–15 % band, where
   start/stop depends on the previous state, is never used.
 - Output stage: the driver board or optocoupler module from
-  [Hardware needed](HARDWARE.md#pwm-pump-output). 12 V is well inside the
-  input range.
+  [Hardware needed](HARDWARE.md#pwm-pump-output). 12 V is inside the input
+  range (max. 15 V).
 - Frequency: 500 Hz (the RESOL controller uses 512 Hz).
 - **The feedback output gives OSCoST real pump monitoring**: confirmation
   that a stop really stopped the pump (2 %), that it runs when commanded

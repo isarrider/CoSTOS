@@ -20,10 +20,10 @@ as seen from the component side: `D8` is row D, column 8.
 
 ## PWM pump output
 
-The pump (here a Wilo Para ST 15/7-50/iPWM2) gets its speed as a PWM
-signal: **brown = PWM input**, **blue (or grey) = signal ground**. Its
-input expects at least 3.6 V at 3 mA, up to 24 V at 7.5 mA, at
-100–5000 Hz. Wilo's older Yonos PARA PWM pumps take at most 15 V, so the
+The pump (here a Wilo Yonos PARA ST 15/7-50/iPWM2) gets its speed as a
+PWM signal: **brown = PWM input**, **blue (or grey) = signal ground**. Its
+input needs a high level of about 4 V or more and takes at most 15 V and
+7.5 mA, at 100–5000 Hz (Wilo's newer Para series accepts up to 24 V). The
 12 V used here suits both.
 
 iPWM pumps like this one also have a **black** wire: a feedback output that
