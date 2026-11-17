@@ -588,17 +588,48 @@ when assembled.
 ### 11.6 Choice of measuring chip (open)
 
 Chips that measure several Pt1000s exist; they differ in price and in how
-much of the analog design they do themselves. Prices are single quantity
-at the time of writing.
+much of the analog design they do themselves. The last column is the
+1-Wire edition with new DS18B20 probes, for comparison with keeping the
+existing Pt1000 sensors.
 
-| Chip | Pt1000s per chip (2-wire) | Price per chip | For 8 sensors | Notes |
-|---|---|---|---|---|
-| **MAX31865** | 1 | ≈ €8.80 (DigiKey), ≈ $4.30 (LCSC) | 8 chips + 1-of-8 decoder | ±45 V inputs and fault register built in; the 1-Wire edition's PT1 circuit, already drawn |
-| **ADS124S08** (TI) | 5 (force + sense pin per sensor, shared reference resistor) | ≈ €9.90 (DigiKey), ≈ $6.50 (LCSC) | 2 chips, 10 channels | Cheapest; protection, open/short detection and linearisation done outside the chip and in software |
-| **AD7124-8** (Analog Devices) | 7 (16 analog pins) | ≈ $10.50 (LCSC) | 2 chips | Like the ADS124S08, with a channel sequencer and more built-in diagnostics (burnout detection) |
-| **LTC2986** (Analog Devices) | several, sharing one sense resistor (exact count per the datasheet's channel rules) | ≈ €34 (Farnell), ≈ $53 (LCSC) | 1 chip, 10 inputs | A complete temperature measurement system: excitation, fault detection, linearisation, result directly in °C; buffered inputs allow external protection. Simplest design, most expensive chip. LTC2983/LTC2984: 20 inputs |
+Prices are single quantity at the time of writing; totals are estimates
+until a real BOM exists, and LCSC stock changes daily. 🟢 good,
+🟡 medium, 🔴 weak.
+
+| | **8 × MAX31865** | **2 × ADS124S08** | **2 × AD7124-8** | **1 × LTC2986** | **1 × LTC2983/84** | **1-Wire edition:** 1 × MAX31865 + 7 × DS18B20 |
+|---|---|---|---|---|---|---|
+| ***Channels*** | | | | | | |
+| Sensors per chip (2-wire) | 1 | 5 (force + sense pin each) | 7 (16 analog pins) | several, shared sense resistor | more, shared sense resistor | collector: 1; DS18B20: one chip per probe |
+| Spare channels | 🔴 0 | 🟡 2 | 🟢 6 | 🟡 some (10 inputs) | 🟢 many (20 inputs) | 🟢 PT2 footprint; the buses take more probes |
+| ***Cost*** | | | | | | |
+| Chips, LCSC | 🟡 8 × $4.27 = $34 | 🟢 2 × $6.46 = $13 | 🟢 2 × $10.47 = $21 | 🔴 $53 | 🟡 $39 (2983) / $71 (2984) | 🟢 $4.27 |
+| Chips, DigiKey / Farnell EU | 🔴 8 × €8.76 = €70 | 🟢 2 × €9.94 = €20 | 🟢 ≈ €20–25 | 🟡 €34–42 | 🟡 €37–42 | 🟢 €8.76 |
+| Extra parts on the board | 8 reference resistors 0.1 %, 16 ESD, decoder ≈ €8 | 2 reference resistors, 16 R + clamps + ESD ≈ €3 | like ADS ≈ €3 | 1 sense resistor, protection R ≈ €2 | like LTC2986 ≈ €2 | pull-ups, ESD, polyfuse ≈ €1 |
+| Sensor section, assembled | 🟡 ≈ €40 | 🟢 ≈ €15 | 🟢 ≈ €22 | 🔴 ≈ €50 | 🟡 ≈ €38 (2983) | 🟢 ≈ €6 |
+| Rest of the board, assembled | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €27 |
+| New sensors and cable | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🔴 7 DS18B20 probes + 2 cables ≈ €60–80 |
+| **Total, assembled (5 boards, JLCPCB, incl. VAT and shipping)** | 🟡 **≈ €68** | 🟢 **≈ €43** | 🟢 **≈ €50** | 🔴 **≈ €78** | 🟡 **≈ €66 (2983) / €96 (2984)** | 🟡 **≈ €33 + €60–80 = €93–113** |
+| **Total, single-quantity parts (DigiKey, excl. VAT)** | 🔴 **≈ €103** | 🟢 **≈ €48** | 🟢 **≈ €50** | 🟡 **≈ €61–69** | 🟡 **≈ €64–69** | 🟡 **≈ €35 + €60–80 = €95–115** |
+| LCSC stock for assembly | 🟡 varies | 🟢 good (≈ 1,700) | 🔴 thin, one variant out | 🔴 thin | 🔴 5 pcs (2983) | 🟡 MAX varies; probes bought separately (fakes are common) |
+| ***Function*** | | | | | | |
+| Input protection | 🟢 ±45 V built in | 🟡 external parts, needs care | 🟡 external parts, needs care | 🟢 external, easy (buffered inputs) | 🟢 external, easy (buffered inputs) | 🟢 MAX ±45 V; 1-Wire ESD + polyfuse |
+| Open / short detection | 🟢 fault register | 🟡 burnout current + software | 🟢 burnout + diagnostics built in | 🟢 built in, per sensor type | 🟢 built in, per sensor type | 🟡 CRC, missing probe; a short takes down its whole bus |
+| Output | ratio, converted to °C in software | raw ADC codes, software does all | raw ADC codes, software does all | 🟢 °C directly, linearised | 🟢 °C directly, linearised | 🟢 DS18B20 gives °C directly |
+| Range, accuracy | 🟢 Pt1000 beyond 200 °C, class B ±0.6 K at 60 °C | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟡 ±0.5 K, max 125 °C (S4 can exceed it: fit PT2) |
+| Resolution | 15-bit, ≈ 0.03 K | 24-bit | 24-bit | 24-bit, 0.1 °C accuracy | 24-bit, 0.1 °C accuracy | DS18B20 12-bit, 0.0625 K |
+| Package, space | 🔴 8 × SSOP-20, tight | 🟢 2 × TQFP-32 5×5 | 🟢 2 × QFN-32 5×5 (no hand soldering) | 🟢 1 × LQFP-48 7×7 | 🟢 1 × LQFP-48 7×7 | 🟢 roomy |
+| ***Effort and risk*** | | | | | | |
+| Circuit design | 🟢 low: PT1 circuit × 8, proven first on the 1-Wire edition | 🔴 high: analog force/sense layout | 🔴 high: like ADS | 🟢 low–medium: datasheet circuits | 🟢 low–medium: datasheet circuits | 🟢 done: schematic drawn |
+| Software | 🟢 simple, driver shared with the 1-Wire edition | 🔴 most: input and current switching, settling, linearising | 🟡 medium: the sequencer helps | 🟢 simple: write channel setup, read °C | 🟢 simple, same as LTC2986 | 🟢 simple: kernel 1-Wire + MAX driver |
+| Work at the installation | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🔴 fit 7 probes, run 2 cables, set calibration offsets |
+| Charts vs. history | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟡 small step, fixed with offsets |
+| ***Verdict*** | | | | | | |
+| Best for | 🟢 first legacy board: lowest risk | 🟢 later cost-down revision | spare analog inputs (other sensors) | least design work, if price doesn't matter | 3/4-wire or many sensors; no gain for 8 × 2-wire | 🟢 new installations, or when sensors get replaced anyway |
+
+Variant not shown as a column: the 1-Wire edition with PT2 fitted, so S4
+stays Pt1000 (2 Pt1000 + 6 DS18B20): about €5 more assembled, one probe
+less.
 
 Leaning: **8 × MAX31865 for the first PT edition** (lowest risk: the circuit
 is proven on the 1-Wire edition first, and the software driver already
 exists), with 2 × ADS124S08 as the cost-down option for a later revision.
-
