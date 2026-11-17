@@ -55,7 +55,7 @@ potential-free relay and 2 PWM outputs (512 Hz, about 11 V, switchable to
 
 The vbus2influx data shows which of these are used here. Before
 implementation starts, that list has to be written down in
-[`docs/installation.md`](installation.md) (still to be written): sensor
+[`docs/installation.md`](installation.md) (started, still incomplete): sensor
 positions (collector, store bottom, store top, return, …), which relay
 drives which pump or valve, and the pump models and their PWM profiles.
 This is the **acceptance spec**. OSCoST is done when it reproduces the BX
@@ -309,6 +309,12 @@ the feedback signal can confirm the pump reacts.
 - This is how OSCoST detects a **stuck or failed pump** (alarm, or no power
   draw while it should run) and confirms that a commanded stop really
   stopped the pump.
+- **Pumps without feedback** (for example the Wilo Yonos PARA with the
+  2-wire PWM cable: only PWM in and ground) need another way to check
+  the pump: a plausibility check on the temperatures (the collector should
+  cool down and the store flow should warm up once the pump runs), the
+  flowmeter if there is one, or measuring the pump's mains current. The
+  feedback input stays optional per output.
 
 #### Mains switching and safety
 
@@ -687,8 +693,8 @@ measurement in phase 2. To be decided.
 ## 11. Open questions
 
 - **Installation details** for `docs/installation.md`: which sensors and
-  relays the BX Plus uses here, which pumps (standard or high-efficiency
-  with PWM, which PWM profile), single or multi-store, flat-plate or
+  relays the BX Plus uses here, other pumps or valves besides the solar
+  pump, single or multi-store, flat-plate or
   evacuated tube collectors, glycol or not, V40 flowmeter present or not.
 - Is there already an independent store overtemperature cut-out?
 - Shadow mode: second set of sensors, or use the RESOL values over VBus at
