@@ -69,8 +69,8 @@
   <!-- pump -->
   <circle cx="870" cy="190" r="70" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
   <text x="870" y="180" text-anchor="middle" class="lbl">Pump</text>
-  <text x="870" y="198" text-anchor="middle" class="xs">Wilo Yonos PARA ST</text>
-  <text x="870" y="212" text-anchor="middle" class="xs">15/7.0-PWM2</text>
+  <text x="870" y="198" text-anchor="middle" class="xs">Wilo Para ST</text>
+  <text x="870" y="212" text-anchor="middle" class="xs">15/7-50/iPWM2</text>
   <path d="M672 162 C 740 162, 760 175, 812 175" stroke="#8d6e63" stroke-width="5" fill="none"/>
   <path d="M672 202 C 740 202, 760 205, 812 205" stroke="#1565c0" stroke-width="5" fill="none"/>
   <text x="742" y="152" text-anchor="middle" class="s" fill="#6d4c41">brown</text>

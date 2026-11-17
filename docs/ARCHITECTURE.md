@@ -244,7 +244,7 @@ speed. Most also send a PWM feedback signal back.
 | Frequency | 100–4000 Hz | 100–5000 Hz (1000 Hz nominal); some variants 100–1000 Hz |
 | Edges | | rise/fall time ≤ T/500 (2 µs at 1 kHz) |
 | Cable | | max. 3 m |
-| Feedback | open collector, 75 Hz, duty encodes power or alarm | open collector on the black wire |
+| Feedback | open collector, 75 Hz, duty encodes power or alarm | iPWM models: open collector on the black wire, 75 Hz, duty encodes status, flow/power, warnings and errors |
 
 So the controller has to **drive** the input: actively source a few mA at
 roughly 10–12 V, with clean, fast edges. A 3.3 V GPIO can do neither. The
@@ -315,8 +315,8 @@ Build instructions, parts lists and layouts for the two practical options
 - This is how OSCoST detects a **stuck or failed pump** (alarm, or no power
   draw while it should run) and confirms that a commanded stop really
   stopped the pump.
-- **Pumps without feedback** (for example the Wilo Yonos PARA with the
-  2-wire PWM cable: only PWM in and ground) need another way to check
+- **Pumps without feedback** (for example the Wilo Yonos PARA PWM with
+  the 2-wire cable: only PWM in and ground) need another way to check
   the pump: a plausibility check on the temperatures (the collector should
   cool down and the store flow should warm up once the pump runs), the
   flowmeter if there is one, or measuring the pump's mains current. The

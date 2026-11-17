@@ -20,9 +20,16 @@ as seen from the component side: `D8` is row D, column 8.
 
 ## PWM pump output
 
-The pump (here a Wilo Yonos PARA ST 15/7.0-PWM2) gets its speed as a PWM
-signal on a 2-wire cable: **brown = PWM**, **blue = signal ground**. Its
-input expects a high level of 4–15 V and up to 7.5 mA, at 100–5000 Hz. A
+The pump (here a Wilo Para ST 15/7-50/iPWM2) gets its speed as a PWM
+signal: **brown = PWM input**, **blue (or grey) = signal ground**. Its
+input expects at least 3.6 V at 3 mA, up to 24 V at 7.5 mA, at
+100–5000 Hz. Wilo's older Yonos PARA PWM pumps take at most 15 V, so the
+12 V used here suits both.
+
+iPWM pumps like this one also have a **black** wire: a feedback output that
+reports the pump's status. The circuits below only drive the input; the
+black wire stays unconnected (insulate its end) until the feedback input is
+added. A
 Raspberry Pi pin gives 3.3 V and very little current, so something has to
 sit in between. See
 [PWM pump outputs](ARCHITECTURE.md#53-pwm-pump-outputs) for the background.
