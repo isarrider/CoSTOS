@@ -18,8 +18,8 @@ STORE = {
     "stand_diameter": 600,
     "coils": [
         # name, bottom, top (mm), connections (top, bottom) on the right side
-        {"name": "Upper coil, 1.8 m²", "bottom": 1060, "top": 1380},
-        {"name": "Lower coil, 2.6 m²", "bottom": 300, "top": 810},
+        {"name": "Upper coil, 1.8 m²", "bottom": 1060, "top": 1380, "use": "heat pump", "in": 1060, "out": 1380},
+        {"name": "Lower coil, 2.6 m²", "bottom": 300, "top": 810, "use": "solar", "in": 810, "out": 300},
     ],
     "dhw": {"name": "Fresh-water coil (DHW)", "bottom": 330, "top": 1700},
     # side, height, size, kind: coil | water | sleeve
@@ -39,7 +39,7 @@ STORE = {
         ("l", 560, '½"', "sleeve"),
     ],
     # sensor positions get filled in once known: (name, side, height)
-    "sensors": [],
+    "sensors": [("S3 store top", "l", 1270), ("S2 store bottom", "l", 560)],
 }
 
 S = 0.25                      # px per mm
@@ -102,6 +102,9 @@ def main():
         o.append(f'<path d="M24 {y(c["top"]):.1f} H18 V{y(c["bottom"]):.1f} H24" fill="none" stroke="{COL["coil"]}" stroke-width="1.5"/>')
         t(30, my - 2, c["name"], "s", col=COL["coil"])
         t(30, my + 12, f'{c["bottom"]}–{c["top"]} mm', "s", col=COL["coil"])
+        if c.get("use"):
+            t(30, my + 30, c["use"], "t", col=COL["coil"])
+            t(30, my + 44, f'in {c["in"]} → out {c["out"]}', "s", col=COL["coil"])
     # ports
     for side, h, size, kind in st["ports"]:
         yy = y(h)
@@ -118,9 +121,12 @@ def main():
     t(CX, y(d["bottom"]) + 29, "coil (DHW)", "s", "middle", "#6a1b9a")
     # sensors
     for name, side, h in st["sensors"]:
-        xx = CX + r + 3 if side == "r" else CX - r - 3
+        xx = CX + r - 8 if side == "r" else CX - r + 8
         o.append(f'<circle cx="{xx:.1f}" cy="{y(h):.1f}" r="6" fill="#ffb300" stroke="#222"/>')
-        t(xx, y(h) - 9, name, "t", "middle")
+        w = len(name) * 6.6 + 8
+        lx = xx + 10 if side == "l" else xx - 10 - w
+        o.append(f'<rect x="{lx:.1f}" y="{y(h)-9:.1f}" width="{w:.1f}" height="18" rx="3" fill="#fff8e1" stroke="#ffb300"/>')
+        t(lx + 4, y(h) + 4, name, "s", col="#222")
     # legend
     ly = H - 22
     for i, (k, lbl) in enumerate((("coil", "heat-exchanger coil connection"), ("water", "store-water connection"),

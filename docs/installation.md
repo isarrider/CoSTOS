@@ -145,14 +145,17 @@ store on its overview page from the same data (see
 
 - The store's 95 °C limit bounds OSCoST's store maximum and its emergency
   store shutdown: both have to stay below 95 °C.
-- Still open: which coil the solar circuit uses (normally the lower one),
-  what feeds the other coil, which store-water connections the heating
-  circuit (S6–S8) uses, and which sleeves hold S2 (store bottom) and S3
-  (store top).
+- **Lower coil: solar circuit**, in at 810 mm (top connection), out at
+  300 mm (bottom), so S4 (solar flow) and S5 (solar return) measure the
+  coil's inlet and outlet.
+- **Upper coil: heat pump** heating water, in at 1060 mm (bottom
+  connection), out at 1380 mm (top), on its way to the house: S6 measures
+  the coil's inlet, S7 its outlet.
+- **S2 (store bottom)** sits in the ½" sleeve at 560 mm (left), **S3 (store
+  top)** in the ½" sleeve at 1270 mm (left).
 
 ## Open points
 
-- Store: coil and sleeve assignment (see [Store](#store)).
 - Collector: flat-plate or evacuated tube, area.
 - Heat transfer fluid: glycol or water, glycol percentage.
 - Flowmeter (V40 or similar) present?

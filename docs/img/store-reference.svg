@@ -18,10 +18,14 @@
 <path d="M24 200.0 H18 V280.0 H24" fill="none" stroke="#c62828" stroke-width="1.5"/>
 <text x="30.0" y="238.0" class="s" text-anchor="start" style="fill:#c62828">Upper coil, 1.8 m²</text>
 <text x="30.0" y="252.0" class="s" text-anchor="start" style="fill:#c62828">1060–1380 mm</text>
+<text x="30.0" y="270.0" class="t" text-anchor="start" style="fill:#c62828">heat pump</text>
+<text x="30.0" y="284.0" class="s" text-anchor="start" style="fill:#c62828">in 1060 → out 1380</text>
 <path d="M448.8 342.5 L273.2 353.1 L448.8 363.8 L273.2 374.4 L448.8 385.0 L273.2 395.6 L448.8 406.2 L273.2 416.9 L448.8 427.5 L273.2 438.1 L448.8 448.8 L273.2 459.4 L448.8 470.0" fill="none" stroke="#c62828" stroke-width="1.5" opacity="0.55"/>
 <path d="M24 342.5 H18 V470.0 H24" fill="none" stroke="#c62828" stroke-width="1.5"/>
 <text x="30.0" y="404.2" class="s" text-anchor="start" style="fill:#c62828">Lower coil, 2.6 m²</text>
 <text x="30.0" y="418.2" class="s" text-anchor="start" style="fill:#c62828">300–810 mm</text>
+<text x="30.0" y="436.2" class="t" text-anchor="start" style="fill:#c62828">solar</text>
+<text x="30.0" y="450.2" class="s" text-anchor="start" style="fill:#c62828">in 810 → out 300</text>
 <path d="M458.8 155.0 H480.8" stroke="#1565c0" stroke-width="5"/>
 <text x="488.8" y="159.0" class="t" text-anchor="start">1560</text>
 <text x="526.8" y="159.0" class="s" text-anchor="start" style="fill:#1565c0">1½" store water</text>
@@ -60,6 +64,12 @@
 <text x="231.2" y="409.0" class="s" text-anchor="end" style="fill:#2e7d32">½" sleeve 560</text>
 <text x="360.0" y="478.5" class="s" text-anchor="middle" style="fill:#6a1b9a">fresh-water</text>
 <text x="360.0" y="491.5" class="s" text-anchor="middle" style="fill:#6a1b9a">coil (DHW)</text>
+<circle cx="269.2" cy="227.5" r="6" fill="#ffb300" stroke="#222"/>
+<rect x="279.2" y="218.5" width="87.2" height="18" rx="3" fill="#fff8e1" stroke="#ffb300"/>
+<text x="283.2" y="231.5" class="s" text-anchor="start" style="fill:#222">S3 store top</text>
+<circle cx="269.2" cy="405.0" r="6" fill="#ffb300" stroke="#222"/>
+<rect x="279.2" y="396.0" width="107.0" height="18" rx="3" fill="#fff8e1" stroke="#ffb300"/>
+<text x="283.2" y="409.0" class="s" text-anchor="start" style="fill:#222">S2 store bottom</text>
 <path d="M20 564 H40" stroke="#c62828" stroke-width="4"/>
 <text x="46.0" y="568.0" class="s" text-anchor="start">heat-exchanger coil connection</text>
 <path d="M240 564 H260" stroke="#1565c0" stroke-width="4"/>
