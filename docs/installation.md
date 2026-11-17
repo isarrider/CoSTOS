@@ -122,7 +122,7 @@ its overview page from the same data (see
 | | |
 |---|---|
 | Vessel | Ø 640 mm, 1845 mm high incl. the top flange, on a 125 mm stand ring |
-| Volume | probably about 500 l (to be confirmed from the type plate) |
+| Volume | **800 l** (stated). Note: Ø 640 × 1845 mm only holds about 500 l, so the dimension drawing may be for another size of the same series; check the type plate or the circumference without insulation (about 2.0 m for Ø 640, about 2.5 m for Ø 790) |
 | Fresh-water coil | centre, cold (KW) and hot water (WW) ¾" at the top |
 | Coil 1 (upper) | 1" connections at 1380 and 1060 mm |
 | Coil 2 (lower) | 1" connections at 810 and 300 mm |
@@ -137,7 +137,7 @@ circuit (S6–S8) uses, and which sleeves hold S2 (store bottom) and S3
 ## Open points
 
 - Sensor types (Pt1000 on every input?).
-- Store: volume, coil and sleeve assignment (see [Store](#store)).
+- Store: dimensions vs. 800 l, coil and sleeve assignment (see [Store](#store)).
 - Collector: flat-plate or evacuated tube, area.
 - Heat transfer fluid: glycol or water, glycol percentage.
 - Flowmeter (V40 or similar) present?
