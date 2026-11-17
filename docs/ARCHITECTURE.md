@@ -730,5 +730,6 @@ come first.
 - **Installation details**: the remaining open points in
   [installation.md](installation.md#open-points).
 - Settled: custom HAT ([HAT.md](HAT.md)); 1-Wire via kernel `w1-gpio` on
-  two buses (HAT D4); the reference installation keeps a Pt1000 only on the
-  collector and moves S2–S8 to DS18B20 on two daisy-chained buses.
+  two buses (HAT D4); a PT edition of the HAT with up to 8 Pt1000 inputs
+  for installations that keep their sensors (HAT D12). Which one the
+  reference installation uses is decided later.

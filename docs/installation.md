@@ -38,17 +38,21 @@ be BX Plus inputs S1–S8.
 | S8 | nach Haus / vor Heizung | Heating circuit: after the house, back to the heat generator | Measurement only |
 
 - **All eight sensors are Pt1000, each on its own 2-wire cable.**
-- **Plan for OSCoST** (decided): S1 (collector) stays Pt1000 on the
-  HAT's MAX31865: only 2 wires go to the roof, and the collector gets
-  hotter than a DS18x20's 125 °C. S2–S8 are replaced by **DS18B20 probes**
-  (6 mm stainless, they fit the ½" sleeves), wired as **two daisy-chained
-  3-wire cables** instead of one cable per sensor, because 1-Wire works
-  reliably as a line, not as a star:
-  - **Bus A** (HAT 1W-A, GPIO4): along the store, S2 → S3 → S4 → S5.
-  - **Bus B** (HAT 1W-B, GPIO17): along the heating pipes, S6 → S7 → S8.
-  - The new sensors read slightly differently from the old Pt1000s (about
-    ±0.5 K, different seat in the sleeve). Per-sensor calibration offsets,
-    set against the BX Plus during shadow mode, keep the long-term charts
+- **Plan for OSCoST: two options, decided later.** The collector (S1)
+  stays Pt1000 either way: only 2 wires go to the roof, and the
+  collector gets hotter than a DS18x20's 125 °C.
+  - **Keep all Pt1000 sensors** with the HAT's
+    [PT edition](HAT.md#11-pt-edition-8--pt1000): S1–S8 connect as they
+    are, nothing changes at the store or the pipes, and the readings
+    match the vbus2influx history.
+  - **Move S2–S8 to DS18B20** with the 1-Wire edition: 6 mm stainless
+    probes (they fit the ½" sleeves), wired as **two daisy-chained 3-wire
+    cables** instead of one cable per sensor, because 1-Wire works
+    reliably as a line, not as a star. Bus A (1W-A, GPIO4) along the
+    store, S2 → S3 → S4 → S5; bus B (1W-B, GPIO17) along the heating
+    pipes, S6 → S7 → S8. The new sensors read slightly differently (about
+    ±0.5 K, different seat in the sleeve); per-sensor calibration offsets,
+    set against the BX Plus during shadow mode, keep the charts
     continuous.
 - The heat generator ("Heizung") is a **heat pump** today; it was a gas
   boiler when the system was installed. S6–S8 are only measured, nothing
