@@ -223,6 +223,11 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
   indicator or worked out from a measured heat output), and calculates
   the heat output from S4/S5 with it. The web interface marks these
   values as estimated.
+- **A float-type flow indicator is installed.** Calibration: whenever the
+  pump runs, read the indicator (l/min) and note the time; the pump speed
+  at that moment comes from the PWM value in the vbus2influx data. Three
+  or four readings at different speeds (low, middle, full) make the
+  table.
 
 ## Overtemperature protection
 
@@ -247,4 +252,4 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
 
 ## Open points
 
-- Flow calibration: is there a float-type flow indicator to read the flow at a few pump speeds?
+- Flow calibration readings (see [Flow measurement](#flow-measurement)).
