@@ -31,18 +31,18 @@ untested circuit goes into a manufactured board.
   signal.
 - **Powering the Pi.** The Pi gets its power from its own USB-C input
   (from the DIN-rail supply). The HAT takes 5 V and 3.3 V from the
-  header. See open decision D6.
+  header. See open decision D5.
 
 ## 2. Target boards and form factor
 
 | | |
 |---|---|
-| Boards | Raspberry Pi 4, Raspberry Pi 5, Radxa Rock 5C (same size and header position) |
+| Boards | Raspberry Pi 4, Raspberry Pi 5 |
 | Size | Raspberry Pi HAT: 65 × 56.5 mm, 4 × M2.5 mounting holes matching the Pi |
 | Header | 40-pin female, with a stacking/extra-tall header option for the Pi 5 active cooler |
 | Connectors | All field connections along one long edge, pluggable 5.08 mm terminal blocks |
 | Component height | Low enough for a standard enclosure; the DC/DC module is the tallest part |
-| ID EEPROM | Footprint for the Raspberry Pi HAT ID EEPROM on pins 27/28, not fitted in rev A (D7) |
+| ID EEPROM | Footprint for the Raspberry Pi HAT ID EEPROM on pins 27/28, not fitted in rev A (D6) |
 
 ## 3. Block diagram
 
@@ -102,17 +102,14 @@ untested circuit goes into a manufactured board.
   0.1 % reference resistor, the input filter from the datasheet and ESD
   protection on the terminal.
 - 2-wire connection by default; solder jumpers for 3-wire sensors.
-- On SPI. Chip select 1 on pin 24 (hardware CS on both boards). Chip
-  select 2 on pin 26: hardware CS1 on the Pi; on the Rock 5C pin 26 is
-  not a chip select of the same SPI bus, so it runs as a GPIO chip select
-  (device tree `cs-gpios`), to be verified on the board (D3).
+- On SPI0, with the two hardware chip selects: CE0 (pin 24) for #1, CE1
+  (pin 26) for #2.
 - The `DRDY` outputs are not connected; OSCoST polls once per second.
 
 ### 4.4 1-Wire bus
 
-- **DS2482-100** I²C-to-1-Wire bridge on I²C pins 3/5 (I2C1 on the Pi,
-  I2C8 on the Rock 5C). Active pull-up and proper timing in hardware, so
-  long cables and many sensors work, and the same driver on both boards.
+- **DS2482-100** I²C-to-1-Wire bridge on I2C1 (pins 3/5). Active pull-up
+  and proper timing in hardware, so long cables and many sensors work.
 - 3.3 V sensor supply with a polyfuse, ESD protection on DQ.
 - Two or three 3-way terminals (VDD, DQ, GND) in parallel, so sensors
   can be wired as several short spurs.
@@ -157,36 +154,34 @@ untested circuit goes into a manufactured board.
 | 3.3 V | Pi header pins 1/17 | MAX31865 × 2, DS2482, DS18x20 sensors, pull-ups | < 30 mA |
 
 The Pi's own supply has to cover this on top of the board itself: a
-5 V / 3 A supply for a Pi 4 or Rock 5C, 5 V / 5 A for a Pi 5.
+5 V / 3 A supply for a Pi 4, 5 V / 5 A for a Pi 5.
 
 ## 5. Pin assignment
 
-Chosen so that the same HAT works on all three boards. Where a pin has
-no suitable function on one board, a solder jumper selects between two
-header pins.
+The same on the Raspberry Pi 4 and Pi 5. Only the PWM chip and channel
+numbers behind GPIO 18/19 differ, which is software configuration.
 
-| Function | Raspberry Pi 4 / 5 | Rock 5C | Notes |
+| Function | Header pin | Pi 4 | Pi 5 |
 |---|---|---|---|
-| I²C SDA / SCL (DS2482) | pins 3 / 5 (I2C1) | pins 3 / 5 (I2C8-M2) | |
-| SPI MOSI / MISO / SCLK | pins 19 / 21 / 23 (SPI0) | pins 19 / 21 / 23 (SPI4-M2) | |
-| SPI CS1 (MAX31865 #1) | pin 24 (CE0) | pin 24 (SPI4_CS0) | |
-| SPI CS2 (MAX31865 #2) | pin 26 (CE1) | pin 26 as GPIO chip select | D3 |
-| PWM 1 | pin 12 (GPIO 18) | pin 13 (PWM14-M1) | solder jumper |
-| PWM 2 | pin 35 (GPIO 19) | pin 15 (PWM11-M1) | solder jumper |
-| Feedback 1 | pin 16 (GPIO 23) | pin 16 (GPIO1_A5) | |
-| Feedback 2 | pin 36 (GPIO 16) | pin 36 (GPIO4_A2) | |
-| Heartbeat | pin 18 (GPIO 24) | pin 18 (GPIO1_B0) | |
-| Relay 1 | pin 22 (GPIO 25) | pin 22 (GPIO1_B5) | |
-| Relay 2 | pin 29 (GPIO 5) | pin 29 (GPIO1_B2) | |
-| ID EEPROM | pins 27 / 28 | — | footprint only (D7) |
-| 5 V | pins 2, 4 | pins 2, 4 | |
-| 3.3 V | pins 1, 17 | pins 1, 17 | |
-| GND | 6, 9, 14, 20, 25, 30, 34, 39 | same | |
+| I²C SDA / SCL (DS2482) | 3 / 5 | I2C1 | I2C1 |
+| SPI MOSI / MISO / SCLK | 19 / 21 / 23 | SPI0 | SPI0 |
+| SPI CE0 (MAX31865 #1) | 24 | GPIO 8 | GPIO 8 |
+| SPI CE1 (MAX31865 #2) | 26 | GPIO 7 | GPIO 7 |
+| PWM 1 | 12 | GPIO 18, PWM0 channel 0 | GPIO 18, RP1 PWM0 channel 2 |
+| PWM 2 | 35 | GPIO 19, PWM0 channel 1 | GPIO 19, RP1 PWM0 channel 3 |
+| Feedback 1 | 16 | GPIO 23 | GPIO 23 |
+| Feedback 2 | 36 | GPIO 16 | GPIO 16 |
+| Heartbeat | 18 | GPIO 24 | GPIO 24 |
+| Relay 1 | 22 | GPIO 25 | GPIO 25 |
+| Relay 2 | 29 | GPIO 5 | GPIO 5 |
+| ID EEPROM | 27 / 28 | ID_SD / ID_SC | ID_SD / ID_SC |
+| 5 V | 2, 4 | | |
+| 3.3 V | 1, 17 | | |
+| GND | 6, 9, 14, 20, 25, 30, 34, 39 | | |
 
-On the Pi 5, the PWM channels on GPIO 18 / 19 are RP1 PWM0 channels 2 / 3
-(see [Testing the output](HARDWARE.md#testing-the-output)). The Rock 5C
-pins come from Radxa's 40-pin table and must be checked on the real board
-before the layout is frozen.
+Both PWM outputs need a two-channel PWM overlay. Which one works on the
+Pi 5 (`pwm-2chan` or two `pwm` entries) is checked during bring-up; see
+also [Testing the output](HARDWARE.md#testing-the-output).
 
 ## 6. Field connectors
 
@@ -216,7 +211,7 @@ silkscreen:
 - **Parts:** SMD where hand-soldering is still easy (0805 passives, SOIC,
   SSOP), through-hole for connectors and the header. That keeps both paths
   open: hand assembly, or AISLER's assembly service if the price is right
-  for 3 boards (D8).
+  for 3 boards (D7).
 - **Checks before ordering:** KiCad ERC and DRC clean, every net compared
   against the stripboard circuits, footprints of the MAX31865, DS2482 and
   DC/DC checked against their datasheets, a 1:1 paper print to check
@@ -235,7 +230,7 @@ silkscreen:
 6. Pt1000 inputs with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C),
    then real sensors.
 7. 1-Wire bus scan with one, then several DS18x20.
-8. Repeat steps 2–7 on the other board type (Pi ↔ Rock 5C).
+8. Repeat steps 2–7 on the other board (Pi 4 ↔ Pi 5).
 
 ## 9. Open decisions
 
@@ -243,9 +238,8 @@ silkscreen:
 |---|---|---|
 | D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
 | D2 | One or two PWM outputs? | **Two**: the TC4427 has two channels anyway, the second costs a few parts |
-| D3 | Second Pt1000 chip select on the Rock 5C | GPIO chip select on pin 26; verify on the board, otherwise move to another free pin |
-| D4 | How many Pt1000 inputs? | **Two** (collector + one spare). More would need more chip selects |
-| D5 | DS2482 or plain `w1-gpio`? | **DS2482-100**: same behaviour on both boards, robust with long cables |
-| D6 | Power the Pi from the HAT (5 V terminal + ideal diode)? | **No** for rev A: the Pi keeps its USB-C supply. Back-powering needs protection, and the Pi 5 then limits USB current without extra configuration |
-| D7 | Fit the HAT ID EEPROM? | Footprint only; fit later if automatic configuration on the Pi is wanted |
-| D8 | Hand assembly or AISLER assembly? | Decide when the BOM exists and AISLER quotes the assembly |
+| D3 | How many Pt1000 inputs? | **Two** (collector + one spare). More would need more chip selects |
+| D4 | DS2482 or plain `w1-gpio`? | **DS2482-100**: robust with long cables and many sensors |
+| D5 | Power the Pi from the HAT (5 V terminal + ideal diode)? | **No** for rev A: the Pi keeps its USB-C supply. Back-powering needs protection, and the Pi 5 then limits USB current without extra configuration |
+| D6 | Fit the HAT ID EEPROM? | Footprint only; fit later if automatic configuration on the Pi is wanted |
+| D7 | Hand assembly or AISLER assembly? | Decide when the BOM exists and AISLER quotes the assembly |

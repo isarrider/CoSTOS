@@ -5,7 +5,7 @@
 OSCoST is an open-source controller for solar thermal systems: the box that
 decides when the solar pump runs, how fast, and when it has to stop to
 protect the store and the collector. It runs on a Linux single-board
-computer (Raspberry Pi or Radxa Rock 5C), is written in Rust, and is
+computer (Raspberry Pi 4 or 5), is written in Rust, and is
 configured completely through a web interface.
 
 > **Status: planning.** There is no code yet, only the
@@ -46,7 +46,7 @@ installation, so that's the reference for which functions come first.
 
 ## Hardware (planned)
 
-- Raspberry Pi or Radxa Rock 5C
+- Raspberry Pi 4 or Raspberry Pi 5
 - MAX31865 boards for Pt1000 sensors, a 4.7 kΩ pull-up for DS18x20 sensors
 - Solid-state or relay outputs for pumps and valves, PWM output for
   high-efficiency pumps

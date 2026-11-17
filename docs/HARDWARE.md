@@ -239,13 +239,11 @@ in its socket, measure with the multimeter:
    |---|---|
    | 2 (5V) | 5V |
    | 6 (GND) | GND |
-   | 12 (GPIO 18); **Rock 5C: pin 13** | PWM |
+   | 12 (GPIO 18) | PWM |
    | 17 (3.3 V) | 3V3 |
-   | 16 (GPIO 23 on the Pi, GPIO1_A5 on the Rock 5C) | FB |
+   | 16 (GPIO 23) | FB |
 
-   The Rock 5C has no PWM on pin 12 (see
-   [Testing the output](#testing-the-output)). Pin 16 is a plain GPIO on
-   both boards, and pin 17 is 3.3 V on both.
+   The pins are the same on the Pi 4 and the Pi 5.
 
    ![Wiring: Pi, driver board, pump](img/pwm-driver-wiring.svg)
 
@@ -258,21 +256,13 @@ in its socket, measure with the multimeter:
 
 #### Testing the output
 
-The PWM pin and how to switch it on depend on the board. 5V (pin 2) and
-GND (pin 6) are the same on all of them.
+The PWM is on **pin 12 (GPIO 18)** on both the Pi 4 and the Pi 5, but the
+PWM hardware behind it differs, and so does the setup.
 
 | Board | PWM pin on the header | PWM hardware | sysfs channel |
 |---|---|---|---|
 | Raspberry Pi 4 and older | **pin 12** (GPIO 18) | PWM0 in the main chip | `0` |
 | Raspberry Pi 5 | **pin 12** (GPIO 18) | PWM0 in the RP1 I/O chip, channel 2 | `2` |
-| Radxa Rock 5C | **pin 13** (GPIO4_B2) | PWM14 (`PWM14_M1`) | `0` |
-
-**Rock 5C: use pin 13, not pin 12.** Pin 12 has no PWM function on the
-Rock 5C. Of the header pins that do (3, 5, 11, 13, 15, 23, 24, 27, 28),
-pins 3/5 are I²C, 23/24 are SPI (needed for the MAX31865 temperature
-boards) and 27/28 are the HAT ID-EEPROM pins in the Raspberry Pi layout, so
-**pin 13** is the natural choice. It is on the left (odd) row, directly below pin 11. Move J1's PWM
-jumper wire there; 5V and GND stay on pins 2 and 6.
 
 **1. Switch the PWM output on** (once, then reboot):
 
@@ -295,11 +285,8 @@ jumper wire there; 5V and GND stay on pins 2 and 6.
   on the Pi 5, so stick to `pwm`. After the
   reboot, `pinctrl get 18` should show `a3 … PWM0_CHAN2`.
 
-- **Rock 5C**: run `sudo rsetup`, go to *Overlays → Manage overlays*,
-  enable the **PWM14-M1** entry, save and reboot.
-
-**2. Find the PWM chip.** Each board numbers them differently, and the
-Pi 5 already has one for its fan. Run `ls /sys/class/pwm/` before and after
+**2. Find the PWM chip.** The Pi 4 and Pi 5 number them differently, and
+the Pi 5 already has one for its fan. Run `ls /sys/class/pwm/` before and after
 step 1: the `pwmchipN` that appeared is yours. (If you didn't check before:
 `ls -l /sys/class/pwm/` shows which hardware each one belongs to.)
 
@@ -308,7 +295,7 @@ chip and the channel from the table:
 
 ```sh
 CHIP=/sys/class/pwm/pwmchip0   # from step 2
-CH=0                            # Pi 4 and Rock 5C: 0, Pi 5: 2
+CH=0                            # Pi 4: 0, Pi 5: 2
 
 echo $CH     | sudo tee $CHIP/export
 echo 2000000 | sudo tee $CHIP/pwm$CH/period       # 500 Hz
@@ -482,8 +469,8 @@ Without U1 in its socket:
 #### Power-up and test
 
 1. Connect the five jumper wires exactly as for the
-   [12 V board](#first-power-up) (pins 2, 6, 12 or 13 on the Rock 5C, 17,
-   16), with the Pi shut down.
+   [12 V board](#first-power-up) (pins 2, 6, 12, 17, 16), with the Pi shut
+   down.
 2. Power up the Pi. Socket pin 6 (D11) against GND: **about 5 V**. J1 FB
    against GND: **3.3 V**.
 3. Shut down, insert U1 (notch up, pin 1 at B8).
@@ -528,7 +515,7 @@ cable. The trade-off is slow edges (see [Limits](#limits)).
 
 | From | To |
 |---|---|
-| Pi pin 12 (GPIO 18); Rock 5C: pin 13 | module **IN+** (also called IN, SIG) |
+| Pi pin 12 (GPIO 18) | module **IN+** (also called IN, SIG) |
 | Pi pin 6 (GND) | module **IN−** (also called G, GND on the input side) |
 | 12 V supply + | module **V+** (also called VCC, V2) |
 | 12 V supply 0 V | module **V−** (also called GND, G2 on the output side) |

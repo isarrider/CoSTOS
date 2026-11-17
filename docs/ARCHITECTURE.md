@@ -3,7 +3,7 @@
 Status: **draft for discussion**. Nothing here is implemented yet.
 
 OSCoST is an open-source controller for solar thermal systems. It runs on a
-Linux single-board computer (Raspberry Pi or Radxa Rock 5C), is written in
+Raspberry Pi 4 or 5, is written in
 Rust, and is meant to **replace** a commercial controller. The reference
 system is the one it replaces: a RESOL DeltaSol BX Plus that is read today by
 [vbus2influx](https://github.com/isarrider/vbus2influx).
@@ -66,7 +66,7 @@ Plus behaviour for this installation.
 ## 3. System overview
 
 ```
-             ┌────────────────────── Linux SBC (Pi / Rock 5C) ─────────────────────┐
+             ┌────────────────────── Raspberry Pi 4 / 5 ────────────────────────────┐
              │                                                                      │
  Pt1000 ───► │  sensors task ──► ┌──────────────┐    ┌──────────────┐               │
  sensors     │  (SPI / I²C)      │ control core │──► │  safety      │──► outputs ───┼──► SSR / relay ──► pumps, valves (230 V)
@@ -189,9 +189,8 @@ The existing Pt1000 sensors are reused.
   code `10`), DS18B20 (9–12-bit, `28`) and DS1822 (`22`). The family code
   in the ROM ID tells the driver which chip it is talking to.
 - **Bus master**, choose one per bus:
-  - **Kernel `w1-gpio`** on a GPIO pin with a 4.7 kΩ pull-up (`dtoverlay=w1-gpio`
-    on the Pi, the equivalent overlay on the Rock 5C). Simple, no extra
-    chip. OSCoST reads `/sys/bus/w1/devices/<id>/temperature`.
+  - **Kernel `w1-gpio`** on a GPIO pin with a 4.7 kΩ pull-up
+    (`dtoverlay=w1-gpio`). Simple, no extra chip. OSCoST reads `/sys/bus/w1/devices/<id>/temperature`.
   - **DS2482-100/-800** I²C-to-1-Wire bridge (1 or 8 buses). Active pull-up
     and proper timing in hardware, so it copes much better with long cables
     and many sensors. Recommended for anything beyond a few metres. OSCoST
@@ -284,8 +283,7 @@ Pi's 5 V, or a ready-made optocoupler module) are in
 - **Hardware PWM** only, never software PWM: the timing must not depend on
   the Linux scheduler. Pi 4 and older: GPIO 18 (header pin 12), PWM0
   channel 0. Pi 5: GPIO 18 too, but the PWM is in the RP1 chip, channel 2.
-  Rock 5C: header pin 13 (PWM14_M1), since its pin 12 has no PWM. The pin,
-  PWM chip and channel are part of the per-board config.
+  The PWM chip and channel are part of the per-board config.
 - **Driver**: a small low-side MOSFET gate driver IC as level shifter. It
   accepts 3.3 V logic, outputs 0/12 V push-pull with edges far below a
   microsecond, and sources plenty of current. A plain transistor with a
@@ -356,11 +354,13 @@ op-amp. Not planned for the first hardware version.
   heat quantity metering.
 - Optional: CS10 irradiation sensor, Grundfos Direct Sensors (digital), later.
 
-### 5.5 SBC portability
+### 5.5 Kernel interfaces
 
-`rppal`, used in vbus2influx, only supports the Raspberry Pi. To run on both
-the Pi and the Rock 5C, the Linux backend uses generic kernel interfaces
-only:
+The supported boards are the **Raspberry Pi 4 and Pi 5**. They differ more
+than it seems: on the Pi 5, GPIO and PWM live in the separate RP1 chip,
+with different PWM chip and channel numbers. So the Linux backend uses the
+generic kernel interfaces only, not a Pi-specific library, and the same code
+runs on both:
 
 | Function | Kernel interface |
 |---|---|
@@ -550,7 +550,7 @@ On first start (or after a factory reset) there is no valid config, so all
 outputs stay OFF and the interface opens a wizard:
 
 1. Create the admin user.
-2. Choose the board (Pi / Rock 5C) and the sensor/output hardware.
+2. Choose the board (Pi 4 / Pi 5) and the sensor/output hardware.
 3. **Assign sensors**: every Pt1000 input and every DS18x20 found by the
    bus scan shows its live temperature, so you can identify each sensor by
    its reading (or by warming it in your hand: the one that rises is
@@ -710,8 +710,6 @@ measurement in phase 2. To be decided.
 - Is there already an independent store overtemperature cut-out?
 - Shadow mode: second set of sensors, or use the RESOL values over VBus at
   first?
-- Raspberry Pi or Rock 5C as the production board? (The design supports
-  both. The answer decides the pin map and the HAT/board layout.)
 - Off-the-shelf boards (MAX31865 breakouts, DIN-rail SSRs) or a custom HAT?
   Breakouts first is the faster way to the bench milestone.
 - 1-Wire master: kernel `w1-gpio` or DS2482? Depends on cable lengths and

@@ -17,7 +17,7 @@
 
   <!-- Raspberry Pi header, pins 1-18 -->
   <rect x="20" y="40" width="260" height="340" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" fill-opacity="0.6"/>
-  <text x="150" y="30" text-anchor="middle" class="lbl">Raspberry Pi / Rock 5C, 40-pin header</text>
+  <text x="150" y="30" text-anchor="middle" class="lbl">Raspberry Pi 4 / 5, 40-pin header</text>
   <g>
     <rect x="100" y="60" width="22" height="22" fill="#222"/><text x="94" y="76" text-anchor="end" class="xs">3V3  1</text>
     <circle cx="160" cy="71" r="11" fill="#c62828"/>
@@ -38,11 +38,9 @@
 
     <circle cx="111" cy="221" r="11" fill="#999"/><text x="94" y="226" text-anchor="end" class="xs">11</text>
     <circle cx="160" cy="221" r="11" fill="#1565c0"/>
-    <rect x="174" y="208" width="96" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="221" class="tag">12  PWM (Pi)</text>
+    <rect x="174" y="208" width="96" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="221" class="tag">12  PWM</text>
 
-    <circle cx="111" cy="251" r="11" fill="#1565c0" fill-opacity="0.45" stroke="#1565c0" stroke-dasharray="3 2"/>
-    <text x="94" y="248" text-anchor="end" class="tag" fill="#1565c0">13</text>
-    <text x="94" y="262" text-anchor="end" class="xs" fill="#1565c0">PWM (Rock 5C)</text>
+    <circle cx="111" cy="251" r="11" fill="#999"/><text x="94" y="256" text-anchor="end" class="xs">13</text>
     <circle cx="160" cy="251" r="11" fill="#999"/><text x="176" y="256" class="xs">14  GND</text>
 
     <circle cx="111" cy="281" r="11" fill="#999"/><text x="94" y="286" text-anchor="end" class="xs">15</text>
@@ -95,7 +93,7 @@
   <text x="900" y="300" text-anchor="middle" class="xs">230 V supply of the pump:</text>
   <text x="900" y="314" text-anchor="middle" class="xs">unchanged, via relay (electrician)</text>
 
-  <text x="20" y="410" class="s">Pin 2 (5V) → J1 5V · pin 6 (GND) → J1 GND · pin 12 (Pi) / pin 13 (Rock 5C) → J1 PWM · pin 17 (3V3) → J1 3V3 · pin 16 → J1 FB</text>
+  <text x="20" y="410" class="s">Pin 2 (5V) → J1 5V · pin 6 (GND) → J1 GND · pin 12 → J1 PWM · pin 17 (3V3) → J1 3V3 · pin 16 → J1 FB</text>
   <text x="20" y="430" class="s">J2 PWM → brown · J2 GND → blue · J2 FB → black (pumps without feedback: leave J2 FB empty)</text>
-  <text x="20" y="452" class="xs">Pin numbers are the same on Raspberry Pi 2/3/4/5 and Rock 5C, except the PWM pin: Rock 5C has no PWM on pin 12, so its PWM wire goes to pin 13.</text>
+  <text x="20" y="452" class="xs">The pin numbers are the same on the Raspberry Pi 4 and Pi 5.</text>
 </svg>
