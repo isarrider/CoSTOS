@@ -69,7 +69,7 @@ layout is done in KiCad.
  │  REL1..2 ─────────────────────────────► low-side MOSFETs ◄─ relay supply ├──► external SSR / relay
  │                                                                         │
  │  SPI ─► MAX31865 #1, #2 (Pt1000) ◄──────────────────────────── sensors  │
- │  I²C ─► DS2482-100 (1-Wire) ◄───────────────────────────────── DS18x20  │
+ │  GPIO 4, 17 ─► pull-ups ─► 1-Wire bus A, B ◄────────────────── DS18x20  │
  │                                                                         │
  │  LEDs: power, watchdog OK, relay 1, relay 2                             │
  └─────────────────────────────────────────────────────────────────────────┘
@@ -115,11 +115,20 @@ layout is done in KiCad.
 
 ### 4.4 1-Wire bus
 
-- **DS2482-100** I²C-to-1-Wire bridge on I2C1 (pins 3/5). Active pull-up
-  and proper timing in hardware, so long cables and many sensors work.
-- 3.3 V sensor supply with a polyfuse, ESD protection on DQ.
-- Two or three 3-way terminals (VDD, DQ, GND) in parallel, so sensors
-  can be wired as several short spurs.
+- **Two independent 1-Wire buses**, driven by the kernel's `w1-gpio`
+  driver: bus A on GPIO 4 (pin 7), bus B on GPIO 17 (pin 11). Up to about
+  5 sensors per bus. A fault on one bus (damaged cable, short) only takes
+  out the sensors on that bus.
+- Per bus: 4.7 kΩ pull-up to 3.3 V, ESD protection on DQ, and a 3-way
+  terminal (3V3, DQ, GND).
+- **Sensors run in normal powered mode** (3 wires: 3V3, DQ, GND), never in
+  parasite mode, which is unreliable at high temperatures and with several
+  sensors converting at once.
+- 3.3 V sensor supply with a polyfuse, shared by both buses.
+- **Fallback: DS2482-100 footprint, not fitted.** An I²C-to-1-Wire bridge
+  on I2C1 (pins 3/5) with active pull-up, for the case that long cables or
+  the Pi 5's GPIO cause trouble. Fitting it (and moving the buses to it)
+  needs no new board.
 
 ### 4.5 Relay / SSR control outputs
 
@@ -200,7 +209,7 @@ Limits and settings:
 |---|---|---|---|
 | 5 V | HAT power input (from the DIN-rail supply) | **the Pi**, DC/DC, relay supply, LEDs | Pi 4 up to 3 A, Pi 5 up to 5 A; HAT itself < 300 mA with two relay coils, < 100 mA with SSRs |
 | 12 V | DC/DC on the HAT (1 W) | TC4427, PWM outputs | < 30 mA |
-| 3.3 V | Pi header pins 1/17 | MAX31865 × 2, DS2482, DS18x20 sensors, pull-ups | < 30 mA |
+| 3.3 V | Pi header pins 1/17 | MAX31865 × 2, DS18x20 sensors, pull-ups | < 30 mA |
 
 ## 5. Pin assignment
 
@@ -209,7 +218,9 @@ numbers behind GPIO 18/19 differ, which is software configuration.
 
 | Function | Header pin | Pi 4 | Pi 5 |
 |---|---|---|---|
-| I²C SDA / SCL (DS2482) | 3 / 5 | I2C1 | I2C1 |
+| 1-Wire bus A | 7 | GPIO 4 | GPIO 4 |
+| 1-Wire bus B | 11 | GPIO 17 | GPIO 17 |
+| I²C SDA / SCL (DS2482, only if fitted) | 3 / 5 | I2C1 | I2C1 |
 | SPI MOSI / MISO / SCLK | 19 / 21 / 23 | SPI0 | SPI0 |
 | SPI CE0 (MAX31865 #1) | 24 | GPIO 8 | GPIO 8 |
 | SPI CE1 (MAX31865 #2) | 26 | GPIO 7 | GPIO 7 |
@@ -239,8 +250,10 @@ set this up; listed here so it can be checked by hand.
 ```ini
 # SPI0 for the two MAX31865 (CE0, CE1)
 dtparam=spi=on
-# I2C1 for the DS2482-100
-dtparam=i2c_arm=on
+# Two 1-Wire buses for the DS18x20 sensors (external pull-ups on the HAT;
+# no "pullup" parameter, which would mean parasite power)
+dtoverlay=w1-gpio,gpiopin=4
+dtoverlay=w1-gpio,gpiopin=17
 
 # Relay outputs and heartbeat: outputs, driven low as early as possible
 gpio=24,25,5=op,dl
@@ -267,8 +280,8 @@ sudo rpi-eeprom-config --edit     # add: PSU_MAX_CURRENT=5000
 
 **Not needed:**
 
-- No 1-Wire overlay: OSCoST talks to the DS2482 directly over
-  `/dev/i2c-1`.
+- No I²C, unless the optional DS2482 is fitted (then `dtparam=i2c_arm=on`
+  instead of the two `w1-gpio` lines).
 - No overlays for the feedback inputs: they are read as GPIO edge events
   through the GPIO character device.
 - With the ID EEPROM fitted later (D6), the overlays above could be
@@ -277,8 +290,8 @@ sudo rpi-eeprom-config --edit     # add: PSU_MAX_CURRENT=5000
 **Also on the system side:**
 
 - The OSCoST service user needs access to `/dev/gpiochip*`, `/dev/spidev0.*`,
-  `/dev/i2c-1` and `/sys/class/pwm` (groups `gpio`, `spi`, `i2c` on
-  Raspberry Pi OS).
+  `/sys/bus/w1` and `/sys/class/pwm` (groups `gpio` and `spi` on Raspberry
+  Pi OS).
 - The SoC hardware watchdog is armed through systemd
   (`RuntimeWatchdogSec=` in `/etc/systemd/system.conf`), in addition to the
   HAT's own watchdog.
@@ -343,7 +356,9 @@ All labelled on the silkscreen:
    [Connecting the pump](HARDWARE.md#connecting-the-pump)).
 7. Pt1000 inputs with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C),
    then real sensors.
-8. 1-Wire bus scan with one, then several DS18x20.
+8. 1-Wire bus scan on both buses, with one, then five DS18x20 each. On
+   the Pi 5, check that `w1-gpio` works reliably through the RP1 chip;
+   otherwise fit the DS2482.
 9. Repeat steps 3–8 on the other board (Pi 4 ↔ Pi 5).
 
 ## 10. Decisions
@@ -353,7 +368,7 @@ All labelled on the silkscreen:
 | D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
 | D2 | One or two PWM outputs? | **Two**: the TC4427 has two channels anyway |
 | D3 | How many Pt1000 inputs? | **Two** (collector + one spare), on the two hardware chip selects |
-| D4 | DS2482 or plain `w1-gpio`? | **DS2482-100**: robust with long cables and many sensors |
+| D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
 | D5 | Power the Pi from the HAT? | **Yes**: one supply cable for everything, with fuse, TVS and ideal diode on the HAT (4.7) |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
 | D7 | Hand assembly or AISLER assembly? | **Decide on the AISLER quote** once the BOM exists; all parts are hand-solderable |

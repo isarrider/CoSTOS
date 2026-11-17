@@ -68,7 +68,9 @@ term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"])
 # chips, left column
 chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
 chip(205, 178, 100, 46, "MAX31865", "Pt1000 #2")
-chip(205, 246, 100, 46, "DS2482-100", "1-Wire bridge")
+out.append('<rect x="205" y="246" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
+t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
 # bottom rows
 chip(196, 368, 78, 46, "Protection", "5 V input")
 chip(282, 368, 78, 46, "Relay", "MOSFETs")

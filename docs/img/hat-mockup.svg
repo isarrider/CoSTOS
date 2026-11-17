@@ -113,9 +113,9 @@
 <rect x="205" y="178" width="100" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="255.0" y="198.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
 <text class="ts" x="255.0" y="213.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">Pt1000 #2</text>
-<rect x="205" y="246" width="100" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="255.0" y="266.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">DS2482-100</text>
-<text class="ts" x="255.0" y="281.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">1-Wire bridge</text>
+<rect x="205" y="246" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
+<text class="th" x="255" y="266" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">DS2482</text>
+<text class="ts" x="255" y="281" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">not fitted</text>
 <rect x="196" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="235.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Protection</text>
 <text class="ts" x="235.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">5 V input</text>
