@@ -225,20 +225,121 @@ The existing Pt1000 sensors are reused.
   proper enclosure. Speed control by switching mains in bursts (the way the
   BX Plus semiconductor relays do it) only applies to old standard pumps.
   Modern high-efficiency pumps are controlled over PWM instead.
-- **PWM for high-efficiency pumps**: the SoC's hardware PWM through an
-  opto/transistor stage to the pump's signal level (open collector, about
-  10–15 V depending on the pump). Supported **PWM profiles** in config:
-  *solar* (higher duty = faster, 0 % = stop) and *heating* (inverted), plus
-  frequency. The RESOL controller uses 512 Hz. The pump's datasheet decides.
+- **PWM for high-efficiency pumps**: see 5.3.
 - Optional 0–10 V output via a DAC or PWM low-pass, if a pump needs it.
 
-### 5.3 Other inputs
+### 5.3 PWM pump outputs
+
+High-efficiency circulators (Grundfos UPM3, Wilo Yonos PARA / Para iPWM and
+similar) get mains power **and** a low-voltage PWM signal that sets the
+speed. Most also send a PWM feedback signal back.
+
+#### What the pump expects
+
+| | Grundfos UPM3 | Wilo Yonos PARA / Para iPWM |
+|---|---|---|
+| Input | Optocoupler in the pump, driven by the controller | Same |
+| High level | 4–24 V, < 10 mA | 4–15 V (Yonos PARA), up to 24 V on newer iPWM pumps; about 3.5–10 mA |
+| Low level | < 1 V | ≤ 1 V |
+| Frequency | 100–4000 Hz | 100–5000 Hz (1000 Hz nominal); some variants 100–1000 Hz |
+| Edges | | rise/fall time ≤ T/500 (2 µs at 1 kHz) |
+| Cable | | max. 3 m |
+| Feedback | open collector, 75 Hz, duty encodes power or alarm | open collector on the black wire |
+
+So the controller has to **drive** the input: actively source a few mA at
+roughly 10–12 V, with clean, fast edges. A 3.3 V GPIO can do neither. The
+pump's input is already isolated inside the pump, so the signal ground can
+be shared with the controller.
+
+#### Profiles
+
+The duty cycle means opposite things depending on the profile set on the
+pump:
+
+- **Solar** (Grundfos *profile C*, Wilo *PWM2*): low duty = stop, higher
+  duty = faster. **No signal or a broken cable = pump stops.**
+- **Heating** (Grundfos *profile A*, Wilo *PWM1*): inverted. Low duty = full
+  speed, high duty = stop. **No signal = full speed.**
+
+Profiles are data in the config: breakpoints (stop below x %, min speed at
+y %, max speed at z %, hysteresis band) with built-in presets for the common
+pumps, plus inversion and frequency. Default frequency 500 Hz (inside every
+range above, slow enough for clean edges over 3 m of cable). The pump
+itself must be set to the matching profile; the setup wizard asks for it and
+the feedback signal can confirm the pump reacts.
+
+#### Output circuit (per pump)
+
+```
+ 3.3 V GPIO (HW PWM) ──► gate driver (e.g. MCP1402/TC4427, 12 V supply) ──► 100 Ω ──┬──► pump PWM in (brown)
+                                                                                    TVS
+ GND ───────────────────────────────────────────────────────────────────────────────┴──► signal GND (blue)
+```
+
+- **Hardware PWM** only (Pi: GPIO12/13/18/19 via `dtoverlay=pwm-2chan`;
+  Rock 5C: its PWM pins), never software PWM: the timing must not depend on
+  the Linux scheduler.
+- **Driver**: a small low-side MOSFET gate driver IC as level shifter. It
+  accepts 3.3 V logic, outputs 0/12 V push-pull with edges far below a
+  microsecond, and sources plenty of current. A plain transistor with a
+  pull-up resistor also works but has slow, weak rising edges.
+- **12 V supply**: a small isolated 5 V → 12 V DC/DC module, or one 12 V
+  supply for the whole controller with a buck converter for the SBC.
+- **Protection**: series resistor (current limit if the cable is shorted)
+  and a TVS diode at the connector against ESD and induced spikes.
+- Parts cost: a few euros per channel.
+- Optional galvanic isolation (digital isolator before the driver) if the
+  signal cable runs far or near mains; not required, because the pump input
+  is isolated already.
+
+#### Feedback input (per pump)
+
+```
+ pump PWM out (black, open collector) ──► 1 kΩ ──┬──► GPIO (input, edge events)
+                                       10 kΩ to 3.3 V, clamp diodes / TVS
+```
+
+- Pull-up to 3.3 V on the controller side, so the pump's open collector
+  pulls it low. Series resistor and clamping protect the GPIO.
+- Read with GPIO edge events, which the kernel timestamps; at 75 Hz that
+  measures the duty cycle to well under 1 %.
+- Decoded per pump type. For the Grundfos UPM3: 95 % = standby (stopped by
+  the PWM signal), 90 % = alarm, blocked, 85 % = alarm, electrical error,
+  75 % = warning, 0–70 % = power consumption (1 W per %).
+- This is how OSCoST detects a **stuck or failed pump** (alarm, or no power
+  draw while it should run) and confirms that a commanded stop really
+  stopped the pump.
+
+#### Mains switching and safety
+
+- The pump's mains supply still goes through a relay or SSR that is part of
+  the safe-by-default output stage (section 4.1): if the heartbeat stops,
+  the pump loses power, whatever the PWM output is doing. This matters
+  because the **hardware PWM keeps running at its last duty cycle when the
+  software crashes**, and with a heating profile a dead signal even means
+  full speed.
+- Speed and normal stops are done over PWM. The mains relay is the enable
+  and the safety cut-off, switched rarely: high-efficiency pumps have a high
+  inrush current and limited mains switching cycles (Wilo for example
+  specifies a relay rated ≥ 8 A and at most 100 mains switchings per day for
+  its Stratos PARA). OSCoST rate-limits mains switching per output.
+- With a solar profile, a broken signal cable stops the pump, which is the
+  safe direction for the collector circuit. With a heating profile, it runs
+  at full speed; the relay is what stops it.
+
+#### 0–10 V pumps
+
+Some pumps take 0–10 V instead of PWM. Optional: an I²C DAC (e.g. MCP4725)
+plus an op-amp with gain 3, or the PWM output through an RC filter and
+op-amp. Not planned for the first hardware version.
+
+### 5.4 Other inputs
 
 - **V40 flowmeter** impulse input: GPIO with interrupt and debounce, for
   heat quantity metering.
 - Optional: CS10 irradiation sensor, Grundfos Direct Sensors (digital), later.
 
-### 5.4 SBC portability
+### 5.5 SBC portability
 
 `rppal`, used in vbus2influx, only supports the Raspberry Pi. To run on both
 the Pi and the Rock 5C, the Linux backend uses generic kernel interfaces
@@ -251,6 +352,7 @@ only:
 | I²C (DS2482) | `/dev/i2c-N` |
 | 1-Wire (kernel master) | `/sys/bus/w1/` (`w1-gpio` + `w1_therm`) |
 | PWM | sysfs PWM (`/sys/class/pwm`) |
+| PWM feedback | GPIO edge events with kernel timestamps |
 | Watchdog | `/dev/watchdog` |
 
 Pin and bus assignments live in a per-board config section, not in code.
