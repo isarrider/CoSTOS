@@ -14,6 +14,11 @@ Status: **incomplete**. Open points are listed at the end.
 - A **Raspberry Pi 5** already sits next to it and runs vbus2influx.
   OSCoST runs on this Pi (with the HAT), so it needs the 5 A supply
   (HDR-60-5) and `PSU_MAX_CURRENT=5000` (see [HAT.md](HAT.md)).
+- **VBus connection today:** a self-built level shifter (voltage divider
+  and two transistors, see the vbus2influx README) on the Pi's GPIO UART:
+  VBus → RX on GPIO15 (header pin 10), read as `/dev/ttyAMA0` at 9600
+  baud. vbus2influx runs in Docker, writes to VictoriaMetrics and serves
+  the latest values as JSON over HTTP (`GET /`, port 11110).
 
 ## Sensors and outputs in use
 

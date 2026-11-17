@@ -685,7 +685,11 @@ The interface can switch pumps, so changes need login:
 | **3. Replacement** | OSCoST only. RESOL kept as a spare. | — |
 
 Shadow mode starts with the RESOL values over VBus (decided): it tests the
-control logic and the software right away, without hardware. A Pt1000 can't
+control logic and the software right away, without hardware. OSCoST doesn't
+open the VBus UART itself (only one program can): it polls the latest
+values once per second from vbus2influx's JSON endpoint
+(`http://localhost:11110/`) through a `vbus2influx` sensor source, so
+vbus2influx keeps running unchanged. A Pt1000 can't
 be connected to two measuring devices at once without affecting both
 readings, so OSCoST's own measurement comes in as extra sensors (the store
 has two free ½" sleeves) once the HAT exists.
