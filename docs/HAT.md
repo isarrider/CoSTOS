@@ -39,9 +39,16 @@ untested circuit goes into a manufactured board.
 | Boards | Raspberry Pi 4, Raspberry Pi 5 |
 | Size | Raspberry Pi HAT: 65 × 56.5 mm, 4 × M2.5 mounting holes matching the Pi |
 | Header | 40-pin female, with a stacking/extra-tall header option for the Pi 5 active cooler |
-| Connectors | All field connections along one long edge, pluggable 5.08 mm terminal blocks |
+| Connectors | Field connections on the left and bottom edges, pluggable 3.5 mm terminal blocks (see 7) |
 | Component height | Low enough for a standard enclosure; the DC/DC module is the tallest part |
 | ID EEPROM | Footprint for the Raspberry Pi HAT ID EEPROM on pins 27/28, not fitted in rev A (D6) |
+
+### Mockup
+
+Top view to scale. The placement shows that everything fits; the real
+layout is done in KiCad.
+
+![HAT mockup, top view](img/hat-mockup.svg)
 
 ## 3. Block diagram
 
@@ -151,6 +158,15 @@ The DIN-rail 5 V supply connects to a terminal on the HAT. The HAT feeds
 its own circuits and, through header pins 2 and 4, the Pi. The Pi's USB-C
 input stays unused in operation.
 
+**Powering through the Pi's USB-C works too.** All HAT circuits sit on the
+header side of the protection, so they run from whichever supply powers
+the 5 V rail: the PWR terminal, or a supply in the Pi's USB-C socket (the
+HAT then draws its few hundred mA through header pins 2/4, as any HAT
+does). That is the easy way on the bench; in the installation the PWR
+terminal saves a separate USB-C supply. **Use one supply at a time**: the
+ideal diode keeps current from flowing back into the PWR terminal, but the
+Pi's USB-C input is not designed to be fed backwards from the header.
+
 Feeding 5 V into the header **bypasses the Pi's own input protection**, so
 the HAT has to provide it:
 
@@ -213,10 +229,72 @@ Both PWM outputs need a two-channel PWM overlay. Which one works on the
 Pi 5 (`pwm-2chan` or two `pwm` entries) is checked during bring-up; see
 also [Testing the output](HARDWARE.md#testing-the-output).
 
-## 6. Field connectors
+## 6. Raspberry Pi configuration
 
-All along one edge, pluggable 5.08 mm terminal blocks, labelled on the
-silkscreen:
+What has to be enabled on the Pi for the HAT. The OSCoST installer will
+set this up; listed here so it can be checked by hand.
+
+**`/boot/firmware/config.txt`**
+
+```ini
+# SPI0 for the two MAX31865 (CE0, CE1)
+dtparam=spi=on
+# I2C1 for the DS2482-100
+dtparam=i2c_arm=on
+
+# Relay outputs and heartbeat: outputs, driven low as early as possible
+gpio=24,25,5=op,dl
+
+[pi4]
+# Two hardware PWM channels on GPIO 18 / 19
+dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2
+# The Pi 4's analog audio uses the same PWM hardware
+dtparam=audio=off
+
+[pi5]
+# RP1 PWM0 channels 2 / 3 on GPIO 18 / 19 (verify during bring-up)
+dtoverlay=pwm-2chan
+
+[all]
+```
+
+**Pi 5 bootloader EEPROM** (only when powered through the HAT's PWR
+terminal with a 5 A supply, see 4.7):
+
+```sh
+sudo rpi-eeprom-config --edit     # add: PSU_MAX_CURRENT=5000
+```
+
+**Not needed:**
+
+- No 1-Wire overlay: OSCoST talks to the DS2482 directly over
+  `/dev/i2c-1`.
+- No overlays for the feedback inputs: they are read as GPIO edge events
+  through the GPIO character device.
+- With the ID EEPROM fitted later (D6), the overlays above could be
+  loaded automatically.
+
+**Also on the system side:**
+
+- The OSCoST service user needs access to `/dev/gpiochip*`, `/dev/spidev0.*`,
+  `/dev/i2c-1` and `/sys/class/pwm` (groups `gpio`, `spi`, `i2c` on
+  Raspberry Pi OS).
+- The SoC hardware watchdog is armed through systemd
+  (`RuntimeWatchdogSec=` in `/etc/systemd/system.conf`), in addition to the
+  HAT's own watchdog.
+
+## 7. Field connectors
+
+22 terminal positions don't fit along one 65 mm edge: at 5.08 mm pitch
+they would need about 112 mm. So the connectors use **3.5 mm pluggable
+terminal blocks** on **two edges**, as in the [mockup](#mockup):
+
+- **Bottom edge** (power and outputs): PWR, REL1, REL2, PUMP1, PUMP2.
+- **Left edge** (sensors): PT1, PT2, 1W-A, 1W-B.
+- The top edge holds the 40-pin header. The right edge stays free: on the
+  Pi, the USB and Ethernet sockets sit right next to it.
+
+All labelled on the silkscreen:
 
 | Connector | Pins | Function |
 |---|---|---|
@@ -225,11 +303,11 @@ silkscreen:
 | PUMP2 | PWM, GND, FB | pump 2 signal cable |
 | PT1 | +, − | Pt1000 sensor 1 (collector) |
 | PT2 | +, − | Pt1000 sensor 2 |
-| 1W-A, 1W-B (, 1W-C) | 3V3, DQ, GND | DS18x20 sensors |
+| 1W-A, 1W-B | 3V3, DQ, GND | DS18x20 sensors |
 | REL1 | +5V, OUT | SSR / relay 1 (pump mains) |
 | REL2 | +5V, OUT | SSR / relay 2 |
 
-## 7. Manufacturing
+## 8. Manufacturing
 
 - **Design tool:** KiCad. Project in `hardware/hat/` in this repository,
   with schematic, layout, and Gerber/BOM exports for each released
@@ -248,7 +326,7 @@ silkscreen:
   DC/DC checked against their datasheets, a 1:1 paper print to check
   connector and mounting-hole positions on the real Pi.
 
-## 8. Bring-up plan (rev A)
+## 9. Bring-up plan (rev A)
 
 1. Visual check, then resistance checks between all rails before power.
 2. Power input on its own, without the Pi: a lab supply with current
@@ -268,7 +346,7 @@ silkscreen:
 8. 1-Wire bus scan with one, then several DS18x20.
 9. Repeat steps 3–8 on the other board (Pi 4 ↔ Pi 5).
 
-## 9. Decisions
+## 10. Decisions
 
 | # | Question | Decision |
 |---|---|---|

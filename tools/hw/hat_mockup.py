@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""Draws docs/img/hat-mockup.svg, the to-scale top view of the OSCoST HAT
+(1 mm = 8 px). Usage: python3 tools/hw/hat_mockup.py file > docs/img/hat-mockup.svg
+("widget" instead of "file" gives a variant for inline display in chat)."""
+import sys
+widget = sys.argv[1] == "widget"
+out = []
+def t(x, y, s, size=12, color=None, weight=400, anchor="start", on_board=True):
+    cls = "th" if weight == 500 else "ts"
+    style = f"font-size:{size}px;font-weight:{weight}"
+    if on_board or not widget:
+        style += f";fill:{color or ('#ffffff' if on_board else '#555555')}"
+    out.append(f'<text class="{cls}" x="{x}" y="{y}" text-anchor="{anchor}" style="{style}">{s}</text>')
+def chip(x, y, w, h, title, sub):
+    out.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>')
+    t(x + w/2, y + h/2 - 3, title, 12, "#ffffff", 500, "middle")
+    t(x + w/2, y + h/2 + 12, sub, 11, "#bdbdbd", 400, "middle")
+
+H = 550
+head = (f'<svg width="100%" viewBox="0 0 680 {H}" role="img">' if widget else
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="680" height="{H}" viewBox="0 0 680 {H}" font-family="Helvetica, Arial, sans-serif">')
+out.append(head)
+out.append('<title>OSCoST HAT mockup, top view</title>')
+out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, with the 40-pin header along the top, Pt1000 and 1-Wire terminals on the left edge, power, relay and pump terminals on the bottom edge, and the chips placed next to their connectors.</desc>')
+if not widget:
+    out.append(f'<rect width="680" height="{H}" fill="white"/>')
+# board
+out.append('<rect x="80" y="30" width="520" height="452" rx="24" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>')
+for (cx, cy) in [(108, 58), (572, 58), (108, 450), (572, 450)]:
+    out.append(f'<circle cx="{cx}" cy="{cy}" r="11" fill="#C9A227"/><circle cx="{cx}" cy="{cy}" r="6" fill="#F4F1E8"/>')
+# header
+out.append('<rect x="137" y="38" width="406" height="40" rx="2" fill="#111111"/>')
+for i in range(20):
+    x = 137 + 10 + i * 20.32
+    for y in (48, 68):
+        out.append(f'<rect x="{x-3:.1f}" y="{y-3}" width="6" height="6" fill="#C9A227"/>')
+t(340, 98, "40-pin header to the Pi (stacking header for the Pi 5 cooler)", 11, "#E8F5E9", 400, "middle")
+# EEPROM footprint
+out.append('<rect x="320" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+t(384, 124, "ID EEPROM, not fitted", 11, "#C8E6C9")
+# left terminals
+def term_v(y0, n, name, sub):
+    h = 28 * n
+    out.append(f'<rect x="58" y="{y0}" width="54" height="{h}" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>')
+    for k in range(n):
+        cy = y0 + 14 + 28 * k
+        out.append(f'<circle cx="72" cy="{cy}" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="{cy}" x2="77" y2="{cy}" stroke="#5F6468" stroke-width="1.5"/>')
+    t(118, y0 + h/2 - 2, name, 12, "#ffffff", 500)
+    t(118, y0 + h/2 + 13, sub, 11, "#C8E6C9")
+term_v(110, 2, "PT1", "Pt1000")
+term_v(178, 2, "PT2", "Pt1000")
+term_v(246, 3, "1W-A", "DS18x20")
+term_v(342, 3, "1W-B", "DS18x20")
+# bottom terminals
+def term_h(x0, n, name, pins):
+    w = 28 * n
+    out.append(f'<rect x="{x0}" y="450" width="{w}" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>')
+    for k in range(n):
+        cx = x0 + 14 + 28 * k
+        out.append(f'<circle cx="{cx}" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="{cx}" y1="461" x2="{cx}" y2="471" stroke="#5F6468" stroke-width="1.5"/>')
+        t(cx, 512, pins[k], 11, None, 400, "middle", on_board=False)
+    t(x0 + w/2, 440, name, 12, "#ffffff", 500, "middle")
+term_h(148, 2, "PWR", ["+5V", "GND"])
+term_h(216, 2, "REL1", ["+5V", "OUT"])
+term_h(284, 2, "REL2", ["+5V", "OUT"])
+term_h(352, 3, "PUMP1", ["PWM", "GND", "FB"])
+term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"])
+# chips, left column
+chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
+chip(205, 178, 100, 46, "MAX31865", "Pt1000 #2")
+chip(205, 246, 100, 46, "DS2482-100", "1-Wire bridge")
+# bottom rows
+chip(196, 368, 78, 46, "Protection", "5 V input")
+chip(282, 368, 78, 46, "Relay", "MOSFETs")
+chip(368, 368, 78, 46, "TC4427", "pump driver")
+chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
+chip(282, 304, 78, 46, "Watchdog", "heartbeat")
+chip(368, 304, 78, 46, "AND gates", "PWM gating")
+chip(454, 304, 78, 46, "Feedback", "2 inputs")
+# LEDs
+for x, col, lab in [(196, "#4CAF50", "PWR"), (222, "#4CAF50", "WD"), (246, "#FFB300", "R1"), (270, "#FFB300", "R2")]:
+    out.append(f'<circle cx="{x}" cy="316" r="6" fill="{col}" stroke="#0F3A20"/>')
+    t(x, 340, lab, 11, "#E8F5E9", 400, "middle")
+# logo
+t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
+t(470, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
+t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: 3.5 mm pluggable terminal blocks.", 11, None, 400, "start", on_board=False)
+out.append('</svg>')
+print("\n".join(out))
