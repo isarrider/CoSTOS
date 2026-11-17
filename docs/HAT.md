@@ -17,9 +17,10 @@ sensor inputs:
 - **1-Wire edition** (sections 1–10): 1 Pt1000 input (collector) plus two
   1-Wire buses for DS18x20 sensors. For new installations and anyone
   replacing their sensors.
-- **PT edition** ([section 11](#11-pt-edition-8--pt1000)): up to 8 Pt1000
-  inputs and no 1-Wire, for installations that keep their existing
-  Pt1000 sensors, as most commercial controllers use them.
+- **PT edition** ([section 11](#11-pt-edition-8--pt1000)): 8 Pt1000
+  inputs on one LTC2983 plus one 1-Wire bus, for installations that keep
+  their existing Pt1000 sensors, as most commercial controllers use them,
+  and still want to add DS18x20 sensors.
 
 ---
 
@@ -498,7 +499,8 @@ estimated here; it gets quoted with the BOM.
 | D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
 | D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |
 | D11 | VBus receiver on the HAT? | **No**: VBus is only needed while the BX Plus is still connected (shadow mode, switchable phase). The existing loose adapter plugs onto pins 1, 6 and 10 on top of the stacking header until then; after the switch-over it goes away and the UART is free |
-| D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board (section 11): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measured with up to 8 × MAX31865 rather than one multi-channel ADC, whose input protection would need two pins per sensor and distort 2-wire readings |
+| D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board (section 11): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measuring chip: see D13 |
+| D13 | Measuring chip for the PT edition? | **One LTC2983**: 8 independent 2-wire Pt1000 inputs (18 of its 20 inputs), excitation, fault detection and linearisation built in, result in °C, buffered inputs for simple protection. Costs a little more than 2 × ADS124S08 but needs far less analog design and software, and it frees GPIO4 for a 1-Wire bus. Comparison in 11.6 |
 
 ---
 
@@ -506,111 +508,113 @@ estimated here; it gets quoted with the BOM.
 
 For installations that keep their Pt1000 sensors: a controller such as
 the RESOL BX Plus measures every sensor as a 2-wire Pt1000, and those
-sensors already sit in their sleeves with their cables in place.
+sensors already sit in their sleeves with their cables in place. One
+1-Wire bus stays on the board, so DS18x20 sensors can still be added.
 
-Status: **planned as the second board**, after the 1-Wire edition (whose
-PT1 channel proves the MAX31865 circuit on the real system first). The
-measuring chip is still open (11.6); sections 11.1–11.5 describe it with
-8 × MAX31865.
+Status: **planned as the second board**, after the 1-Wire edition. The
+reference installation plans to use it (see
+[installation.md](installation.md#sensors-and-outputs-in-use)).
+
+![OSCoST HAT PT edition mockup](img/hat-pt-mockup.svg)
 
 ### 11.1 What differs from the 1-Wire edition
 
 | | 1-Wire edition | PT edition |
 |---|---|---|
-| Pt1000 inputs | 1 (PT1), PT2 footprint not fitted | **up to 8 (S1–S8)**, fit 2, 4 or 8 |
-| 1-Wire | 2 buses (GPIO4, GPIO17) | none |
-| Sensor terminals | PT1 2-way, 1W-A/1W-B 3-way | **one two-level block, 8 positions**: upper and lower level of position *n* are the two wires of sensor S*n* |
-| Chip selects | CE0 (CE1 for PT2) | CE0 through a **74LVC138** 1-of-8 decoder |
-| 3-wire jumpers | JP2–JP4 | none: 2-wire only (FORCE+ tied to RTDIN+, RTDIN− to FORCE−, FORCE2 to GND) |
+| Pt1000 inputs | 1 (PT1, MAX31865), PT2 footprint not fitted | **8 (S1–S8) on one LTC2983**, each wired independently |
+| 1-Wire | 2 buses (GPIO4, GPIO17) | **1 bus (1W-A, GPIO4)**: same circuit (4.7 kΩ pull-up, ESD diode, polyfuse) |
+| Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*), plus 1W-A 3-way |
+| SPI | CE0 (CE1 for PT2) | CE0 for the LTC2983 |
+| Extra GPIOs | | LTC2983 /RESET on GPIO22 (pin 15), INTERRUPT (conversion done) on GPIO27 (pin 13) |
 | Everything else | power input, 12 V, PUMP1/2, REL1/2, watchdog, AND gates, feedback, header, EEPROM footprint | **identical** |
 
-### 11.2 Pt1000 channels
+### 11.2 Pt1000 inputs (LTC2983)
 
-Each channel is the PT1 circuit of the 1-Wire edition (section 4.3,
-[circuit diagram](img/hat-sch-sensors.svg)) in its 2-wire form:
-MAX31865, 4.3 kΩ 0.1 % reference resistor, 10 nF across the RTD inputs,
-100 nF at VDD and DVDD, PESD5V0 ESD diode on each terminal wire. All
-eight share SCLK, MOSI and MISO (SPI0); unfitted channels leave MISO
-undriven.
+- **One LTC2983** (LQFP-48, 7 × 7 mm) on 3.3 V, so its SPI levels match
+  the Pi. Decoupling and reference capacitors as in the datasheet.
+- **Shared sense resistor:** one 2 kΩ 0.1 %, low-drift resistor on CH1/CH2
+  serves all eight sensors; the measurement is ratiometric against it.
+- **Each sensor independent:** in the datasheet's standard 2-wire
+  configuration every RTD uses two inputs, so S1–S8 use 16 of the
+  remaining 18 inputs (2 spare). A broken cable or sensor only loses that
+  sensor. The "18 RTDs in a series stack" trick from Analog Devices'
+  design note is deliberately **not** used: there a single broken cable
+  stops the current for every sensor.
+- **Excitation current** chosen for Pt1000 per the datasheet (around
+  100 µA), so the voltages stay well inside the input range up to the
+  collector's 208 °C stagnation temperature.
+- **Protection:** the inputs are buffered (high impedance), so each
+  terminal wire gets a series resistor and an ESD diode without
+  distorting the reading.
+- **Built in:** Pt1000 linearisation, result in °C, and fault reporting per
+  sensor (open, short, out of range).
 
-### 11.3 Chip select through a decoder
+### 11.3 Raspberry Pi configuration
 
-The Pi has only two hardware chip selects. The 74LVC138 turns three GPIOs
-into eight:
+As in section 6, with these differences:
 
-| Decoder pin | Connected to | Pi pin |
-|---|---|---|
-| A0, A1, A2 | GPIO4, GPIO17, GPIO27 (free in this edition) | 7, 11, 13 |
-| /E1 (enable) | CE0 = GPIO8 | 24 |
-| /E2 | GND | |
-| E3 | +3V3 | |
-| /Y0 … /Y7 | CS of MAX31865 S1 … S8 | |
-
-OSCoST sets A0–A2 to the channel number, then runs the SPI transfer on
-CE0: the kernel's own chip select enables the decoder, so the timing stays
-exact and only the addressed chip sees it. While CE0 is idle (high) every
-output is high and no chip is selected, also while the Pi boots. CE1
-(GPIO7) stays free.
-
-Raspberry Pi configuration: as in section 6, without the two
-`w1-gpio` lines, and with `gpio=4,17,27=op,dl` added.
+```ini
+dtparam=spi=on
+dtoverlay=w1-gpio,gpiopin=4
+# no second w1-gpio line (GPIO17 is unused on the PT edition)
+gpio=24,25,5=op,dl
+gpio=22=op,dh   # LTC2983 /RESET released
+gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
+```
 
 ### 11.4 Software
 
-- OSCoST **detects the fitted channels** at start: it writes and reads
-  back the configuration register of each address; an unfitted channel
-  answers with 0x00 or 0xFF.
 - The board edition is chosen in the setup wizard (Settings → Hardware);
-  sensor S*n* is channel *n*.
-- Each MAX31865 runs in automatic conversion mode with the 50 Hz mains
-  filter; OSCoST reads all channels once per second.
+  sensor S*n* is LTC2983 channel pair *n*, the 1-Wire probes are assigned
+  by their ROM ID as on the 1-Wire edition.
+- At start OSCoST writes the channel assignment words (sensor type
+  PT-1000, 2-wire, shared sense resistor, excitation current) and the
+  sense resistor value; nothing needs to be stored on the chip, so the
+  LTC2984's EEPROM brings no benefit.
+- Once per second: start a multi-channel conversion, wait for INTERRUPT,
+  read the eight results in °C with their fault bits. Faults map onto
+  the same sensor-fault handling and glitch counters as every other
+  sensor (ARCHITECTURE section 5.1).
 
 ### 11.5 Space and cost
 
-- **Space:** eight SSOP-20 chips with their reference resistors fit where
-  the 1-Wire edition has PT1, PT2, the DS2482 footprint and the 1-Wire
-  parts (see the mockup). Tight but plausible on one side; checked with a
-  real placement in KiCad before the PT edition is committed.
-- **Cost** with 8 channels, compared with the 1-Wire edition (section
-  8.1): plus 7 × (MAX31865 + reference resistor + capacitors + ESD), the
-  decoder and the two-level block; minus the 1-Wire parts and two
-  terminals.
+- **Space:** one 7 × 7 mm chip, the sense resistor, 16 protection
+  resistors and ESD diodes fit comfortably where the 1-Wire edition has
+  PT1, PT2, the DS2482 footprint and the second 1-Wire bus (see the
+  mockup).
+- **Cost** (estimates, details in 11.6): about **€67 per assembled board**
+  (5 boards, JLCPCB), about €66 in single-quantity parts.
+- **Sourcing:** LCSC rarely has the LTC2983 in stock. For JLCPCB assembly
+  the chips are bought at DigiKey (≈ €39) and consigned to JLCPCB, or
+  AISLER assembles with EU-sourced parts.
 
-| | 1-Wire edition | PT edition, 8 channels |
-|---|---|---|
-| Parts, single quantity (DigiKey) | ≈ €35 | ≈ €105 |
-| Assembled, 5 boards (JLCPCB, incl. VAT and shipping) | ≈ €33 per board | ≈ €65–70 per board |
+### 11.6 Choice of measuring chip
 
-The MAX31865 is the cost driver (€8.80 at DigiKey, about €4 at LCSC for
-assembled boards). Fitting only 4 channels saves about 4 × €5 per board
-when assembled.
-
-### 11.6 Choice of measuring chip (open)
-
-Chips that measure several Pt1000s exist; they differ in price and in how
-much of the analog design they do themselves. The last column is the
-1-Wire edition with new DS18B20 probes, for comparison with keeping the
-existing Pt1000 sensors.
+Chips that measure several Pt1000s, compared for 8 two-wire sensors; the
+last column is the 1-Wire edition with new DS18B20 probes, for comparison
+with keeping the existing Pt1000 sensors. **Decided: LTC2983 (D13).** The
+other options stay documented as alternatives.
 
 Prices are single quantity at the time of writing; totals are estimates
 until a real BOM exists, and LCSC stock changes daily. 🟢 good,
 🟡 medium, 🔴 weak.
 
-| | **8 × MAX31865** | **2 × ADS124S08** | **2 × AD7124-8** | **1 × LTC2986** | **1 × LTC2983/84** | **1-Wire edition:** 1 × MAX31865 + 7 × DS18B20 |
+| | **8 × MAX31865** | **2 × ADS124S08** | **2 × AD7124-8** | **1 × LTC2986** | **1 × LTC2983** (chosen) | **1-Wire edition:** 1 × MAX31865 + 7 × DS18B20 |
 |---|---|---|---|---|---|---|
 | ***Channels*** | | | | | | |
-| Sensors per chip (2-wire) | 1 | 5 (force + sense pin each) | 7 (16 analog pins) | several, shared sense resistor | more, shared sense resistor | collector: 1; DS18B20: one chip per probe |
-| Spare channels | 🔴 0 | 🟡 2 | 🟢 6 | 🟡 some (10 inputs) | 🟢 many (20 inputs) | 🟢 PT2 footprint; the buses take more probes |
+| Independent 2-wire Pt1000s per chip | 1 | 5 (force + sense pin each) | 7 (16 analog pins) | 🔴 4 (10 inputs, 2 per sensor + sense resistor) | 🟢 9 (20 inputs) | collector: 1; DS18B20: one chip per probe |
+| Spare channels with 8 sensors | 🔴 0 | 🟡 2 | 🟢 6 | 🔴 none: 8 only as a series stack | 🟡 1 more sensor | 🟢 PT2 footprint; the buses take more probes |
+| 1-Wire bus on the same board | 🔴 no: GPIO4/17 drive the chip-select decoder | 🟢 possible | 🟢 possible | 🟢 possible | 🟢 **yes, 1W-A** | 🟢 2 buses |
 | ***Cost*** | | | | | | |
-| Chips, LCSC | 🟡 8 × $4.27 = $34 | 🟢 2 × $6.46 = $13 | 🟢 2 × $10.47 = $21 | 🔴 $53 | 🟡 $39 (2983) / $71 (2984) | 🟢 $4.27 |
-| Chips, DigiKey / Farnell EU | 🔴 8 × €8.76 = €70 | 🟢 2 × €9.94 = €20 | 🟢 ≈ €20–25 | 🟡 €34–42 | 🟡 €37–42 | 🟢 €8.76 |
-| Extra parts on the board | 8 reference resistors 0.1 %, 16 ESD, decoder ≈ €8 | 2 reference resistors, 16 R + clamps + ESD ≈ €3 | like ADS ≈ €3 | 1 sense resistor, protection R ≈ €2 | like LTC2986 ≈ €2 | pull-ups, ESD, polyfuse ≈ €1 |
-| Sensor section, assembled | 🟡 ≈ €40 | 🟢 ≈ €15 | 🟢 ≈ €22 | 🔴 ≈ €50 | 🟡 ≈ €38 (2983) | 🟢 ≈ €6 |
+| Chips, LCSC | 🟡 8 × $4.27 = $34 | 🟢 2 × $6.46 = $13 | 🟢 2 × $10.47 = $21 | 🔴 $53 | 🟡 $39 | 🟢 $4.27 |
+| Chips, DigiKey / Farnell EU | 🔴 8 × €8.76 = €70 | 🟢 2 × €9.94 = €20 | 🟢 ≈ €20–25 | 🟡 €34–42 | 🟡 ≈ €37–42 | 🟢 €8.76 |
+| Extra parts on the board | 8 reference resistors 0.1 %, 16 ESD, decoder ≈ €8 | 2 reference resistors, 16 R + clamps + ESD ≈ €3 | like ADS ≈ €3 | 1 sense resistor, protection R ≈ €2 | 1 sense resistor, 16 protection R + ESD, 1-Wire parts ≈ €3 | pull-ups, ESD, polyfuse ≈ €1 |
+| Sensor section, assembled | 🟡 ≈ €40 | 🟢 ≈ €15 | 🟢 ≈ €22 | 🔴 ≈ €50 | 🟡 ≈ €39 | 🟢 ≈ €6 |
 | Rest of the board, assembled | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €27 |
 | New sensors and cable | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🔴 7 DS18B20 probes + 2 cables ≈ €60–80 |
-| **Total, assembled (5 boards, JLCPCB, incl. VAT and shipping)** | 🟡 **≈ €68** | 🟢 **≈ €43** | 🟢 **≈ €50** | 🔴 **≈ €78** | 🟡 **≈ €66 (2983) / €96 (2984)** | 🟡 **≈ €33 + €60–80 = €93–113** |
-| **Total, single-quantity parts (DigiKey, excl. VAT)** | 🔴 **≈ €103** | 🟢 **≈ €48** | 🟢 **≈ €50** | 🟡 **≈ €61–69** | 🟡 **≈ €64–69** | 🟡 **≈ €35 + €60–80 = €95–115** |
-| LCSC stock for assembly | 🟡 varies | 🟢 good (≈ 1,700) | 🔴 thin, one variant out | 🔴 thin | 🔴 5 pcs (2983) | 🟡 MAX varies; probes bought separately (fakes are common) |
+| **Total, assembled (5 boards, JLCPCB, incl. VAT and shipping)** | 🟡 **≈ €68** | 🟢 **≈ €43** | 🟢 **≈ €50** | 🔴 **≈ €78** | 🟡 **≈ €67** | 🟡 **≈ €33 + €60–80 = €93–113** |
+| **Total, single-quantity parts (DigiKey, excl. VAT)** | 🔴 **≈ €103** | 🟢 **≈ €48** | 🟢 **≈ €50** | 🟡 **≈ €61–69** | 🟡 **≈ €66** | 🟡 **≈ €35 + €60–80 = €95–115** |
+| Stock for assembly | 🟡 varies | 🟢 good (≈ 1,700 at LCSC) | 🔴 thin, one variant out | 🔴 thin | 🟡 thin at LCSC; buy at DigiKey and consign | 🟡 MAX varies; probes bought separately (fakes are common) |
 | ***Function*** | | | | | | |
 | Input protection | 🟢 ±45 V built in | 🟡 external parts, needs care | 🟡 external parts, needs care | 🟢 external, easy (buffered inputs) | 🟢 external, easy (buffered inputs) | 🟢 MAX ±45 V; 1-Wire ESD + polyfuse |
 | Open / short detection | 🟢 fault register | 🟡 burnout current + software | 🟢 burnout + diagnostics built in | 🟢 built in, per sensor type | 🟢 built in, per sensor type | 🟡 CRC, missing probe; a short takes down its whole bus |
@@ -619,17 +623,14 @@ until a real BOM exists, and LCSC stock changes daily. 🟢 good,
 | Resolution | 15-bit, ≈ 0.03 K | 24-bit | 24-bit | 24-bit, 0.1 °C accuracy | 24-bit, 0.1 °C accuracy | DS18B20 12-bit, 0.0625 K |
 | Package, space | 🔴 8 × SSOP-20, tight | 🟢 2 × TQFP-32 5×5 | 🟢 2 × QFN-32 5×5 (no hand soldering) | 🟢 1 × LQFP-48 7×7 | 🟢 1 × LQFP-48 7×7 | 🟢 roomy |
 | ***Effort and risk*** | | | | | | |
-| Circuit design | 🟢 low: PT1 circuit × 8, proven first on the 1-Wire edition | 🔴 high: analog force/sense layout | 🔴 high: like ADS | 🟢 low–medium: datasheet circuits | 🟢 low–medium: datasheet circuits | 🟢 done: schematic drawn |
-| Software | 🟢 simple, driver shared with the 1-Wire edition | 🔴 most: input and current switching, settling, linearising | 🟡 medium: the sequencer helps | 🟢 simple: write channel setup, read °C | 🟢 simple, same as LTC2986 | 🟢 simple: kernel 1-Wire + MAX driver |
+| Circuit design | 🟢 low: PT1 circuit × 8 | 🔴 high: analog force/sense layout | 🔴 high: like ADS | 🟢 low–medium: datasheet circuits | 🟢 low–medium: datasheet circuits | 🟢 done: schematic drawn |
+| Software | 🟢 simple, driver shared with the 1-Wire edition | 🔴 most: input and current switching, settling, linearising | 🟡 medium: the sequencer helps | 🟢 simple: write channel setup, read °C | 🟢 simple: write channel setup, read °C | 🟢 simple: kernel 1-Wire + MAX driver |
 | Work at the installation | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🔴 fit 7 probes, run 2 cables, set calibration offsets |
 | Charts vs. history | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟡 small step, fixed with offsets |
 | ***Verdict*** | | | | | | |
-| Best for | 🟢 first legacy board: lowest risk | 🟢 later cost-down revision | spare analog inputs (other sensors) | least design work, if price doesn't matter | 3/4-wire or many sensors; no gain for 8 × 2-wire | 🟢 new installations, or when sensors get replaced anyway |
+| Best for | fallback with a proven circuit, no 1-Wire | cheapest; cost-down option | spare analog inputs (other sensors) | only up to 4 independent sensors | 🟢 **PT edition: chosen** | 🟢 new installations, or when sensors get replaced anyway |
 
 Variant not shown as a column: the 1-Wire edition with PT2 fitted, so S4
 stays Pt1000 (2 Pt1000 + 6 DS18B20): about €5 more assembled, one probe
-less.
-
-Leaning: **8 × MAX31865 for the first PT edition** (lowest risk: the circuit
-is proven on the 1-Wire edition first, and the software driver already
-exists), with 2 × ADS124S08 as the cost-down option for a later revision.
+less. The LTC2984 is the LTC2983 with an EEPROM for the channel setup; it
+costs more (≈ $71 at LCSC) and OSCoST doesn't need it.

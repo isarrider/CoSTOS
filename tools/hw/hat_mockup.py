@@ -26,7 +26,7 @@ head = (f'<svg width="100%" viewBox="0 0 680 {H}" role="img">' if widget else
 out.append(head)
 if pt:
     out.append('<title>OSCoST HAT PT edition mockup, top view</title>')
-    out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, PT edition: a two-level terminal block with eight Pt1000 inputs on the left edge, eight MAX31865 converters with a 1-of-8 chip-select decoder, and the same power, relay, pump and watchdog section as the 1-Wire edition.</desc>')
+    out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, PT edition with one LTC2983: a two-level terminal block with eight Pt1000 inputs and a 1-Wire terminal on the left edge, the LTC2983 with its shared sense resistor and input protection, and the same power, relay, pump and watchdog section as the 1-Wire edition.</desc>')
 else:
     out.append('<title>OSCoST HAT mockup, top view</title>')
     out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, with the 40-pin header along the top, Pt1000 and 1-Wire terminals on the left edge, power, relay and pump terminals on the bottom edge, and the chips placed next to their connectors.</desc>')
@@ -75,6 +75,7 @@ def term_pt8(y0):
         t(126, cy + 4, f"S{k+1}", 12, "#ffffff", 500)
 if pt:
     term_pt8(110)
+    term_v(346, 3, "1W-A", "DS18x20")
 else:
     term_v(110, 2, "PT1", "collector")
     term_v(178, 2, "PT2", "not fitted", fitted=False)
@@ -102,10 +103,13 @@ term_h(352, 3, "PUMP1", ["PWM", "GND", "FB"])
 term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"], fitted=False)
 # chips, left column
 if pt:
+    chip(170, 118, 120, 96, "LTC2983", "8 × Pt1000, 20 inputs")
+    chip(170, 226, 120, 34, "R sense 2 kΩ", "0.1 %, shared")
+    out.append('<rect x="300" y="118" width="40" height="142" rx="3" fill="#2b2b2b" stroke="#3a3a3a"/>')
     for k in range(8):
-        col, row = k // 4, k % 4
-        chip(160 + col * 86, 110 + row * 46, 78, 38, "MAX31865", f"S{k+1}")
-    chip(340, 148, 86, 46, "74LVC138", "CS 1 of 8")
+        out.append(f'<rect x="306" y="{124 + k*17}" width="12" height="6" fill="#C9A227"/><rect x="322" y="{124 + k*17}" width="12" height="6" fill="#C9A227"/>')
+    t(320, 276, "input protection", 11, "#C8E6C9", 400, "middle")
+    chip(170, 272, 96, 30, "1-Wire", "pull-up, ESD, fuse")
 else:
     chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
     out.append('<rect x="205" y="178" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
@@ -132,12 +136,12 @@ for x, col, lab in [(196 if not pt else 170, "#4CAF50", "PWR"), (222 if not pt e
     t(x, 340, lab, 11, "#E8F5E9", 400, "middle")
 # logo
 if pt:
-    t(500, 210, "OSCoST HAT PT", 14, "#ffffff", 500, "middle")
-    t(500, 230, "rev A · 8 × Pt1000", 11, "#C8E6C9", 400, "middle")
+    t(480, 200, "OSCoST HAT PT", 14, "#ffffff", 500, "middle")
+    t(480, 220, "rev A · 8 × Pt1000 + 1-Wire", 11, "#C8E6C9", 400, "middle")
 else:
     t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
     t(470, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
 t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
-  + ("; S1–S8 on a two-level block." if pt else "."), 11, None, 400, "start", on_board=False)
+  + ("; S1–S8 on a two-level block, 1W-A below." if pt else "."), 11, None, 400, "start", on_board=False)
 out.append('</svg>')
 print("\n".join(out))

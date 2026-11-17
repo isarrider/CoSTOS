@@ -38,26 +38,32 @@ be BX Plus inputs S1–S8.
 | S8 | nach Haus / vor Heizung | Heating circuit: after the house, back to the heat generator | Measurement only |
 
 - **All eight sensors are Pt1000, each on its own 2-wire cable.**
-- **Plan for OSCoST** (decided): 1-Wire edition of the HAT. S1
-  (collector) stays Pt1000 on the MAX31865: only 2 wires go to the roof,
-  and the collector gets hotter than a DS18x20's 125 °C. S2–S8 become
-  **DS18B20 probes** (6 mm stainless, they fit the ½" sleeves) once the
-  BX Plus is retired, wired as **two daisy-chained 3-wire cables**
-  instead of one cable per sensor, because 1-Wire works reliably as a
-  line, not as a star:
+- **Plan for OSCoST: keep all eight Pt1000 sensors** with the HAT's
+  [PT edition](HAT.md#11-pt-edition-8--pt1000) (8 × Pt1000 on an
+  LTC2983, plus one 1-Wire bus). S1–S8 connect as they are: no new
+  sensors, nothing changes at the store or the pipes, and the readings
+  continue the vbus2influx history seamlessly. DS18B20 probes can still be
+  added on the 1W-A bus where an extra reading is wanted.
+- **Alternative, kept documented: 1 Pt1000 + 7 DS18B20** with the 1-Wire
+  edition. S1 (collector) stays Pt1000 on the MAX31865: only 2 wires go
+  to the roof, and the collector gets hotter than a DS18x20's 125 °C.
+  S2–S8 become **DS18B20 probes** (6 mm stainless, they fit the ½"
+  sleeves), wired as **two daisy-chained 3-wire cables** instead of one
+  cable per sensor, because 1-Wire works reliably as a line, not as a
+  star:
   - **Bus A** (HAT 1W-A, GPIO4): along the store, S2 → S3 → S4 → S5.
   - **Bus B** (HAT 1W-B, GPIO17): along the heating pipes, S6 → S7 → S8.
   - The new sensors read slightly differently from the old Pt1000s (about
-    ±0.5 K, different seat in the sleeve). Per-sensor calibration offsets,
-    set against the BX Plus during shadow mode, keep the long-term charts
-    continuous.
-  - The [PT edition](HAT.md#11-pt-edition-8--pt1000) (keep all Pt1000
-    sensors) was considered and stays documented for other installations.
-  - To consider before ordering: **S4 (solar flow) can briefly exceed a
-    DS18B20's 125 °C** after a stagnation day; fitting the HAT's PT2
-    position and keeping S4 as Pt1000 (2 Pt1000 + 6 DS18B20) avoids that
-    for about €9. And a short in one probe or its cable takes down its
-    whole bus: OSCoST then treats those sensors as unknown, never as cold.
+    ±0.5 K, different seat in the sleeve). Per-sensor calibration
+    offsets, set against the BX Plus during shadow mode, keep the
+    long-term charts continuous.
+  - **S4 (solar flow) can briefly exceed a DS18B20's 125 °C** after a
+    stagnation day; fitting the HAT's PT2 position and keeping S4 as
+    Pt1000 (2 Pt1000 + 6 DS18B20) avoids that for about €9. And a short in
+    one probe or its cable takes down its whole bus: OSCoST then treats
+    those sensors as unknown, never as cold.
+  - Cost comparison of both options:
+    [HAT.md 11.6](HAT.md#116-choice-of-measuring-chip).
 - The heat generator ("Heizung") is a **heat pump** today; it was a gas
   boiler when the system was installed. S6–S8 are only measured, nothing
   acts on them.

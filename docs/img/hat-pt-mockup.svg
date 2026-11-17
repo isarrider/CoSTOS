@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="550" viewBox="0 0 680 550" font-family="Helvetica, Arial, sans-serif">
 <title>OSCoST HAT PT edition mockup, top view</title>
-<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, PT edition: a two-level terminal block with eight Pt1000 inputs on the left edge, eight MAX31865 converters with a 1-of-8 chip-select decoder, and the same power, relay, pump and watchdog section as the 1-Wire edition.</desc>
+<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, PT edition with one LTC2983: a two-level terminal block with eight Pt1000 inputs and a 1-Wire terminal on the left edge, the LTC2983 with its shared sense resistor and input protection, and the same power, relay, pump and watchdog section as the 1-Wire edition.</desc>
 <rect width="680" height="550" fill="white"/>
 <rect x="80" y="30" width="520" height="452" rx="24" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>
 <circle cx="108" cy="58" r="11" fill="#C9A227"/><circle cx="108" cy="58" r="6" fill="#F4F1E8"/>
@@ -77,6 +77,12 @@
 <circle cx="72" cy="320" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="320" x2="77" y2="320" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="103" cy="320" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="320" x2="108" y2="320" stroke="#5F6468" stroke-width="1.5"/>
 <text class="th" x="126" y="324" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S8</text>
+<rect x="58" y="346" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="72" cy="360" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="360" x2="77" y2="360" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="388" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="388" x2="77" y2="388" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="416" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="416" x2="77" y2="416" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="118" y="386.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">1W-A</text>
+<text class="ts" x="118" y="401.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">DS18x20</text>
 <rect x="148" y="450" width="56" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="162" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="162" y1="461" x2="162" y2="471" stroke="#5F6468" stroke-width="1.5"/>
 <text class="ts" x="162" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">+5V</text>
@@ -111,33 +117,25 @@
 <circle cx="518" cy="466" r="4" fill="#C9A227"/>
 <text class="ts" x="518" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">FB</text>
 <text class="th" x="490.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">PUMP2 (n.f.)</text>
-<rect x="160" y="110" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="199.0" y="126.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="199.0" y="141.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S1</text>
-<rect x="160" y="156" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="199.0" y="172.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="199.0" y="187.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S2</text>
-<rect x="160" y="202" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="199.0" y="218.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="199.0" y="233.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S3</text>
-<rect x="160" y="248" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="199.0" y="264.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="199.0" y="279.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S4</text>
-<rect x="246" y="110" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="285.0" y="126.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="285.0" y="141.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S5</text>
-<rect x="246" y="156" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="285.0" y="172.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="285.0" y="187.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S6</text>
-<rect x="246" y="202" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="285.0" y="218.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="285.0" y="233.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S7</text>
-<rect x="246" y="248" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="285.0" y="264.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="285.0" y="279.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S8</text>
-<rect x="340" y="148" width="86" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="383.0" y="168.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">74LVC138</text>
-<text class="ts" x="383.0" y="183.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">CS 1 of 8</text>
+<rect x="170" y="118" width="120" height="96" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="230.0" y="163.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">LTC2983</text>
+<text class="ts" x="230.0" y="178.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">8 × Pt1000, 20 inputs</text>
+<rect x="170" y="226" width="120" height="34" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="230.0" y="240.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">R sense 2 kΩ</text>
+<text class="ts" x="230.0" y="255.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">0.1 %, shared</text>
+<rect x="300" y="118" width="40" height="142" rx="3" fill="#2b2b2b" stroke="#3a3a3a"/>
+<rect x="306" y="124" width="12" height="6" fill="#C9A227"/><rect x="322" y="124" width="12" height="6" fill="#C9A227"/>
+<rect x="306" y="141" width="12" height="6" fill="#C9A227"/><rect x="322" y="141" width="12" height="6" fill="#C9A227"/>
+<rect x="306" y="158" width="12" height="6" fill="#C9A227"/><rect x="322" y="158" width="12" height="6" fill="#C9A227"/>
+<rect x="306" y="175" width="12" height="6" fill="#C9A227"/><rect x="322" y="175" width="12" height="6" fill="#C9A227"/>
+<rect x="306" y="192" width="12" height="6" fill="#C9A227"/><rect x="322" y="192" width="12" height="6" fill="#C9A227"/>
+<rect x="306" y="209" width="12" height="6" fill="#C9A227"/><rect x="322" y="209" width="12" height="6" fill="#C9A227"/>
+<rect x="306" y="226" width="12" height="6" fill="#C9A227"/><rect x="322" y="226" width="12" height="6" fill="#C9A227"/>
+<rect x="306" y="243" width="12" height="6" fill="#C9A227"/><rect x="322" y="243" width="12" height="6" fill="#C9A227"/>
+<text class="ts" x="320" y="276" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">input protection</text>
+<rect x="170" y="272" width="96" height="30" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="218.0" y="284.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">1-Wire</text>
+<text class="ts" x="218.0" y="299.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">pull-up, ESD, fuse</text>
 <rect x="196" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="235.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Protection</text>
 <text class="ts" x="235.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">5 V input</text>
@@ -167,7 +165,7 @@
 <text class="ts" x="222" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R1</text>
 <circle cx="248" cy="316" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>
 <text class="ts" x="248" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R2</text>
-<text class="th" x="500" y="210" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#ffffff">OSCoST HAT PT</text>
-<text class="ts" x="500" y="230" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">rev A · 8 × Pt1000</text>
-<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; S1–S8 on a two-level block.</text>
+<text class="th" x="480" y="200" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#ffffff">OSCoST HAT PT</text>
+<text class="ts" x="480" y="220" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">rev A · 8 × Pt1000 + 1-Wire</text>
+<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; S1–S8 on a two-level block, 1W-A below.</text>
 </svg>
