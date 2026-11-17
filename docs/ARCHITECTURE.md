@@ -714,7 +714,6 @@ measurement in phase 2. To be decided.
 
 - **Installation details**: the remaining open points in
   [installation.md](installation.md#open-points).
-- Is there already an independent store overtemperature cut-out?
 - Shadow mode: second set of sensors, or use the RESOL values over VBus at
   first?
 - Settled: custom HAT ([HAT.md](HAT.md)); 1-Wire via kernel `w1-gpio` on

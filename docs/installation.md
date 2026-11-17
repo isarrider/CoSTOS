@@ -216,7 +216,21 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
   the heat output from S4/S5 with it. The web interface marks these
   values as estimated.
 
+## Overtemperature protection
+
+- **No independent overtemperature cut-out**, and none planned. In
+  practice the store doesn't reach its 95 °C limit: the household uses
+  enough hot water, and during holidays part of the collector is covered.
+- Protection therefore rests on OSCoST's own layers: store maximum and
+  emergency store shutdown below 95 °C, collector emergency shutdown, and
+  the hardware watchdog that stops the pump through both the SSR and the
+  PWM (HAT D8). A mechanical cut-out can still be added to the 230 V side
+  later.
+- Covering the collector is the right holiday measure for heat pipes:
+  evacuated tubes lose almost no heat at night, so the "store recooling
+  through the collector" function of flat-plate systems would barely work
+  here.
+
 ## Open points
 
 - Flow calibration: is there a float-type flow indicator to read the flow at a few pump speeds?
-- Independent store overtemperature cut-out present?
