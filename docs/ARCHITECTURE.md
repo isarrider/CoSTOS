@@ -700,7 +700,8 @@ heat-pipe collector goes into stagnation. That costs solar yield but
 doesn't damage anything short term. The fastest way back to a running
 system is the bench setup without the HAT: a Pi, two MAX31865 breakout
 boards on the existing collector (S1) and store bottom (S2) Pt1000 cables,
-the stripboard PWM driver ([HARDWARE.md](HARDWARE.md)) and the pump on
+a ready-made PC817 optocoupler module for the pump's PWM (option 2 in
+[HARDWARE.md](HARDWARE.md), no soldering) and the pump on
 permanent mains. That needs milestones 1 and 3 only, which is why they
 come first.
 

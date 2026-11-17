@@ -5,9 +5,11 @@ defines what the HAT has to do before anything is drawn in KiCad. The
 decisions behind it are listed at the end.
 
 The HAT combines the circuits from [Hardware needed](HARDWARE.md) on one
-board that plugs onto the 40-pin header. It is designed once the
-stripboard versions have been tested on the real system, so that no
-untested circuit goes into a manufactured board.
+board that plugs onto the 40-pin header. No stripboard version is built
+for the reference installation, so HAT rev A is the first hardware on the
+real system: the bring-up plan (section 9) tests every block on its own,
+and the pump only gets connected once its output and the watchdog have
+been checked on the bench.
 
 ---
 
