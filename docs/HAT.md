@@ -171,6 +171,12 @@ layout is done in KiCad.
   heartbeats, so nothing runs while the Pi boots.
 - LED "watchdog OK". A test point and a jumper to disable the gating for
   bench tests (clearly marked, open by default).
+- **Why it is worth the ~€3:** the Pi's own hardware watchdog and systemd
+  catch a hung kernel or a crashed OSCoST, but not a fault in the
+  switching hardware. DIN-rail SSRs typically fail short-circuited, which
+  would leave the pump powered permanently. The watchdog-gated PWM is then
+  a second, independent way to stop the pump (0 % = stop with a PWM2
+  pump), and the feedback input shows that it happened (D8).
 - This is the "external heartbeat" layer from
   [Safety](ARCHITECTURE.md#41-hardware-layer-independent-of-software); the
   SoC watchdog and the systemd watchdog remain in addition.
@@ -387,3 +393,4 @@ All labelled on the silkscreen:
 | D5 | Power the Pi from the HAT? | **Yes**: one supply cable for everything, with fuse, TVS and ideal diode on the HAT (4.7) |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
 | D7 | Hand assembly or AISLER assembly? | **Decide on the AISLER quote** once the BOM exists; all parts are hand-solderable |
+| D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts for a second, independent way to stop the pump, e.g. when the SSR fails short-circuited |
