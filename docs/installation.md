@@ -206,7 +206,17 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
 - Maintenance from the manufacturer's instructions: check frost
   protection and pH at least once a year.
 
+## Flow measurement
+
+- **No pulse flowmeter** in the solar circuit, so the HAT needs no flow
+  input.
+- OSCoST estimates the flow from the pump speed (PWM duty) with a
+  calibration table (flow at a few duty values, read once from a flow
+  indicator or worked out from a measured heat output), and calculates
+  the heat output from S4/S5 with it. The web interface marks these
+  values as estimated.
+
 ## Open points
 
-- Flowmeter (V40 or similar) present?
+- Flow calibration: is there a float-type flow indicator to read the flow at a few pump speeds?
 - Independent store overtemperature cut-out present?
