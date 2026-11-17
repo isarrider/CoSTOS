@@ -508,6 +508,15 @@ For installations that keep their Pt1000 sensors: a controller such as
 the RESOL BX Plus measures every sensor as a 2-wire Pt1000, and those
 sensors already sit in their sleeves with their cables in place.
 
+Status: **specified, not scheduled.** The reference installation uses
+the 1-Wire edition; the PT edition gets designed when someone needs it.
+At that point, measuring with **2 × ADS124S08** instead of 8 × MAX31865
+is worth evaluating: 10 channels, about €20 less per assembled board and
+more room on the board, at the cost of a new analog circuit (force and
+sense pin per sensor so the input protection doesn't distort the
+reading, one shared 0.1 % reference resistor per chip) and a more
+complex driver.
+
 ![OSCoST HAT PT edition mockup](img/hat-pt-mockup.svg)
 
 ### 11.1 What differs from the 1-Wire edition
