@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="590" viewBox="0 0 680 590" font-family="Helvetica, Arial, sans-serif">
+<title>Store of the reference installation</title>
+<desc>Combination store, 640 mm diameter, 1845 mm high, with a fresh-water coil in the centre, two heat-exchanger coils on the right and store-water connections and sensor sleeves on both sides. Heights in mm above the floor.</desc>
+<style>.t{font-size:12px;fill:#222}.s{font-size:11px;fill:#555}.h{font-size:15px;font-weight:bold;fill:#222}</style>
+<rect width="680" height="590" fill="white"/>
+<text x="20.0" y="28.0" class="h" text-anchor="start">Combination store with fresh-water coil</text>
+<text x="20.0" y="46.0" class="s" text-anchor="start">Heights in mm above the floor · Ø 640 mm · 1845 mm high</text>
+<path d="M160 545 H560" stroke="#999" stroke-width="1.5"/>
+<rect x="285.0" y="513.8" width="150.0" height="31.2" fill="#eee" stroke="#777"/>
+<rect x="280.0" y="98.8" width="160.0" height="415.0" rx="36.0" fill="#fafafa" stroke="#333" stroke-width="2"/>
+<rect x="336" y="83.8" width="48" height="19.0" fill="#ddd" stroke="#555"/>
+<path d="M346 83.8 V69.8" stroke="#6a1b9a" stroke-width="4"/>
+<text x="346.0" y="65.8" class="s" text-anchor="middle" style="fill:#6a1b9a">KW</text>
+<path d="M374 83.8 V69.8" stroke="#6a1b9a" stroke-width="4"/>
+<text x="374.0" y="65.8" class="s" text-anchor="middle" style="fill:#6a1b9a">WW</text>
+<path d="M342 120.0 L378 133.2 L342 146.3 L378 159.5 L342 172.7 L378 185.9 L342 199.0 L378 212.2 L342 225.4 L378 238.6 L342 251.7 L378 264.9 L342 278.1 L378 291.2 L342 304.4 L378 317.6 L342 330.8 L378 343.9 L342 357.1 L378 370.3 L342 383.5 L378 396.6 L342 409.8 L378 423.0 L342 436.2 L378 449.3 L342 462.5" fill="none" stroke="#6a1b9a" stroke-width="1.5" opacity="0.7"/>
+<path d="M430.0 200.0 L292.0 206.7 L430.0 213.3 L292.0 220.0 L430.0 226.7 L292.0 233.3 L430.0 240.0 L292.0 246.7 L430.0 253.3 L292.0 260.0 L430.0 266.7 L292.0 273.3 L430.0 280.0" fill="none" stroke="#c62828" stroke-width="1.5" opacity="0.55"/>
+<path d="M24 200.0 H18 V280.0 H24" fill="none" stroke="#c62828" stroke-width="1.5"/>
+<text x="30.0" y="238.0" class="s" text-anchor="start" style="fill:#c62828">Coil 1 (upper)</text>
+<text x="30.0" y="252.0" class="s" text-anchor="start" style="fill:#c62828">1060–1380 mm</text>
+<path d="M430.0 342.5 L292.0 353.1 L430.0 363.8 L292.0 374.4 L430.0 385.0 L292.0 395.6 L430.0 406.2 L292.0 416.9 L430.0 427.5 L292.0 438.1 L430.0 448.8 L292.0 459.4 L430.0 470.0" fill="none" stroke="#c62828" stroke-width="1.5" opacity="0.55"/>
+<path d="M24 342.5 H18 V470.0 H24" fill="none" stroke="#c62828" stroke-width="1.5"/>
+<text x="30.0" y="404.2" class="s" text-anchor="start" style="fill:#c62828">Coil 2 (lower)</text>
+<text x="30.0" y="418.2" class="s" text-anchor="start" style="fill:#c62828">300–810 mm</text>
+<path d="M440.0 155.0 H462.0" stroke="#1565c0" stroke-width="5"/>
+<text x="470.0" y="159.0" class="t" text-anchor="start">1560</text>
+<text x="508.0" y="159.0" class="s" text-anchor="start" style="fill:#1565c0">1½" store water</text>
+<path d="M440.0 200.0 H462.0" stroke="#c62828" stroke-width="5"/>
+<text x="470.0" y="204.0" class="t" text-anchor="start">1380</text>
+<text x="508.0" y="204.0" class="s" text-anchor="start" style="fill:#c62828">1" coil</text>
+<path d="M440.0 225.0 H462.0" stroke="#2e7d32" stroke-width="3"/>
+<text x="470.0" y="229.0" class="t" text-anchor="start">1280</text>
+<text x="508.0" y="229.0" class="s" text-anchor="start" style="fill:#2e7d32">½" sleeve</text>
+<path d="M440.0 280.0 H462.0" stroke="#c62828" stroke-width="5"/>
+<text x="470.0" y="284.0" class="t" text-anchor="start">1060</text>
+<text x="508.0" y="284.0" class="s" text-anchor="start" style="fill:#c62828">1" coil</text>
+<path d="M440.0 302.5 H462.0" stroke="#1565c0" stroke-width="5"/>
+<text x="470.0" y="306.5" class="t" text-anchor="start">970</text>
+<text x="508.0" y="306.5" class="s" text-anchor="start" style="fill:#1565c0">1½" store water</text>
+<path d="M440.0 342.5 H462.0" stroke="#c62828" stroke-width="5"/>
+<text x="470.0" y="346.5" class="t" text-anchor="start">810</text>
+<text x="508.0" y="346.5" class="s" text-anchor="start" style="fill:#c62828">1" coil</text>
+<path d="M440.0 380.0 H462.0" stroke="#1565c0" stroke-width="5"/>
+<text x="470.0" y="384.0" class="t" text-anchor="start">660</text>
+<text x="508.0" y="384.0" class="s" text-anchor="start" style="fill:#1565c0">1½" store water</text>
+<path d="M440.0 431.2 H462.0" stroke="#2e7d32" stroke-width="3"/>
+<text x="470.0" y="435.2" class="t" text-anchor="start">455</text>
+<text x="508.0" y="435.2" class="s" text-anchor="start" style="fill:#2e7d32">½" sleeve</text>
+<path d="M440.0 470.0 H462.0" stroke="#c62828" stroke-width="5"/>
+<text x="470.0" y="474.0" class="t" text-anchor="start">300</text>
+<text x="508.0" y="474.0" class="s" text-anchor="start" style="fill:#c62828">1" coil</text>
+<path d="M440.0 502.5 H462.0" stroke="#1565c0" stroke-width="5"/>
+<text x="470.0" y="506.5" class="t" text-anchor="start">170</text>
+<text x="508.0" y="506.5" class="s" text-anchor="start" style="fill:#1565c0">1½" store water</text>
+<path d="M280.0 227.5 H258.0" stroke="#2e7d32" stroke-width="3"/>
+<text x="250.0" y="231.5" class="s" text-anchor="end" style="fill:#2e7d32">½" sleeve 1270</text>
+<path d="M280.0 318.8 H258.0" stroke="#1565c0" stroke-width="5"/>
+<text x="250.0" y="322.8" class="s" text-anchor="end" style="fill:#1565c0">1½" store water 905</text>
+<path d="M280.0 405.0 H258.0" stroke="#2e7d32" stroke-width="3"/>
+<text x="250.0" y="409.0" class="s" text-anchor="end" style="fill:#2e7d32">½" sleeve 560</text>
+<text x="360.0" y="478.5" class="s" text-anchor="middle" style="fill:#6a1b9a">fresh-water</text>
+<text x="360.0" y="491.5" class="s" text-anchor="middle" style="fill:#6a1b9a">coil (DHW)</text>
+<path d="M20 564 H40" stroke="#c62828" stroke-width="4"/>
+<text x="46.0" y="568.0" class="s" text-anchor="start">heat-exchanger coil connection</text>
+<path d="M240 564 H260" stroke="#1565c0" stroke-width="4"/>
+<text x="266.0" y="568.0" class="s" text-anchor="start">store-water connection</text>
+<path d="M460 564 H480" stroke="#2e7d32" stroke-width="4"/>
+<text x="486.0" y="568.0" class="s" text-anchor="start">½" sleeve (sensor?)</text>
+</svg>

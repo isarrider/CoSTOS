@@ -108,10 +108,36 @@ stopped, 5–75 % when running) before OSCoST relies on them.
   in the hardware guide (standby about 0.4 V, running in between, no
   power about 3.3 V).
 
+## Store
+
+One combination store (Kombispeicher) with a fresh-water coil for domestic
+hot water in the centre and two heat-exchanger coils. Drawn from the
+manufacturer's dimension drawing; the web interface will draw the store on
+its overview page from the same data (see
+[ARCHITECTURE 7.1](ARCHITECTURE.md#71-pages)), generated here by
+`python3 tools/docs/store_svg.py > docs/img/store-reference.svg`.
+
+![Store of the reference installation](img/store-reference.svg)
+
+| | |
+|---|---|
+| Vessel | Ø 640 mm, 1845 mm high incl. the top flange, on a 125 mm stand ring |
+| Volume | probably about 500 l (to be confirmed from the type plate) |
+| Fresh-water coil | centre, cold (KW) and hot water (WW) ¾" at the top |
+| Coil 1 (upper) | 1" connections at 1380 and 1060 mm |
+| Coil 2 (lower) | 1" connections at 810 and 300 mm |
+| Store-water connections | 1½" at 1560, 970, 660, 170 mm (right) and 905 mm (left) |
+| ½" sleeves | 1280, 455 mm (right); 1270, 560 mm (left) |
+
+Still open: which coil the solar circuit uses (normally the lower one),
+what feeds the other coil, which store-water connections the heating
+circuit (S6–S8) uses, and which sleeves hold S2 (store bottom) and S3
+(store top).
+
 ## Open points
 
 - Sensor types (Pt1000 on every input?).
-- Store: one or several, volume.
+- Store: volume, coil and sleeve assignment (see [Store](#store)).
 - Collector: flat-plate or evacuated tube, area.
 - Heat transfer fluid: glycol or water, glycol percentage.
 - Flowmeter (V40 or similar) present?

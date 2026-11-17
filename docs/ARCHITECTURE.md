@@ -533,12 +533,12 @@ should ever need to edit a file or open a shell to run OSCoST.
 
 | Page | Content |
 |---|---|
-| **Overview** | System diagram (collector, pipes, store, pumps) with live temperatures, pump state and speed, ΔT, current heat output. Active alarms and safety interventions on top. Updates live. |
+| **Overview** | System diagram (collector, pipes, store, pumps) with live temperatures; the store is drawn to scale from its configured shape (dimensions, coils, connections, sensor positions; example: [reference store](img/store-reference.svg)), pump state and speed, ΔT, current heat output. Active alarms and safety interventions on top. Updates live. |
 | **History** | Charts of temperatures, pump speed and heat quantity, queried from VictoriaMetrics (its Prometheus query API), so any time range is available. If VictoriaMetrics is unreachable, the last 24 h are shown from memory. |
 | **Manual mode** | Per output OFF / AUTO / ON / speed %, with a mandatory timeout after which it returns to AUTO. Clearly shows that the safety limits still apply. |
 | **Events** | Log of state changes, sensor faults, safety interventions and config changes (who, when, what). |
 | **Settings → Hardware** | Board, Pt1000 inputs and 1-Wire buses with a **bus scan** (lists every DS18x20 found with ROM ID, chip type and live reading; new or missing sensors are highlighted), per sensor: name, VBus channel number, calibration offset, live reading; outputs (relay/SSR/PWM, PWM profile and frequency, **test button**), flowmeter. |
-| **Settings → System** | Hydraulic layout (which sensor is collector/store bottom/store top, which output is the solar pump) and the control functions with their parameters (ΔT on/off, setpoint, store max, optional functions). Each parameter has a short explanation, unit, allowed range and default. |
+| **Settings → System** | Hydraulic layout (which sensor is collector/store bottom/store top, which output is the solar pump), the store's shape (dimensions, coils, connections, sensor heights) for the overview drawing, and the control functions with their parameters (ΔT on/off, setpoint, store max, optional functions). Each parameter has a short explanation, unit, allowed range and default. |
 | **Settings → Integrations** | VictoriaMetrics (URL, auth, buffer size), MQTT + Home Assistant discovery, with a "test connection" button. |
 | **Settings → Users & access** | Users, passwords, API tokens. |
 | **Settings → Backup** | Download/upload the whole config, list of config revisions with diff and one-click rollback. |
