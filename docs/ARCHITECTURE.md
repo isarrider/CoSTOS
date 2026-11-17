@@ -25,9 +25,10 @@ OSCoST without risking the system.
   never leave a pump running or switched off in a dangerous state.
 - Keep the control logic **pure and testable**: no I/O in the control code,
   so it can run against a simulator, against recorded data and in CI.
-- Be **observable**: every input, decision and output is exported (Influx
-  line protocol / VictoriaMetrics, MQTT, HTTP), so the existing Grafana
-  dashboards keep working.
+- Be **observable**: every input, decision and output is pushed to
+  **VictoriaMetrics** once per second, and buffered locally while the
+  database is unreachable, so no data is lost (section 6.5). MQTT and the
+  HTTP API expose the live state too.
 - Make **everything configurable in the web interface**: status, sensors,
   outputs, control functions, integrations and users. No config files to
   edit by hand. Sensors, outputs and functions are wired up in config, not
@@ -73,7 +74,7 @@ Plus behaviour for this installation.
  V40 pulses ►│  pulse counter ─► └──────────────┘    └──────────────┘               │
              │                          │                    │                     │
              │                          ▼                    ▼                     │
-             │                    state + events ───► telemetry: HTTP / MQTT / Influx
+             │                    state + events ───► telemetry: VictoriaMetrics / MQTT / HTTP
              │                                                                      │
              │  systemd watchdog ◄── heartbeat           hardware watchdog (/dev/watchdog)
              └──────────────────────────────────────────────────────────────────────┘
@@ -205,7 +206,7 @@ oscost/
 │  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, sysfs PWM, MAX31865 driver
 │  ├─ oscost-sim/        # thermal model of collector + store, used for tests and dry runs
 │  ├─ oscost-config/     # config schema, validation, migrations between schema versions, revision store
-│  └─ oscostd/           # daemon: scheduler, tasks, HTTP API, MQTT/Influx, systemd integration
+│  └─ oscostd/           # daemon: scheduler, tasks, HTTP API, MQTT, VictoriaMetrics push + buffer, systemd
 ├─ web/                  # web interface (Svelte + TypeScript), built to static files embedded in oscostd
 └─ docs/
 ```
@@ -261,14 +262,52 @@ config:
 | Interface | Purpose |
 |---|---|
 | **Web interface + HTTP API** (axum) | Status, configuration, manual mode, history, events. See section 7. |
-| **Influx line protocol** | Same idea as vbus2influx, so Grafana and VictoriaMetrics keep working. Choose field names so existing dashboards need little rework. |
+| **VictoriaMetrics** | All values pushed every second, with a local buffer for outages. See section 6.5. |
 | **MQTT** with Home Assistant discovery | Sensors, outputs and alarms appear in HA automatically. Writes (manual mode) are optional and off by default. |
-| **Prometheus `/metrics`** | Optional, cheap to add. |
 | **Logs** | `tracing` to journald. Every state change and every safety intervention is logged as a structured event. |
 
 Not planned: emulating VBus to be read by other RESOL tools.
 
-### 6.5 Deployment
+### 6.5 VictoriaMetrics push and buffering
+
+VictoriaMetrics is the only time-series target. No InfluxDB support.
+
+- **Every control cycle (1 Hz)** produces one sample set: all temperatures,
+  output states and speeds, ΔT, heat output, heat quantity counters, active
+  functions, sensor fault and safety intervention flags. Each sample carries
+  the timestamp of the control cycle, not the time it was sent.
+- **Protocol**: VictoriaMetrics' Prometheus import endpoint
+  (`/api/v1/import/prometheus`), text format with explicit millisecond
+  timestamps, optional basic auth or bearer token. One request per second in
+  normal operation. Metric names follow Prometheus conventions, for example
+  `oscost_temperature_celsius{sensor="collector"}`,
+  `oscost_output_speed_percent{output="solar_pump"}`.
+- **Buffering**: a sender task reads from a queue, so a slow or unreachable
+  database never affects the control loop.
+  - Samples go into an in-memory queue first. If a push fails, the queue
+    keeps growing, and its content is written to disk in compressed (zstd)
+    segments of about one minute in `/var/lib/oscost/buffer/`. This keeps SD
+    card or eMMC writes low and survives a restart or power loss (at most the
+    last minute is lost).
+  - Size limit is configurable (for example 500 MB). At 1 Hz with about 30
+    values that is weeks of outage. When full, the oldest segments are
+    dropped and an event is logged.
+  - When VictoriaMetrics is back, the current samples are sent first, so live
+    dashboards recover immediately, then the backlog is sent oldest first in
+    batches, rate-limited so it doesn't overload the database or the network.
+    VictoriaMetrics accepts backfilled samples, so the gap fills in.
+  - A segment is only deleted after VictoriaMetrics has confirmed it (HTTP
+    2xx). A crash during sending means a few samples are sent twice, which
+    VictoriaMetrics deduplicates (same series and timestamp).
+- **Clock**: timestamps need correct time. A Raspberry Pi has no RTC and
+  boots with a wrong clock until NTP syncs. Until the system clock is
+  synchronised, samples are buffered with monotonic timestamps and converted
+  once the clock is synced. Control itself doesn't depend on wall-clock time.
+- **Status** in the web interface: connected / buffering, buffer size and
+  age of the oldest buffered sample, last error. Long outages and a full
+  buffer create an event (and an MQTT alarm).
+
+### 6.6 Deployment
 
 - A **native systemd service** is the primary target, not Docker. The
   watchdog integration, start ordering and direct device access are simpler
@@ -291,12 +330,12 @@ should ever need to edit a file or open a shell to run OSCoST.
 | Page | Content |
 |---|---|
 | **Overview** | System diagram (collector, pipes, store, pumps) with live temperatures, pump state and speed, ΔT, current heat output. Active alarms and safety interventions on top. Updates live. |
-| **History** | Charts of the last 24 h – 7 days from an in-memory/ring-file buffer (temperatures, pump speed, heat quantity). Long-term history stays in Grafana/VictoriaMetrics. |
+| **History** | Charts of temperatures, pump speed and heat quantity, queried from VictoriaMetrics (its Prometheus query API), so any time range is available. If VictoriaMetrics is unreachable, the last 24 h are shown from memory. |
 | **Manual mode** | Per output OFF / AUTO / ON / speed %, with a mandatory timeout after which it returns to AUTO. Clearly shows that the safety limits still apply. |
 | **Events** | Log of state changes, sensor faults, safety interventions and config changes (who, when, what). |
 | **Settings → Hardware** | Board, sensor inputs (type, name, live reading, calibration offset), outputs (relay/SSR/PWM, PWM profile and frequency, **test button**), flowmeter. |
 | **Settings → System** | Hydraulic layout (which sensor is collector/store bottom/store top, which output is the solar pump) and the control functions with their parameters (ΔT on/off, setpoint, store max, optional functions). Each parameter has a short explanation, unit, allowed range and default. |
-| **Settings → Integrations** | InfluxDB/VictoriaMetrics, MQTT + Home Assistant discovery, with a "test connection" button. |
+| **Settings → Integrations** | VictoriaMetrics (URL, auth, buffer size), MQTT + Home Assistant discovery, with a "test connection" button. |
 | **Settings → Users & access** | Users, passwords, API tokens. |
 | **Settings → Backup** | Download/upload the whole config, list of config revisions with diff and one-click rollback. |
 | **About / Diagnostics** | Version, uptime, watchdog state, board temperature, update check. |
@@ -359,14 +398,19 @@ Config changes can switch pumps, so they are applied carefully:
 
 ### 7.5 Access and security
 
-The interface can switch pumps, so it needs login:
+The interface can switch pumps, so changes need login:
 
-- Users with roles: **viewer** (status and history only) and **admin**
-  (manual mode, settings). Optional: status pages viewable without login in
-  the local network.
+- **Without login**: the status pages (overview, history, events) are
+  visible to everyone who can reach the device, **read-only**. Nothing can be
+  changed, not even manual mode. Settings pages are not shown (they contain
+  credentials such as the VictoriaMetrics and MQTT passwords).
+- **With login**: everything else (manual mode, all settings, users,
+  backup). One role (admin) is enough; several admin users are possible, so
+  the event log shows who changed what.
 - Passwords stored as Argon2 hashes, session cookies (`HttpOnly`,
   `SameSite=Strict`), CSRF protection on all writes, rate-limited login.
-- API tokens per integration, revocable, with the same roles.
+- API tokens per integration, revocable. Read-only API endpoints, like the
+  status pages, need no token.
 - HTTP by default in the local network, with optional built-in TLS (own
   certificate or self-signed). Not meant to be exposed to the internet
   directly; use a VPN or reverse proxy for remote access.
@@ -416,7 +460,7 @@ measurement in phase 2. To be decided.
 2. `oscost-sim` and simulation tests in CI.
 3. HAL + Linux backend: MAX31865, GPIO outputs, PWM, watchdog. Bench setup.
 4. `oscostd` + `oscost-config`: scheduler, systemd, config store with
-   revisions, JSON API, Influx output.
+   revisions, JSON API, VictoriaMetrics push with buffering.
 5. Web interface: overview, setup wizard, all settings pages, users/login,
    manual mode.
 6. MQTT + Home Assistant discovery.
@@ -439,10 +483,10 @@ measurement in phase 2. To be decided.
   both. The answer decides the pin map and the HAT/board layout.)
 - Off-the-shelf boards (MAX31865 breakouts, DIN-rail SSRs) or a custom HAT?
   Breakouts first is the faster way to the bench milestone.
-- Do any values have to be compatible with existing vbus2influx dashboards
-  (measurement and field names)?
+- Metric names: new Prometheus-style names (proposed), or the vbus2influx
+  names (`vbus2influx_temperature_01`, …) so the existing dashboards work
+  unchanged?
 - Web frontend: Svelte (proposed), or an all-Rust frontend (Leptos/WASM), or
   server-rendered HTML with htmx? Svelte is the most practical for a
   form-heavy, live-updating interface. All-Rust avoids a Node toolchain in
   CI, but the ecosystem is smaller.
-- Should status pages be viewable without login in the local network?
