@@ -59,19 +59,25 @@ term_v(178, 2, "PT2", "not fitted", fitted=False)
 term_v(246, 3, "1W-A", "DS18x20")
 term_v(342, 3, "1W-B", "DS18x20")
 # bottom terminals
-def term_h(x0, n, name, pins):
+def term_h(x0, n, name, pins, fitted=True):
     w = 28 * n
-    out.append(f'<rect x="{x0}" y="450" width="{w}" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>')
+    if fitted:
+        out.append(f'<rect x="{x0}" y="450" width="{w}" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>')
+    else:
+        out.append(f'<rect x="{x0}" y="450" width="{w}" height="32" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
     for k in range(n):
         cx = x0 + 14 + 28 * k
-        out.append(f'<circle cx="{cx}" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="{cx}" y1="461" x2="{cx}" y2="471" stroke="#5F6468" stroke-width="1.5"/>')
+        if fitted:
+            out.append(f'<circle cx="{cx}" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="{cx}" y1="461" x2="{cx}" y2="471" stroke="#5F6468" stroke-width="1.5"/>')
+        else:
+            out.append(f'<circle cx="{cx}" cy="466" r="4" fill="#C9A227"/>')
         t(cx, 512, pins[k], 11, None, 400, "middle", on_board=False)
-    t(x0 + w/2, 440, name, 12, "#ffffff", 500, "middle")
+    t(x0 + w/2, 440, name + ("" if fitted else " (n.f.)"), 12, "#ffffff" if fitted else "#E8F5E9", 500, "middle")
 term_h(148, 2, "PWR", ["+5V", "GND"])
 term_h(216, 2, "REL1", ["+5V", "OUT"])
-term_h(284, 2, "REL2", ["+5V", "OUT"])
+term_h(284, 2, "REL2", ["+5V", "OUT"], fitted=False)
 term_h(352, 3, "PUMP1", ["PWM", "GND", "FB"])
-term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"])
+term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"], fitted=False)
 # chips, left column
 chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
 out.append('<rect x="205" y="178" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
@@ -82,15 +88,18 @@ t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
 t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
 # bottom rows
 chip(196, 368, 78, 46, "Protection", "5 V input")
-chip(282, 368, 78, 46, "Relay", "MOSFETs")
+chip(282, 368, 78, 46, "Relay", "MOSFET")
 chip(368, 368, 78, 46, "TC4427", "pump driver")
 chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
 chip(282, 304, 78, 46, "Watchdog", "heartbeat")
-chip(368, 304, 78, 46, "AND gates", "PWM gating")
-chip(454, 304, 78, 46, "Feedback", "2 inputs")
+chip(368, 304, 78, 46, "AND gate", "PWM gating")
+chip(454, 304, 78, 46, "Feedback", "input 1")
 # LEDs
 for x, col, lab in [(196, "#4CAF50", "PWR"), (222, "#4CAF50", "WD"), (246, "#FFB300", "R1"), (270, "#FFB300", "R2")]:
-    out.append(f'<circle cx="{x}" cy="316" r="6" fill="{col}" stroke="#0F3A20"/>')
+    if lab == "R2":
+        out.append(f'<circle cx="{x}" cy="316" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
+    else:
+        out.append(f'<circle cx="{x}" cy="316" r="6" fill="{col}" stroke="#0F3A20"/>')
     t(x, 340, lab, 11, "#E8F5E9", 400, "middle")
 # logo
 t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")

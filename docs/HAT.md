@@ -79,9 +79,12 @@ layout is done in KiCad.
 
 ### 4.1 PWM pump outputs
 
-- **Two outputs**, one per TC4427 channel (the second channel is free on
-  the stripboard design anyway). Rev A needs one for the solar pump; the
-  second is a spare for a later store-loading or heating pump (D2).
+- **Two output positions**, one per TC4427 channel. **Rev A fits only
+  PUMP1** (solar pump). PUMP2 (its series resistor, TVS, AND gate,
+  feedback parts and terminal) stays unfitted, as a spare for a later
+  store-loading or heating pump (D2).
+- **Fitted in any case:** the 100 kΩ pull-down on the TC4427's channel B
+  input, so the unused input is held low and never floats.
 - Same circuit as the [12 V driver board](HARDWARE.md#option-1-driver-board-12-v):
   TC4427 from a 5 V → 12 V DC/DC, 470 Ω series resistor, P6KE15A-class
   TVS (SMD equivalent with the same breakdown voltage, e.g. SMBJ13A; not
@@ -97,7 +100,7 @@ layout is done in KiCad.
 
 ### 4.2 Pump feedback inputs
 
-- Two, one per PWM output. Same circuit as on the stripboard: 4.7 kΩ
+- One per PWM output (FB2 unfitted in rev A, with PUMP2). Same circuit as on the stripboard: 4.7 kΩ
   pull-up to 3.3 V at the terminal, 10 kΩ series resistor, 1 nF to GND at
   the GPIO.
 - Optional per output in software; an unconnected input reads as
@@ -140,7 +143,10 @@ layout is done in KiCad.
 
 ### 4.5 Relay / SSR control outputs
 
-- **Two outputs.** Each is a low-side N-MOSFET switching the negative side
+- **Two output positions, rev A fits only REL1** (solar pump mains).
+  REL2 (MOSFET, flyback diode, LED, terminal) stays unfitted; its gate
+  pull-down is fitted so the GPIO line is defined.
+- Each is a low-side N-MOSFET switching the negative side
   of an external SSR input or relay coil; the positive side comes from
   the HAT's **relay supply** (5 V).
 - The relay supply is switched by the watchdog (4.6): without a heartbeat,
@@ -215,7 +221,7 @@ Limits and settings:
 
 | Rail | Source | Users | Estimated current |
 |---|---|---|---|
-| 5 V | HAT power input (from the DIN-rail supply) | **the Pi**, DC/DC, relay supply, LEDs | Pi 4 up to 3 A, Pi 5 up to 5 A; HAT itself < 300 mA with two relay coils, < 100 mA with SSRs |
+| 5 V | HAT power input (from the DIN-rail supply) | **the Pi**, DC/DC, relay supply, LEDs | Pi 4 up to 3 A, Pi 5 up to 5 A; HAT itself < 200 mA with a relay coil, < 100 mA with an SSR (per extra fitted relay output up to +100 mA) |
 | 12 V | DC/DC on the HAT (1 W) | TC4427, PWM outputs | < 30 mA |
 | 3.3 V | Pi header pins 1/17 | MAX31865 × 2, DS18x20 sensors, pull-ups | < 30 mA |
 
@@ -233,18 +239,19 @@ numbers behind GPIO 18/19 differ, which is software configuration.
 | SPI CE0 (MAX31865 #1) | 24 | GPIO 8 | GPIO 8 |
 | SPI CE1 (MAX31865 #2, only if fitted) | 26 | GPIO 7 | GPIO 7 |
 | PWM 1 | 12 | GPIO 18, PWM0 channel 0 | GPIO 18, RP1 PWM0 channel 2 |
-| PWM 2 | 35 | GPIO 19, PWM0 channel 1 | GPIO 19, RP1 PWM0 channel 3 |
+| PWM 2 (only if fitted) | 35 | GPIO 19, PWM0 channel 1 | GPIO 19, RP1 PWM0 channel 3 |
 | Feedback 1 | 16 | GPIO 23 | GPIO 23 |
-| Feedback 2 | 36 | GPIO 16 | GPIO 16 |
+| Feedback 2 (only if fitted) | 36 | GPIO 16 | GPIO 16 |
 | Heartbeat | 18 | GPIO 24 | GPIO 24 |
 | Relay 1 | 22 | GPIO 25 | GPIO 25 |
-| Relay 2 | 29 | GPIO 5 | GPIO 5 |
+| Relay 2 (only if fitted) | 29 | GPIO 5 | GPIO 5 |
 | ID EEPROM | 27 / 28 | ID_SD / ID_SC | ID_SD / ID_SC |
 | 5 V (HAT → Pi) | 2, 4 | | |
 | 3.3 V | 1, 17 | | |
 | GND | 6, 9, 14, 20, 25, 30, 34, 39 | | |
 
-Both PWM outputs need a two-channel PWM overlay. Which one works on the
+The config below enables both PWM channels and all relay pins, so a later
+fitted PUMP2 or REL2 needs no configuration change. Both PWM channels need a two-channel PWM overlay. Which one works on the
 Pi 5 (`pwm-2chan` or two `pwm` entries) is checked during bring-up; see
 also [Testing the output](HARDWARE.md#testing-the-output).
 
@@ -310,7 +317,7 @@ sudo rpi-eeprom-config --edit     # add: PSU_MAX_CURRENT=5000
 they would need about 112 mm. So the connectors use **3.5 mm pluggable
 terminal blocks** on **two edges**, as in the [mockup](#mockup):
 
-- **Bottom edge** (power and outputs): PWR, REL1, REL2, PUMP1, PUMP2.
+- **Bottom edge** (power and outputs): PWR, REL1, REL2, PUMP1, PUMP2 (REL2 and PUMP2 not fitted in rev A).
 - **Left edge** (sensors): PT1, PT2, 1W-A, 1W-B.
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
@@ -321,12 +328,12 @@ All labelled on the silkscreen:
 |---|---|---|
 | PWR | +5V, GND | from the DIN-rail 5 V supply; powers HAT and Pi |
 | PUMP1 | PWM, GND, FB | pump 1 signal cable (brown, blue, black) |
-| PUMP2 | PWM, GND, FB | pump 2 signal cable |
+| PUMP2 | PWM, GND, FB | pump 2 signal cable (not fitted in rev A) |
 | PT1 | +, − | Pt1000 sensor 1 (collector) |
 | PT2 | +, − | Pt1000 sensor 2 (not fitted in rev A) |
 | 1W-A, 1W-B | 3V3, DQ, GND | DS18x20 sensors |
 | REL1 | +5V, OUT | SSR / relay 1 (pump mains) |
-| REL2 | +5V, OUT | SSR / relay 2 |
+| REL2 | +5V, OUT | SSR / relay 2 (not fitted in rev A) |
 
 ## 8. Manufacturing
 
@@ -358,9 +365,9 @@ All labelled on the silkscreen:
    in the Pi's USB-C: no current may flow back into the PWR terminal.
 4. Watchdog: `WD_OK` low after boot, high while a test script toggles the
    heartbeat, low again 2–3 s after it stops.
-5. Relay outputs with an LED/resistor as dummy load, with and without
+5. Relay output REL1 with an LED/resistor as dummy load, with and without
    heartbeat.
-6. PWM outputs into a 1 kΩ dummy load, then the real pump (as in
+6. PWM output PUMP1 into a 1 kΩ dummy load, then the real pump (as in
    [Connecting the pump](HARDWARE.md#connecting-the-pump)).
 7. Pt1000 input with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C),
    then the real collector sensor on its 2-wire cable.
@@ -374,7 +381,7 @@ All labelled on the silkscreen:
 | # | Question | Decision |
 |---|---|---|
 | D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
-| D2 | One or two PWM outputs? | **Two**: the TC4427 has two channels anyway |
+| D2 | One or two PWM outputs and relay outputs? | **Two positions each, one fitted**: PUMP1 and REL1 for the solar pump; PUMP2 and REL2 stay unfitted until a second pump is added |
 | D3 | How many Pt1000 inputs? | **Two on the board, one fitted**: PT1 for the collector; PT2 (MAX31865 #2, its parts and terminal) stays unfitted until needed |
 | D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
 | D5 | Power the Pi from the HAT? | **Yes**: one supply cable for everything, with fuse, TVS and ideal diode on the HAT (4.7) |
