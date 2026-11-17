@@ -385,10 +385,16 @@ All labelled on the silkscreen:
   65 × 56.5 mm board (about 37 cm²) a set of 3 bare boards is about
   €19 net at the time of writing (check their current pricing).
 - **Design rules:** AISLER's KiCad design rules, imported before routing.
-- **Parts:** SMD where hand-soldering is still easy (0805 passives, SOIC,
-  SSOP), through-hole for connectors and the header. That keeps both paths
-  open: hand assembly, or AISLER's assembly service if the price is right
-  for 3 boards (D7).
+- **Assembly: delivered fully soldered (D7).** All SMD parts on the top
+  side only (one-sided assembly is the cheap option at every assembler),
+  through-hole only for the terminals, the 40-pin header and the DC/DC.
+  Parts are chosen from what the assembler stocks: for JLCPCB that means
+  LCSC part numbers in the BOM, "basic" parts where possible, since every
+  other part type adds a feeder fee. Packages stay hand-solderable (0805,
+  SOIC, SSOP), so a board can still be repaired or built by hand.
+- **Assembler:** decided on real quotes once the KiCad BOM exists: AISLER
+  (boards and assembly from Germany) against JLCPCB (cheapest for small
+  runs, ships from China).
 - **Checks before ordering:** KiCad ERC and DRC clean, every net compared
   against the stripboard circuits, footprints of the MAX31865, DS2482 and
   DC/DC checked against their datasheets, a 1:1 paper print to check
@@ -425,6 +431,24 @@ are the Pi, the DIN-rail supply, the SSR and the sensors.
 The watchdog with AND gate and relay supply switch is about €1.50–2 of
 this (D8). Pluggable terminals would add about €4 (D10).
 
+### 8.2 Fully assembled: rough estimate
+
+Factory assembly adds fixed costs per order, so the price per board
+depends mostly on how many boards are ordered. A rough JLCPCB estimate
+for the fitted rev A (about 250 SMD joints and 60 through-hole joints
+per board, about 15 part types that are not "basic"), incl. shipping and
+19 % import VAT:
+
+| Boards | ≈ € total | ≈ € per board |
+|---|---|---|
+| 2 (their minimum for economic assembly) | 105 | 52 |
+| 5 | 165 | 33 |
+
+Built from JLCPCB's published fees: setup fee, per-joint fees for SMD and
+through-hole, a feeder fee per non-basic part type, a hand-soldering fee
+per order, plus the parts at LCSC prices. AISLER's assembly price is not
+estimated here; it gets quoted with the BOM.
+
 ## 9. Bring-up plan (rev A)
 
 1. Visual check, then resistance checks between all rails before power.
@@ -457,7 +481,7 @@ this (D8). Pluggable terminals would add about €4 (D10).
 | D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
 | D5 | Power the Pi from the HAT? | **Yes**: one supply cable for everything, with fuse, TVS and ideal diode on the HAT (4.7) |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
-| D7 | Hand assembly or AISLER assembly? | **Decide on the AISLER quote** once the BOM exists; all parts are hand-solderable |
+| D7 | Hand assembly or factory assembly? | **Factory-assembled, delivered fully soldered**; AISLER or JLCPCB decided on quotes once the BOM exists (8.2) |
 | D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts for a second, independent way to stop the pump, e.g. when the SSR fails short-circuited |
 | D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
 | D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |
