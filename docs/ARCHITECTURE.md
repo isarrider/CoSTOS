@@ -680,15 +680,25 @@ The interface can switch pumps, so changes need login:
 | Phase | What runs | Exit criteria |
 |---|---|---|
 | **0. Bench** | OSCoST on the bench with simulated or resistor sensors | All tests green, watchdog and output-default-OFF verified |
-| **1. Shadow mode** | RESOL controls the system. OSCoST reads its **own** sensors (second set of sensors, or parallel measurement where possible) and computes decisions **without outputs connected**. vbus2influx keeps logging the RESOL side. | Weeks of data across sunny/cloudy/hot days. Temperature readings match RESOL within tolerance. Decisions match, or every difference is understood. |
+| **1. Shadow mode** | RESOL controls the system. OSCoST takes the **RESOL's sensor values over VBus** (the same data vbus2influx reads) and computes decisions **without outputs connected**. Its own sensors (HAT, DS18B20 in the free sleeves) are added once the hardware exists. | Weeks of data across sunny/cloudy/hot days. Temperature readings match RESOL within tolerance. Decisions match, or every difference is understood. |
 | **2. Switchable** | Changeover switch per output: RESOL or OSCoST. OSCoST drives the outputs on chosen days, with RESOL one switch flip away. | Runs through hot periods (store max, collector shutdown actually triggered) without intervention |
 | **3. Replacement** | OSCoST only. RESOL kept as a spare. | — |
 
-Shadow mode needs its own temperature readings, because the Pt1000 sensors
-can't be connected to two measuring devices at once without affecting both
-readings. Options: extra sensors in the same sensor pockets, or use the RESOL
-values over VBus for the decisions in phase 1 and only add OSCoST's own
-measurement in phase 2. To be decided.
+Shadow mode starts with the RESOL values over VBus (decided): it tests the
+control logic and the software right away, without hardware. A Pt1000 can't
+be connected to two measuring devices at once without affecting both
+readings, so OSCoST's own measurement comes in as extra sensors (the store
+has two free ½" sleeves) once the HAT exists.
+
+**If the BX Plus fails before OSCoST is ready:** with the Wilo PWM2 profile
+a missing PWM signal means *stop*, so the pump stands still and the
+heat-pipe collector goes into stagnation. That costs solar yield but
+doesn't damage anything short term. The fastest way back to a running
+system is the bench setup without the HAT: a Pi, two MAX31865 breakout
+boards on the existing collector (S1) and store bottom (S2) Pt1000 cables,
+the stripboard PWM driver ([HARDWARE.md](HARDWARE.md)) and the pump on
+permanent mains. That needs milestones 1 and 3 only, which is why they
+come first.
 
 ---
 
@@ -714,8 +724,6 @@ measurement in phase 2. To be decided.
 
 - **Installation details**: the remaining open points in
   [installation.md](installation.md#open-points).
-- Shadow mode: second set of sensors, or use the RESOL values over VBus at
-  first?
 - Settled: custom HAT ([HAT.md](HAT.md)); 1-Wire via kernel `w1-gpio` on
   two buses (HAT D4); the reference installation keeps a Pt1000 only on the
   collector and moves S2–S8 to DS18B20 on two daisy-chained buses.
