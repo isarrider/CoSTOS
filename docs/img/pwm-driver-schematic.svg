@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1030" height="430" viewBox="0 0 1030 430" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1030" height="520" viewBox="0 0 1030 520" font-family="Helvetica, Arial, sans-serif">
   <title>OSCoST PWM pump driver, circuit diagram</title>
   <defs>
     <!-- ground symbol, anchor at its top -->
@@ -39,12 +39,18 @@
     .s    { font-size: 11px; fill: #444; }
     .pin  { font-size: 11px; fill: #c62828; font-weight: bold; }
   </style>
-  <rect width="1030" height="430" fill="white"/>
+  <rect width="1030" height="520" fill="white"/>
 
   <!-- ===== J1: connector to the Raspberry Pi ===== -->
-  <rect x="20" y="150" width="76" height="120" rx="4" fill="#fafafa" stroke="#222" stroke-width="2"/>
+  <rect x="20" y="150" width="76" height="190" rx="4" fill="#fafafa" stroke="#222" stroke-width="2"/>
   <text x="58" y="142" text-anchor="middle" class="lbl">J1</text>
-  <text x="58" y="288" text-anchor="middle" class="s">to Raspberry Pi</text>
+  <text x="58" y="358" text-anchor="middle" class="s">to Raspberry Pi</text>
+  <text x="28" y="285" class="s">3V3</text>
+  <text x="28" y="320" class="s">FB</text>
+  <circle cx="96" cy="281" r="3" fill="#222"/>
+  <circle cx="96" cy="316" r="3" fill="#222"/>
+  <path class="v5" d="M96 281 H120" style="stroke:#f9a825"/>
+  <text x="124" y="285" class="s" fill="#f57f17" font-weight="bold">+3.3 V</text>
   <text x="28" y="180" class="s">5V</text>
   <text x="28" y="215" class="s">PWM</text>
   <text x="28" y="250" class="s">GND</text>
@@ -112,7 +118,7 @@
   <text x="600" y="322" class="s" text-anchor="end">unused input to GND</text>
   <path class="wire" d="M770 280 H790"/>
   <text x="796" y="284" class="s">n.c.</text>
-  <text x="705" y="356" text-anchor="middle" class="s">pins 1 and 8: no internal connection</text>
+  <text x="705" y="272" text-anchor="middle" class="s">pins 1, 8: n.c.</text>
 
   <!-- ===== PWM input ===== -->
   <path class="sig" d="M96 211 H260 V190 H640"/>
@@ -141,16 +147,37 @@
   <text x="846" y="276" class="s" text-anchor="end">band = top</text>
 
   <!-- J2 -->
-  <rect x="900" y="160" width="30" height="110" rx="3" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <rect x="900" y="160" width="30" height="170" rx="3" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <circle cx="900" cy="302" r="3" fill="#222"/>
+  <text x="940" y="308" class="s">FB (black)</text>
   <text x="915" y="152" text-anchor="middle" class="lbl">J2</text>
   <circle cx="900" cy="190" r="3" fill="#222"/>
   <circle cx="900" cy="246" r="3" fill="#222"/>
   <path class="wire" d="M900 246 H885 V262"/>
   <use href="#gnd" x="885" y="262"/>
-  <text x="915" y="300" text-anchor="middle" class="s">to pump</text>
+  <text x="915" y="348" text-anchor="middle" class="s">to pump</text>
   <text x="940" y="196" class="s">PWM (brown)</text>
   <text x="940" y="252" class="s">GND (blue)</text>
 
-  <text x="20" y="400" class="s">All ground symbols are one common net: Pi GND, DC/DC −Vin and 0V, driver GND and the pump's signal ground.</text>
-  <text x="20" y="418" class="s">U2's isolation is deliberately bridged: the driver needs the same ground as the Pi's GPIO.</text>
+  <!-- ===== Feedback input ===== -->
+  <path class="wire" d="M96 316 H140 V400 H400" stroke="#6a1b9a"/>
+  <text x="150" y="392" class="s" fill="#6a1b9a" font-weight="bold">to Pi GPIO 23 (pin 16)</text>
+  <circle cx="300" cy="400" r="3" fill="#6a1b9a"/>
+  <path class="wire" d="M300 400 V408" stroke="#6a1b9a"/>
+  <use href="#cap" x="300" y="408"/>
+  <use href="#gnd" x="300" y="446"/>
+  <text x="314" y="430" class="s">C4 1 nF</text>
+  <rect x="400" y="393" width="44" height="14" fill="white" stroke="#222" stroke-width="2"/>
+  <text x="422" y="386" text-anchor="middle" class="s">R5 10 kΩ</text>
+  <text x="422" y="426" text-anchor="middle" class="s">protects the GPIO</text>
+  <path class="wire" d="M444 400 H880 V302 H900" stroke="#6a1b9a"/>
+  <circle cx="760" cy="400" r="3" fill="#6a1b9a"/>
+  <path class="wire" d="M760 400 V386"/>
+  <g transform="translate(760,386) scale(1,-1)"><use href="#res"/></g>
+  <text x="772" y="354" class="s">R4 4.7 kΩ pull-up</text>
+  <text x="760" y="322" text-anchor="middle" class="s" fill="#f57f17" font-weight="bold">+3.3 V</text>
+  <text x="600" y="420" class="s" fill="#6a1b9a">pump feedback: open collector, 75 Hz</text>
+
+  <text x="20" y="490" class="s">All ground symbols are one common net: Pi GND, DC/DC −Vin and 0V, driver GND and the pump's signal ground.</text>
+  <text x="20" y="508" class="s">U2's isolation is deliberately bridged: the driver needs the same ground as the Pi's GPIO.</text>
 </svg>

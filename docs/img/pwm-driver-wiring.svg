@@ -1,85 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="480" viewBox="0 0 1000 480" font-family="Helvetica, Arial, sans-serif">
   <title>Option 1 wiring: Raspberry Pi, driver board and pump</title>
   <style>
     .lbl { font-size: 14px; font-weight: bold; fill: #222; }
     .s { font-size: 12px; fill: #333; }
     .xs { font-size: 10.5px; fill: #555; }
+    .tag { font-size: 12px; font-weight: bold; fill: #222; }
   </style>
-  <rect width="980" height="420" fill="white"/>
+  <rect width="1000" height="480" fill="white"/>
 
-  <!-- Raspberry Pi header (pins 1-14 shown) -->
-  <rect x="20" y="40" width="250" height="300" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
-  <text x="145" y="30" text-anchor="middle" class="lbl">Raspberry Pi, 40-pin header</text>
-  <text x="145" y="330" text-anchor="middle" class="xs">pin 1 = square pad, next to the SD card side</text>
-  <!-- wires Pi -> J1 (jumper wires, female-female), drawn under the labels -->
-  <path d="M160 71 C 300 71, 330 128, 430 128" stroke="#c62828" stroke-width="4" fill="none"/>
-  <path d="M160 131 C 300 131, 330 158, 430 158" stroke="#222" stroke-width="4" fill="none"/>
-  <path d="M160 221 C 300 221, 330 188, 430 188" stroke="#1565c0" stroke-width="4" fill="none"/>
-  <!-- two columns of pins: odd left, even right -->
-  <g font-size="11">
-    <!-- row 1 -->
+  <!-- wires Pi -> J1, drawn first so the pin labels sit on top -->
+  <path d="M160 71  C 300 71,  330 118, 450 118" stroke="#c62828" stroke-width="4" fill="none"/>
+  <path d="M160 131 C 300 131, 330 148, 450 148" stroke="#222"    stroke-width="4" fill="none"/>
+  <path d="M160 221 C 300 221, 330 178, 450 178" stroke="#1565c0" stroke-width="4" fill="none"/>
+  <path d="M111 311 C 60 360, 330 208, 450 208"  stroke="#f9a825" stroke-width="4" fill="none"/>
+  <path d="M160 281 C 300 281, 330 238, 450 238" stroke="#6a1b9a" stroke-width="4" fill="none"/>
+
+  <!-- Raspberry Pi header, pins 1-18 -->
+  <rect x="20" y="40" width="260" height="340" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2" fill-opacity="0.6"/>
+  <text x="150" y="30" text-anchor="middle" class="lbl">Raspberry Pi / Rock 5C, 40-pin header</text>
+  <g>
     <rect x="100" y="60" width="22" height="22" fill="#222"/><text x="94" y="76" text-anchor="end" class="xs">3V3  1</text>
-    <circle cx="160" cy="71" r="11" fill="#c62828"/><rect x="174" y="63" width="51.5" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="76" class="s" font-weight="bold">2  5V</text>
-    <!-- row 2 -->
-    <circle cx="111" cy="101" r="11" fill="#999"/><text x="94" y="106" text-anchor="end" class="xs">GPIO2  3</text>
+    <circle cx="160" cy="71" r="11" fill="#c62828"/>
+    <rect x="174" y="58" width="52" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="71" class="tag">2  5V</text>
+
+    <circle cx="111" cy="101" r="11" fill="#999"/><text x="94" y="106" text-anchor="end" class="xs">3</text>
     <circle cx="160" cy="101" r="11" fill="#999"/><text x="176" y="106" class="xs">4  5V</text>
-    <!-- row 3 -->
-    <circle cx="111" cy="131" r="11" fill="#999"/><text x="94" y="136" text-anchor="end" class="xs">GPIO3  5</text>
-    <circle cx="160" cy="131" r="11" fill="#2e7d32"/><rect x="174" y="123" width="59.0" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="136" class="s" font-weight="bold">6  GND</text>
-    <!-- row 4 -->
-    <circle cx="111" cy="161" r="11" fill="#999"/><text x="94" y="166" text-anchor="end" class="xs">GPIO4  7</text>
-    <circle cx="160" cy="161" r="11" fill="#999"/><text x="176" y="166" class="xs">8  GPIO14</text>
-    <!-- row 5 -->
+
+    <circle cx="111" cy="131" r="11" fill="#999"/><text x="94" y="136" text-anchor="end" class="xs">5</text>
+    <circle cx="160" cy="131" r="11" fill="#2e7d32"/>
+    <rect x="174" y="118" width="60" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="131" class="tag">6  GND</text>
+
+    <circle cx="111" cy="161" r="11" fill="#999"/><text x="94" y="166" text-anchor="end" class="xs">7</text>
+    <circle cx="160" cy="161" r="11" fill="#999"/><text x="176" y="166" class="xs">8</text>
+
     <circle cx="111" cy="191" r="11" fill="#999"/><text x="94" y="196" text-anchor="end" class="xs">GND  9</text>
-    <circle cx="160" cy="191" r="11" fill="#999"/><text x="176" y="196" class="xs">10  GPIO15</text>
-    <!-- row 6 -->
-    <circle cx="111" cy="221" r="11" fill="#999"/><text x="94" y="226" text-anchor="end" class="xs">GPIO17  11</text>
-    <circle cx="160" cy="221" r="11" fill="#1565c0"/><rect x="174" y="213" width="89.0" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="226" class="s" font-weight="bold">12  GPIO18</text>
-    <!-- row 7 -->
-    <circle cx="111" cy="251" r="11" fill="#999"/><text x="94" y="256" text-anchor="end" class="xs">GPIO27  13</text>
+    <circle cx="160" cy="191" r="11" fill="#999"/><text x="176" y="196" class="xs">10</text>
+
+    <circle cx="111" cy="221" r="11" fill="#999"/><text x="94" y="226" text-anchor="end" class="xs">11</text>
+    <circle cx="160" cy="221" r="11" fill="#1565c0"/>
+    <rect x="174" y="208" width="96" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="221" class="tag">12  PWM (Pi)</text>
+
+    <circle cx="111" cy="251" r="11" fill="#1565c0" fill-opacity="0.45" stroke="#1565c0" stroke-dasharray="3 2"/>
+    <text x="94" y="248" text-anchor="end" class="tag" fill="#1565c0">13</text>
+    <text x="94" y="262" text-anchor="end" class="xs" fill="#1565c0">PWM (Rock 5C)</text>
     <circle cx="160" cy="251" r="11" fill="#999"/><text x="176" y="256" class="xs">14  GND</text>
-    <text x="135" y="290" text-anchor="middle" class="xs">… pins 15–40</text>
+
+    <circle cx="111" cy="281" r="11" fill="#999"/><text x="94" y="286" text-anchor="end" class="xs">15</text>
+    <circle cx="160" cy="281" r="11" fill="#6a1b9a"/>
+    <rect x="174" y="268" width="72" height="18" rx="3" fill="white" stroke="#999"/><text x="178" y="281" class="tag">16  FB in</text>
+
+    <circle cx="111" cy="311" r="11" fill="#f9a825"/>
+    <rect x="30" y="300" width="64" height="18" rx="3" fill="white" stroke="#999"/><text x="34" y="313" class="tag">3V3  17</text>
+    <circle cx="160" cy="311" r="11" fill="#999"/><text x="176" y="316" class="xs">18</text>
+
+    <text x="135" y="350" text-anchor="middle" class="xs">… pins 19–40</text>
+    <text x="150" y="370" text-anchor="middle" class="xs">pin 1 = square pad</text>
   </g>
 
   <!-- driver board -->
-  <rect x="420" y="90" width="260" height="190" rx="8" fill="#f3e3c3" stroke="#8a6d3b" stroke-width="2"/>
-  <text x="550" y="80" text-anchor="middle" class="lbl">Driver board (option 1)</text>
-  <text x="550" y="190" text-anchor="middle" class="s">TC4427 + DC/DC</text>
-  <text x="550" y="208" text-anchor="middle" class="xs">see layout drawing</text>
-  <!-- J1 -->
-  <rect x="420" y="110" width="30" height="96" fill="#222"/>
-  <text x="458" y="132" class="s">5V</text>
-  <text x="458" y="162" class="s">GND</text>
-  <text x="458" y="192" class="s">PWM</text>
-  <text x="435" y="226" text-anchor="middle" class="xs">J1</text>
-  <circle cx="435" cy="128" r="5" fill="#e6c200"/>
-  <circle cx="435" cy="158" r="5" fill="#e6c200"/>
-  <circle cx="435" cy="188" r="5" fill="#e6c200"/>
-  <!-- J2 -->
-  <rect x="650" y="140" width="30" height="80" fill="#2f7d32"/>
-  <text x="642" y="166" text-anchor="end" class="s">PWM</text>
-  <text x="642" y="206" text-anchor="end" class="s">GND</text>
-  <text x="665" y="240" text-anchor="middle" class="xs">J2</text>
-  <circle cx="665" cy="162" r="7" fill="#cfd8dc"/>
-  <circle cx="665" cy="202" r="7" fill="#cfd8dc"/>
-
-  <text x="300" y="300" text-anchor="middle" class="xs">3 jumper wires (female–female),</text>
-  <text x="300" y="314" text-anchor="middle" class="xs">keep them short (&lt; 20 cm)</text>
+  <rect x="440" y="90" width="260" height="200" rx="8" fill="#f3e3c3" stroke="#8a6d3b" stroke-width="2"/>
+  <text x="570" y="80" text-anchor="middle" class="lbl">Driver board (option 1)</text>
+  <text x="590" y="270" text-anchor="middle" class="xs">TC4427 + DC/DC + feedback input</text>
+  <!-- J1 5 pins -->
+  <rect x="440" y="104" width="30" height="148" fill="#222"/>
+  <g class="s">
+    <circle cx="455" cy="118" r="5" fill="#e6c200"/><text x="478" y="122">5V</text>
+    <circle cx="455" cy="148" r="5" fill="#e6c200"/><text x="478" y="152">GND</text>
+    <circle cx="455" cy="178" r="5" fill="#e6c200"/><text x="478" y="182">PWM</text>
+    <circle cx="455" cy="208" r="5" fill="#e6c200"/><text x="478" y="212">3V3</text>
+    <circle cx="455" cy="238" r="5" fill="#e6c200"/><text x="478" y="242">FB</text>
+  </g>
+  <text x="455" y="300" text-anchor="middle" class="xs">J1</text>
+  <!-- J2 3 terminals -->
+  <rect x="670" y="120" width="30" height="130" fill="#2f7d32"/>
+  <g class="s">
+    <circle cx="685" cy="140" r="7" fill="#cfd8dc"/><text x="662" y="144" text-anchor="end">PWM</text>
+    <circle cx="685" cy="185" r="7" fill="#cfd8dc"/><text x="662" y="189" text-anchor="end">GND</text>
+    <circle cx="685" cy="230" r="7" fill="#cfd8dc"/><text x="662" y="234" text-anchor="end">FB</text>
+  </g>
+  <text x="685" y="300" text-anchor="middle" class="xs">J2</text>
 
   <!-- pump -->
-  <circle cx="870" cy="190" r="70" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
-  <text x="870" y="180" text-anchor="middle" class="lbl">Pump</text>
-  <text x="870" y="198" text-anchor="middle" class="xs">Wilo Yonos PARA ST</text>
-  <text x="870" y="212" text-anchor="middle" class="xs">15/7-50/iPWM2</text>
-  <path d="M672 162 C 740 162, 760 175, 812 175" stroke="#8d6e63" stroke-width="5" fill="none"/>
-  <path d="M672 202 C 740 202, 760 205, 812 205" stroke="#1565c0" stroke-width="5" fill="none"/>
-  <text x="742" y="152" text-anchor="middle" class="s" fill="#6d4c41">brown</text>
-  <text x="742" y="226" text-anchor="middle" class="s" fill="#1565c0">blue</text>
-  <text x="745" y="260" text-anchor="middle" class="xs">pump signal cable, max. 3 m</text>
+  <circle cx="900" cy="190" r="72" fill="#eceff1" stroke="#455a64" stroke-width="2"/>
+  <text x="900" y="178" text-anchor="middle" class="lbl">Pump</text>
+  <text x="900" y="196" text-anchor="middle" class="xs">Wilo Yonos PARA ST</text>
+  <text x="900" y="210" text-anchor="middle" class="xs">15/7-50/iPWM2</text>
+  <path d="M692 140 C 760 140, 790 160, 830 165" stroke="#8d6e63" stroke-width="5" fill="none"/>
+  <path d="M692 185 C 760 185, 790 190, 828 190" stroke="#1565c0" stroke-width="5" fill="none"/>
+  <path d="M692 230 C 760 230, 790 215, 830 215" stroke="#111" stroke-width="5" fill="none"/>
+  <text x="765" y="134" text-anchor="middle" class="s" fill="#6d4c41">brown</text>
+  <text x="765" y="180" text-anchor="middle" class="s" fill="#1565c0">blue</text>
+  <text x="765" y="250" text-anchor="middle" class="s">black</text>
+  <text x="765" y="280" text-anchor="middle" class="xs">signal cable, max. 3 m</text>
+  <text x="900" y="300" text-anchor="middle" class="xs">230 V supply of the pump:</text>
+  <text x="900" y="314" text-anchor="middle" class="xs">unchanged, via relay (electrician)</text>
 
-  <text x="870" y="300" text-anchor="middle" class="xs">230 V supply of the pump:</text>
-  <text x="870" y="314" text-anchor="middle" class="xs">unchanged, via relay (electrician)</text>
-
-  <text x="20" y="380" class="s">Pi 5V (pin 2) → J1 5V   ·   Pi GND (pin 6) → J1 GND   ·   Pi GPIO 18 (pin 12) → J1 PWM   ·   J2 PWM → brown   ·   J2 GND → blue</text>
-  <text x="20" y="400" class="xs">Pin numbers are the same on Raspberry Pi 2/3/4/5. Rock 5C: the 40-pin header has the same 5V and GND pins; the PWM pin differs (see text).</text>
+  <text x="20" y="410" class="s">Pin 2 (5V) → J1 5V · pin 6 (GND) → J1 GND · pin 12 (Pi) / pin 13 (Rock 5C) → J1 PWM · pin 17 (3V3) → J1 3V3 · pin 16 → J1 FB</text>
+  <text x="20" y="430" class="s">J2 PWM → brown · J2 GND → blue · J2 FB → black (pumps without feedback: leave J2 FB empty)</text>
+  <text x="20" y="452" class="xs">Pin numbers are the same on Raspberry Pi 2/3/4/5 and Rock 5C, except the PWM pin: Rock 5C has no PWM on pin 12, so its PWM wire goes to pin 13.</text>
 </svg>

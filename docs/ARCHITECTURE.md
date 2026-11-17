@@ -315,6 +315,10 @@ Build instructions, parts lists and layouts for the two practical options
 - This is how OSCoST detects a **stuck or failed pump** (alarm, or no power
   draw while it should run) and confirms that a commanded stop really
   stopped the pump.
+- The feedback input is **optional per output** in the config (none /
+  Wilo iPWM / Grundfos). With nothing connected, the board's pull-up holds
+  the GPIO high, which would read as a constant 100 %; with feedback set
+  to *none*, OSCoST ignores the input.
 - **Pumps without feedback** (for example the Wilo Yonos PARA PWM with
   the 2-wire cable: only PWM in and ground) need another way to check
   the pump: a plausibility check on the temperatures (the collector should

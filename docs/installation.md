@@ -41,7 +41,8 @@ third wire.
 
 Open collector on the pump side (470 Ω in series), high level 3–25 V
 supplied by the controller's pull-up, low ≤ 1 V, at most 1 mA in normal
-operation. 75 Hz, duty cycle accurate to ±1 %:
+operation. 75 Hz, duty cycle accurate to ±1 %. The duty cycle is the share
+of time the line is high (an unpowered pump leaves it high: 100 %).
 
 | Feedback duty | Meaning |
 |---|---|
@@ -72,9 +73,11 @@ stopped, 5–75 % when running) before OSCoST relies on them.
 - **The feedback output gives OSCoST real pump monitoring**: confirmation
   that a stop really stopped the pump (2 %), that it runs when commanded
   (5–75 %), warnings (80 %), and errors (85–95 %), plus "no power" (100 %),
-  which also detects a failed mains relay. It needs one more input on the
-  controller: a pull-up to 3.3 V and a GPIO (see
-  [Feedback input](ARCHITECTURE.md#feedback-input-per-pump)).
+  which also detects a failed mains relay. The driver board has the input
+  for it (J2 FB, see [Hardware needed](HARDWARE.md#checking-the-feedback-signal)).
+- **To do on the real pump**: confirm the table with the multimeter check
+  in the hardware guide (standby about 0.4 V, running in between, no
+  power about 3.3 V).
 
 ## Open points
 

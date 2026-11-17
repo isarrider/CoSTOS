@@ -19,14 +19,14 @@ from pathlib import Path
 # Stripboard, copper strips run horizontally (along x). Holes are numbered
 # x = 1..W (columns, left to right) and y = 1..H (rows = strips, top to
 # bottom), as seen from the component side.
-W, H = 20, 11
+W, H = 20, 13
 
 # Holes where the strip is cut (drilled through).
-CUTS = [(9, 5), (9, 6), (9, 7)]
+CUTS = [(9, 5), (9, 6), (9, 7), (4, 6), (4, 7)]
 
 # Components: name -> (label, value, {pin: (x, y)}, kind)
 COMPONENTS = {
-    "J1": ("J1", "to Pi: 5V / GND / PWM", {"5V": (1, 3), "GND": (1, 4), "PWM": (1, 5)}, "header3"),
+    "J1": ("J1", "to Pi", {"5V": (1, 3), "GND": (1, 4), "PWM": (1, 5), "3V3": (1, 6), "FB": (1, 7)}, "header3"),
     "U2": ("U2", "B0512S-1WR3", {"4": (4, 1), "3": (4, 2), "2": (4, 3), "1": (4, 4)}, "sip4"),
     "C3": ("C3", "4.7 µF", {"+": (6, 3), "-": (6, 2)}, "elko"),
     "C2": ("C2", "2.2 µF", {"+": (7, 1), "-": (7, 2)}, "elko"),
@@ -38,7 +38,10 @@ COMPONENTS = {
     "C1": ("C1", "100 nF", {"a": (12, 6), "b": (12, 4)}, "cer"),
     "R2": ("R2", "470 Ω 0.5 W", {"a": (15, 5), "b": (15, 9)}, "res"),
     "D1": ("D1", "P6KE15A", {"K": (17, 9), "A": (17, 11)}, "tvs_up"),
-    "J2": ("J2", "to pump", {"PWM": (19, 9), "GND": (19, 11)}, "screw2"),
+    "J2": ("J2", "to pump", {"PWM": (19, 9), "GND": (19, 11), "FB": (19, 13)}, "screw2"),
+    "R4": ("R4", "4.7 kΩ", {"a": (16, 12), "b": (16, 13)}, "res_up"),
+    "R5": ("R5", "10 kΩ", {"a": (12, 13), "b": (12, 8)}, "res"),
+    "C4": ("C4", "1 nF", {"a": (6, 8), "b": (6, 7)}, "cer"),
 }
 
 # Wire links on the component side: name -> ((x1, y1), (x2, y2))
@@ -48,12 +51,17 @@ LINKS = {
     "L3": ((7, 7), (7, 6)),     # U1 IN B (pin 4) -> GND
     "L4": ((14, 6), (14, 1)),   # U1 VDD (pin 6) -> +12 V
     "L5": ((18, 11), (18, 4)),  # pump GND -> GND
+    "L6": ((3, 6), (3, 12)),    # 3.3 V from J1 -> row L
+    "L7": ((2, 7), (2, 8)),     # feedback from J1 -> row H
 }
 
 # Intended circuit: net -> set of component pins
 NETLIST = {
     "GND": {"J1.GND", "U2.1", "U2.3", "C3.-", "C2.-", "R3.b", "R1.b", "U1.1",
-            "U1.8", "U1.3", "U1.4", "C1.b", "D1.A", "J2.GND"},
+            "U1.8", "U1.3", "U1.4", "C1.b", "D1.A", "J2.GND", "C4.b"},
+    "+3V3": {"J1.3V3", "R4.a"},
+    "FB_GPIO": {"J1.FB", "R5.b", "C4.a"},
+    "FB_PUMP": {"R5.a", "R4.b", "J2.FB"},
     "+12V": {"U2.4", "C2.+", "R3.a", "U1.6", "C1.a"},
     "+5V": {"J1.5V", "U2.2", "C3.+"},
     "PWM_IN": {"J1.PWM", "R1.a", "U1.2"},
@@ -270,6 +278,8 @@ def draw_components():
                 out.append(f"<path d='M {ax} {ay} Q {ax+16} {(ay+by)/2} {bx} {by}' fill='none' stroke='#9e9e9e' stroke-width='2.5'/>")
                 if name == "R1":
                     out.append(text(ax - 14, ay + 26, f"{label} {value}", 10, anchor="end", weight="bold"))
+                elif name == "R4":
+                    out.append(text(ax - 14, ay + 4, f"{label} {value}", 10, anchor="end", weight="bold"))
                 else:
                     out.append(text(ax + 14, ay + 4, f"{label} {value}", 10, anchor="start", weight="bold"))
             elif kind == "cer":
@@ -288,7 +298,8 @@ def draw_components():
 
 def draw_links():
     out = []
-    colors = {"L1": "#2e7d32", "L2": "#2e7d32", "L3": "#2e7d32", "L4": "#c62828", "L5": "#2e7d32"}
+    colors = {"L1": "#2e7d32", "L2": "#2e7d32", "L3": "#2e7d32", "L4": "#c62828", "L5": "#2e7d32",
+              "L6": "#ef6c00", "L7": "#6a1b9a"}
     for name, ((x1, y1), (x2, y2)) in LINKS.items():
         c = colors.get(name, "#1565c0")
         X1, Y1, X2, Y2 = hx(x1), hy(y1), hx(x2), hy(y2)
@@ -297,6 +308,10 @@ def draw_links():
             out.append(f"<circle cx='{X}' cy='{Y}' r='4.5' fill='#bbb' stroke='{c}' stroke-width='2'/>")
         if name == "L5":
             out.append(text(X1 - 10, hy(10) + 4, name, 10, anchor="end", color=c, weight="bold"))
+        elif name == "L6":
+            out.append(text(X1 + 10, hy(10) + 4, name, 10, anchor="start", color=c, weight="bold"))
+        elif name == "L7":
+            out.append(text(X1 - 8, Y2 + 16, name, 10, anchor="middle", color=c, weight="bold"))
         else:
             out.append(text(X1 - 10, (Y1 + Y2) / 2 + 4, name, 10, anchor="end", color=c, weight="bold"))
     return out
@@ -321,6 +336,7 @@ def component_side_svg():
     out += draw_components()
     out += cut_marks(False)
     out.append(text(hx(9) + 15, hy(7) + 32, "3 cuts under U1 (column 9)", 10, color="#c0392b", weight="bold"))
+    out.append(text(hx(4), hy(7) + 22, "2 cuts (col. 4)", 10, color="#c0392b", weight="bold"))
     ly = hy(H) + 72
     out += legend(ly, [
         (lambda x, y: f"<rect x='{x}' y='{y-6}' width='22' height='12' fill='{COPPER}' opacity='0.5'/>",
@@ -331,7 +347,7 @@ def component_side_svg():
          "wire link (insulated)"),
     ])
     out.append(text(M - 20, ly + 28, "View: component side, strips run left to right. "
-                    "Rows A–K, columns 1–20.", 11, anchor="start", color="#555"))
+                    "Rows A–M, columns 1–20.", 11, anchor="start", color="#555"))
     out.append("</svg>")
     return "\n".join(out)
 

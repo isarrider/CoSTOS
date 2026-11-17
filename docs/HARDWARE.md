@@ -26,13 +26,15 @@ input needs a high level of about 4 V or more and takes at most 15 V and
 7.5 mA, at 100–5000 Hz (Wilo's newer Para series accepts up to 24 V). The
 12 V used here suits both.
 
-iPWM pumps like this one also have a **black** wire: a feedback output that
-reports the pump's status. The circuits below only drive the input; the
-black wire stays unconnected (insulate its end) until the feedback input is
-added. A
-Raspberry Pi pin gives 3.3 V and very little current, so something has to
+A Raspberry Pi pin gives 3.3 V and very little current, so something has to
 sit in between. See
 [PWM pump outputs](ARCHITECTURE.md#53-pwm-pump-outputs) for the background.
+
+iPWM pumps like this one also have a **black** wire: a **feedback output**
+that reports the pump's status (stopped, running, warning, error, no power)
+as a 75 Hz PWM signal. The driver board (option 1) has an input for it.
+Pumps without feedback work the same way; their J2 FB terminal just stays
+empty.
 
 Two ways to do it:
 
@@ -44,6 +46,7 @@ Two ways to do it:
 | Isolation Pi ↔ pump wiring | No (shared ground, protected by series resistor and TVS diode) | Yes |
 | 12 V | Made on the board from the Pi's 5 V | Separate 12 V supply needed |
 | Parts cost | about €5 | about €3–7 plus the 12 V supply |
+| Pump feedback (black wire) | Yes, input on the board | Not covered (would need a second, reversed optocoupler) |
 | Recommended | **yes** | if you don't want to solder |
 
 ---
@@ -51,8 +54,9 @@ Two ways to do it:
 ### Option 1: driver board
 
 A TC4427 MOSFET driver turns the Pi's 3.3 V PWM into a clean 0/12 V signal.
-A small DC/DC module makes the 12 V from the Pi's 5 V, so the board needs
-only three wires to the Pi and two to the pump.
+A small DC/DC module makes the 12 V from the Pi's 5 V. A second, simple
+circuit reads the pump's feedback output. The board needs five wires to the
+Pi and up to three to the pump.
 
 ![Circuit diagram of the driver board](img/pwm-driver-schematic.svg)
 
@@ -73,6 +77,20 @@ What each part does:
 - **D1 P6KE15A**: TVS diode, clamps spikes and static discharge coming in
   over the pump cable.
 - **C1, C2, C3**: decoupling for the driver and the DC/DC module.
+- **R4 4.7 kΩ**: pull-up to 3.3 V for the pump's open-collector feedback
+  output. When the pump's output transistor is on, it pulls the line low;
+  otherwise R4 pulls it up to 3.3 V. The current (0.7 mA) stays under the
+  1 mA Wilo allows.
+- **R5 10 kΩ**: between the feedback line and the Pi's GPIO. If a wrong
+  voltage ever reaches the black wire (a wiring mistake, a spike), R5 keeps
+  the current into the GPIO small enough for the Pi's internal protection.
+- **C4 1 nF**: filters short spikes picked up on the cable. With R5 it
+  delays edges by about 10 µs, nothing compared with the 13 ms period of the
+  75 Hz feedback signal.
+
+Without a pump connected to J2 FB, R4 simply holds the GPIO at 3.3 V. That
+is harmless; OSCoST is told per pump whether there is a feedback signal to
+read and ignores the input otherwise.
 
 #### Parts list
 
@@ -88,11 +106,14 @@ What each part does:
 | R2 | 470 Ω, **0.5 W** or 0.6 W metal film | |
 | R3 | 1.5 kΩ, 0.25 W | |
 | D1 | **P6KE15A** TVS diode, unidirectional | Not the bidirectional P6KE15CA |
-| J1 | 3-pin male pin header, 2.54 mm | For jumper wires to the Pi |
-| J2 | 2-pin PCB screw terminal, 5.08 mm | For the pump cable |
-| — | Stripboard, 2.54 mm, at least 20 × 11 holes | Strips must run along the 20-hole side |
+| R4 | 4.7 kΩ, 0.25 W | |
+| R5 | 10 kΩ, 0.25 W | |
+| C4 | 1 nF ceramic, ≥ 25 V | 2.54 mm pitch, or bend the leads |
+| J1 | 5-pin male pin header, 2.54 mm | For jumper wires to the Pi |
+| J2 | 3-pin PCB screw terminal, 5.08 mm | For the pump cable (or 2-pin + 1-pin side by side) |
+| — | Stripboard, 2.54 mm, at least 20 × 13 holes | Strips must run along the 20-hole side |
 | — | Solid insulated wire, about 0.5 mm | For the wire links |
-| — | 3 jumper wires female–female, 10–20 cm | Pi to J1 |
+| — | 5 jumper wires female–female, 10–20 cm | Pi to J1 |
 
 Tools: soldering iron, solder, side cutters, a strip cutter (or a 3.5–4 mm
 drill bit turned by hand), a multimeter.
@@ -117,20 +138,26 @@ also checks every connection on the board against the circuit diagram.
 Solder the flattest parts first; that way the board lies flat while you
 work.
 
-1. **Cut the board** to 20 columns × 11 rows, with the strips running
+1. **Cut the board** to 20 columns × 13 rows, with the strips running
    along the 20 columns. Write `A1` on the corner that will be top left
    (component side) so you don't lose orientation.
-2. **Cut the three strips under U1**: holes **E9, F9 and G9**. From the
-   copper side (second drawing) they are in the middle, just right of
-   centre. Twist the strip cutter or drill bit until the copper ring is
-   gone completely. Check with the multimeter (continuity mode): E8–E11,
-   F8–F11 and G8–G11 must **not** beep.
+2. **Make the five strip cuts**:
+   - under U1: **E9, F9 and G9**. From the copper side (second drawing)
+     they are in the middle, just right of centre.
+   - next to J1: **F4 and G4**. From the copper side they are near the
+     right edge.
+
+   Twist the strip cutter or drill bit until the copper ring is gone
+   completely. Check with the multimeter (continuity mode): E8–E11, F8–F11,
+   G8–G11, F3–F5 and G3–G5 must **not** beep.
 3. **Wire links** (insulated wire; strip only the ends):
    - **L3**: G7 → F7 (short)
    - **L2**: F6 → D6
    - **L1**: B13 → D13
    - **L4**: F14 → A14 (red in the drawing: +12 V)
    - **L5**: K18 → D18 (long)
+   - **L6**: F3 → L3 (orange in the drawing: 3.3 V)
+   - **L7**: G2 → H2 (short; feedback)
 
    The links only connect at their two ends. Where they cross other strips
    they must not touch the copper, which is why they're insulated.
@@ -138,10 +165,13 @@ work.
    - **R2** 470 Ω lying flat from **E15 to I15**.
    - **R1** 100 kΩ standing upright between **D7 and E7**.
    - **R3** 1.5 kΩ standing upright between **A9 and B9**.
+   - **R5** 10 kΩ lying flat from **H12 to M12**.
+   - **R4** 4.7 kΩ standing upright between **L16 and M16**.
 5. **IC socket for U1**: pins 1–4 in **D8, E8, F8, G8**, pins 8–5 in
    **D11, E11, F11, G11**. The notch points up (towards row A–C), pin 1 is
    at **D8**. Don't insert the chip yet.
-6. **C1** 100 nF between **D12 and F12** (no polarity).
+6. **C1** 100 nF between **D12 and F12**, **C4** 1 nF between **G6 and H6**
+   (no polarity).
 7. **Electrolytic capacitors**, mind the polarity (the stripe on the can
    marks **minus**):
    - **C3** 4.7 µF: **+ in C6**, − in B6.
@@ -152,10 +182,10 @@ work.
    B4, pin 4 in A4. Pin 1 is marked on the module (dot, notch or the
    printed "1"). Check before soldering: this part is the easiest to put
    in the wrong way round.
-10. **J1** pin header: **C1 = 5V, D1 = GND, E1 = PWM**. Label them on the
-    board with a marker.
+10. **J1** pin header: **C1 = 5V, D1 = GND, E1 = PWM, F1 = 3V3, G1 = FB**.
+    Label them on the board with a marker.
 11. **J2** screw terminal with the openings facing outwards (right):
-    **I19 = PWM (brown)**, **K19 = GND (blue)**.
+    **I19 = PWM (brown)**, **K19 = GND (blue)**, **M19 = FB (black)**.
 
 #### Checks before power
 
@@ -172,19 +202,33 @@ in its socket, measure with the multimeter:
 | J2 PWM – socket pin 7 (E11) | 470 Ω | R2 |
 | J2 GND – J1 GND | 0 Ω | L5 |
 | Socket pin 4 (G8) – J1 GND | 0 Ω | L3 / L2 |
+| J1 3V3 – J1 GND | no short | cut F4 incomplete |
+| J1 3V3 – J2 FB | 4.7 kΩ | R4, L6 |
+| J1 FB – J2 FB | 10 kΩ | R5, L7, cut G4 |
+| J1 FB – J1 GND | open (C4 charges briefly) | cut G4 incomplete, C4 shorted |
 
 #### First power-up
 
-1. Shut down the Pi and unplug it. Connect the three jumper wires: **Pi
-   pin 2 (5V) → J1 5V**, **Pi pin 6 (GND) → J1 GND**, **Pi pin 12 (GPIO 18)
-   → J1 PWM**. On a **Rock 5C** the PWM wire goes to **pin 13** instead
-   (see [Testing the output](#testing-the-output)).
+1. Shut down the Pi and unplug it. Connect the five jumper wires:
+
+   | Pi pin | J1 |
+   |---|---|
+   | 2 (5V) | 5V |
+   | 6 (GND) | GND |
+   | 12 (GPIO 18); **Rock 5C: pin 13** | PWM |
+   | 17 (3.3 V) | 3V3 |
+   | 16 (GPIO 23 on the Pi, GPIO1_A5 on the Rock 5C) | FB |
+
+   The Rock 5C has no PWM on pin 12 (see
+   [Testing the output](#testing-the-output)). Pin 16 is a plain GPIO on
+   both boards, and pin 17 is 3.3 V on both.
 
    ![Wiring: Pi, driver board, pump](img/pwm-driver-wiring.svg)
 
 2. Power up the Pi. Measure the A row against the D row: **about 12 V**
    (11–13.5 V is fine; the DC/DC output is unregulated). The DC/DC module
-   should stay cold.
+   should stay cold. J1 FB against GND should show **3.3 V** (R4 pulls it
+   up while nothing is connected to J2 FB).
 3. Shut down and unplug the Pi again, then insert **U1 into its socket,
    notch up, pin 1 at D8**.
 
@@ -264,7 +308,8 @@ averages the PWM):
 
 1. Set the duty cycle back to `0`.
 2. Unplug the pump's signal cable from the RESOL controller and connect it
-   to J2: **brown → PWM, blue → GND**.
+   to J2: **brown → PWM, blue → GND, black → FB** (pumps without feedback:
+   leave FB empty).
 3. The pump still gets its 230 V from the RESOL relay. For the test, set
    that relay to manual **ON** in the RESOL menu. Remember to set it back
    to **Auto** afterwards.
@@ -273,8 +318,42 @@ averages the PWM):
    - `400000` (20 %): pump starts and runs slowly.
    - `1000000` (50 %), then `2000000` (100 %): pump gets faster.
    - back to `0`: pump stops.
-5. Finally plug the signal cable back into the RESOL controller and set its
+5. Check the feedback (iPWM pumps), see below.
+6. Finally plug the signal cable back into the RESOL controller and set its
    relay back to Auto, until OSCoST takes over.
+
+#### Checking the feedback signal
+
+Wilo documents the meaning of the feedback duty cycle for its Para series
+(see [Reference installation](installation.md#feedback-output-black-wire)):
+2 % = stopped and ready, 5–75 % = running, 80 % = warning, 85–95 % =
+stopped by an error, 100 % = no power. The Yonos PARA iPWM uses the same
+interface standard, but its own manual doesn't list the table. This check
+confirms the values before OSCoST relies on them, and also tells which way
+round the signal is counted.
+
+The direction follows from the hardware: an unpowered pump can't switch
+its output transistor on, so R4 holds the line high, and Wilo calls that
+100 %. So the duty cycle is the share of time the line is **high**. When
+the transistor is on, the line sits at about 0.4 V (0.7 mA through the
+pump's internal 470 Ω), not 0 V.
+
+A multimeter on DC volts between **J1 FB and J1 GND** shows the average of
+the 75 Hz signal, which is enough to check this:
+
+| Pump state | Expected feedback | Multimeter (average) |
+|---|---|---|
+| Powered, PWM input `0` (standby) | 2 % | about **0.4 V** |
+| Running, PWM input `1000000` (50 %) | somewhere in 5–75 % | **between 0.5 and 2.6 V**, changes with speed |
+| No power (RESOL relay off) | 100 % | about **3.3 V** |
+
+If the readings follow this pattern, the table applies to this pump; note
+the result in [Reference installation](installation.md). If they don't,
+OSCoST uses the feedback only as "signal present / absent" until the
+correct table is known.
+
+Exact duty-cycle values (to tell 85 % from 90 % from 95 %) need the
+software: OSCoST measures the time between edges on the GPIO.
 
 ---
 
