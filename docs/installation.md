@@ -53,6 +53,11 @@ be BX Plus inputs S1–S8.
     continuous.
   - The [PT edition](HAT.md#11-pt-edition-8--pt1000) (keep all Pt1000
     sensors) was considered and stays documented for other installations.
+  - To consider before ordering: **S4 (solar flow) can briefly exceed a
+    DS18B20's 125 °C** after a stagnation day; fitting the HAT's PT2
+    position and keeping S4 as Pt1000 (2 Pt1000 + 6 DS18B20) avoids that
+    for about €9. And a short in one probe or its cable takes down its
+    whole bus: OSCoST then treats those sensors as unknown, never as cold.
 - The heat generator ("Heizung") is a **heat pump** today; it was a gas
   boiler when the system was installed. S6–S8 are only measured, nothing
   acts on them.
