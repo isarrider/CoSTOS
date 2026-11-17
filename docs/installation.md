@@ -154,9 +154,37 @@ store on its overview page from the same data (see
 - **S2 (store bottom)** sits in the ½" sleeve at 560 mm (left), **S3 (store
   top)** in the ½" sleeve at 1270 mm (left).
 
+## Collector
+
+**2 × Solardirekt24 EUROTHERM-SOLAR-PRO 30R**: heat-pipe evacuated tube
+collectors with 30 tubes each. 2 tubes are broken and removed, so 58 of 60
+tubes are in place.
+
+| | per collector | installation |
+|---|---|---|
+| Tubes | 30, Ø 58 mm, borosilicate glass | 58 in place |
+| Gross area | 4.58 m² | 9.16 m² |
+| Output (data sheet, 1000 W/m², ΔT 0 / 30 / 50 K) | 2037 / 1853 / 1682 W | about 3.9 / 3.6 / 3.3 kW with 58 tubes |
+| Size (H × W × D) | 1980 × 2370 × 125 mm, 103 kg | |
+| Max. working temperature | 95 °C | |
+| **Stagnation temperature** | **208 °C** | |
+| Connections | 22 mm copper | |
+| Pressure drop | 78 Pa at 120 l/h | |
+
+- **Heat pipes:** each tube carries its heat to a condenser in the
+  manifold; the collector sensor sits in a sleeve in that manifold. The
+  manifold therefore heats up without flow, and the "tube collector
+  function" (short pump runs to bring heat to the sensor) is normally not
+  needed. To be checked: whether it is switched on in the BX Plus.
+- **208 °C stagnation:** far above a DS18x20's range, so S1 stays Pt1000
+  (as planned), and OSCoST's collector emergency shutdown and cooling
+  functions matter on hot summer days with a full store.
+- A broken tube just lowers the output; a heat pipe has no fluid
+  connection to the solar circuit, so there is no leak.
+
 ## Open points
 
-- Collector: flat-plate or evacuated tube, area.
+- Collector: is the tube collector function switched on in the BX Plus?
 - Heat transfer fluid: glycol or water, glycol percentage.
 - Flowmeter (V40 or similar) present?
 - Independent store overtemperature cut-out present?
