@@ -344,26 +344,28 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
   (`/api/v1/import/prometheus`), text format with explicit millisecond
   timestamps, optional basic auth or bearer token. One request per second in
   normal operation.
-- **Metric names are compatible with vbus2influx**, so the existing
-  dashboards keep working unchanged after the switch-over. vbus2influx
-  writes Influx line protocol with measurement `<prefix>` (default
-  `vbus2influx`) and fields like `temperature_01`, without tags.
-  VictoriaMetrics turns that into series named `<prefix>_<field>` with no
-  labels. OSCoST writes exactly those names (over the Prometheus endpoint,
-  which gives the same series):
-  - every sensor gets a **VBus channel number** in the web interface, so the
-    collector sensor that was `S1` on the RESOL is still
-    `vbus2influx_temperature_01`. Same for `relay_01` … `relay_05` (speed in
-    %), `PWM_0_10V_A`/`_B`, `flow_rate_*`, `irradiation_10`, `pressure_*`.
+- **Metric names follow the vbus2influx scheme with the prefix `oscost`.**
+  vbus2influx writes Influx line protocol with measurement `vbus2influx`
+  and fields like `temperature_01`, without tags, which VictoriaMetrics
+  stores as series named `vbus2influx_temperature_01` with no labels.
+  OSCoST writes the same field names, without labels, under its own
+  prefix: `oscost_temperature_01`.
+  - Every sensor gets a **VBus channel number** in the web interface, so
+    the collector sensor that was `S1` on the RESOL becomes
+    `oscost_temperature_01`. Same for `relay_01` … `relay_05` (speed in %),
+    `PWM_0_10V_A`/`_B`, `flow_rate_*`, `irradiation_10`, `pressure_*`.
     Units stay the same (°C, %).
-  - values the RESOL never had (ΔT, heat output, active function, fault and
+  - Values the RESOL never had (ΔT, heat output, active function, fault and
     safety flags, buffer state) get new names under the same prefix, for
-    example `vbus2influx_delta_t`, `vbus2influx_sensor_fault_01`.
+    example `oscost_delta_t`, `oscost_sensor_fault_01`.
   - A sensor with a fault is **not written** for that second (a gap in the
     chart), instead of writing a fake value.
-  - The prefix is configurable. **During shadow mode it must differ** from
-    the one vbus2influx uses (for example `oscost`), otherwise both write
-    to the same series. At the switch-over it is changed to `vbus2influx`.
+  - The prefix is fixed at `oscost`, also after OSCoST has replaced the
+    RESOL controller. That way vbus2influx and OSCoST never write to the
+    same series, shadow mode needs no special setup, and the RESOL history
+    stays under `vbus2influx_*`. Existing dashboards only need the prefix
+    in their queries changed. To show old and new data in one chart, query
+    both, for example `oscost_temperature_01 or vbus2influx_temperature_01`.
 - **Buffering**: a sender task reads from a queue, so a slow or unreachable
   database never affects the control loop.
   - Samples go into an in-memory queue first. If a push fails, the queue
