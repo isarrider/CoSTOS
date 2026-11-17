@@ -36,22 +36,43 @@ as a 75 Hz PWM signal. The driver board (option 1) has an input for it.
 Pumps without feedback work the same way; their J2 FB terminal just stays
 empty.
 
-Two ways to do it:
+Three ways to do it:
 
-| | Option 1: driver board | Option 2: optocoupler module |
-|---|---|---|
-| What | TC4427 gate driver on stripboard | Ready-made PC817 level-shifter module |
-| Soldering | Yes, about an hour | None (screw terminals) |
-| Signal quality | Clean 12 V, edges < 1 µs | Slow edges (tens of µs), small duty-cycle error |
-| Isolation Pi ↔ pump wiring | No (shared ground, protected by series resistor and TVS diode) | Yes |
-| 12 V | Made on the board from the Pi's 5 V | Separate 12 V supply needed |
-| Parts cost | about €5 | about €3–7 plus the 12 V supply |
-| Pump feedback (black wire) | Yes, input on the board | Not covered (would need a second, reversed optocoupler) |
-| Recommended | **yes** | if you don't want to solder |
+| | Option 1: driver board, 12 V | Option 1 simplified: driver board, 5 V | Option 2: optocoupler module |
+|---|---|---|---|
+| What | TC4427 gate driver + 5→12 V DC/DC on stripboard | Same board without the DC/DC; driver runs from the Pi's 5 V | Ready-made PC817 level-shifter module |
+| Soldering | Yes, about an hour | Yes, a bit less | None (screw terminals) |
+| Signal at the pump | about 10.6 V (worst case 7.5 V) | about 4.7 V (worst case 4.0 V) | about 12 V, slow edges |
+| Margin above the pump's ~4 V threshold | large | **small** | large |
+| Isolation Pi ↔ pump wiring | No (series resistor and TVS diode) | No (series resistor and TVS diode) | Yes |
+| Extra supply | None (12 V made on the board) | None | Separate 12 V supply |
+| Parts cost | about €5 | about €3 | about €3–7 plus the 12 V supply |
+| Pump feedback (black wire) | Yes, input on the board | Yes, input on the board | Not covered (would need a second, reversed optocoupler) |
+| Recommended | **yes** | if you want the simplest board and accept the small margin | if you don't want to solder |
+
+#### 12 V or 5 V?
+
+Both driver boards are the same circuit; the simplified one just leaves out
+the DC/DC module and runs the TC4427 from the Pi's 5 V. That saves three
+parts and the module, but the pump then gets only about 4.7 V instead of
+about 10.6 V, against a threshold of about 4 V:
+
+![Comparison: 12 V board versus simplified 5 V board](img/pwm-driver-options-comparison.svg)
+
+- **Worst case** means the Pi's 5 V at its lower limit (4.75 V), the DC/DC
+  at 11 V and the pump drawing its maximum input current (7.5 mA). Then the
+  simplified board delivers exactly the threshold, with no margin left.
+- **Typical** values (5.0 V, 12 V, about 3 mA) leave the simplified board
+  0.7 V above the threshold. That works, but a weak 5 V supply, a long
+  cable or an older pump with a higher threshold can eat it up.
+- **The PWM frequency doesn't change this.** The margin is about the
+  voltage level; 200 Hz or 500 Hz makes no difference with the fast TC4427.
+  (Lower frequencies help only with slow optocouplers, see
+  [option 2](#limits).)
 
 ---
 
-### Option 1: driver board
+### Option 1: driver board, 12 V
 
 A TC4427 MOSFET driver turns the Pi's 3.3 V PWM into a clean 0/12 V signal.
 A small DC/DC module makes the 12 V from the Pi's 5 V. A second, simple
@@ -354,6 +375,132 @@ correct table is known.
 
 Exact duty-cycle values (to tell 85 % from 90 % from 95 %) need the
 software: OSCoST measures the time between edges on the GPIO.
+
+---
+
+### Option 1 simplified: 5 V driver board
+
+The same driver board without the DC/DC module: the TC4427 runs directly
+from the Pi's 5 V. Read [12 V or 5 V?](#12-v-or-5-v) first; this version
+has only a small voltage margin at the pump.
+
+![Circuit diagram of the simplified 5 V driver board](img/pwm-driver-5v-schematic.svg)
+
+Differences to the [12 V board](#option-1-driver-board-12-v):
+
+- **No U2, C2, R3.** The 5 V from the Pi goes straight to the driver's VDD
+  (pin 6). The TC4427 works from 4.5 V, so the Pi's 5 V is enough.
+- **R2 is 100 Ω instead of 470 Ω.** At 5 V there is no room for a large
+  voltage drop. 100 Ω still limits a short circuit on the pump cable to
+  50 mA, which the driver handles.
+- **D1 is a P6KE6.8A instead of a P6KE15A.** It must clamp just above 5 V
+  to protect the driver; a 15 V diode would never conduct here.
+- The feedback input (R4, R5, C4) and everything else is identical.
+
+#### Parts list
+
+| Ref | Part | Notes |
+|---|---|---|
+| U1 | **TC4427** in DIP-8 (TC4427CPA, TC4427ACPA or TC4427EPA) | Must be TC4427 (non-inverting) |
+| — | DIP-8 IC socket | Recommended |
+| C1 | 100 nF ceramic, ≥ 16 V, 5.08 mm pitch | |
+| C3 | 4.7 µF electrolytic, ≥ 10 V | |
+| R1 | 100 kΩ, 0.25 W | |
+| R2 | **100 Ω, 0.5 W** | |
+| R4 | 4.7 kΩ, 0.25 W | |
+| R5 | 10 kΩ, 0.25 W | |
+| C4 | 1 nF ceramic, ≥ 16 V | 2.54 mm pitch, or bend the leads |
+| D1 | **P6KE6.8A** TVS diode, unidirectional | Not the bidirectional P6KE6.8CA |
+| J1 | 5-pin male pin header, 2.54 mm | |
+| J2 | 3-pin PCB screw terminal, 5.08 mm | |
+| — | Stripboard, 2.54 mm, at least 20 × 11 holes | Strips along the 20-hole side |
+| — | Solid insulated wire, about 0.5 mm | For the wire links |
+| — | 5 jumper wires female–female, 10–20 cm | Pi to J1 |
+
+#### Layout
+
+Component side:
+
+![Simplified 5 V board, component side](img/pwm-driver-5v-stripboard-top.svg)
+
+Copper side (flipped left to right):
+
+![Simplified 5 V board, copper side](img/pwm-driver-5v-stripboard-copper.svg)
+
+Generated and checked by the same script as the 12 V board,
+[`tools/hw/pwm_driver_layout.py`](../tools/hw/pwm_driver_layout.py).
+
+#### Building it, step by step
+
+1. **Cut the board** to 20 columns × 11 rows (rows A–K), strips along the
+   20 columns. Mark the top-left corner `A1`.
+2. **Make the five strip cuts**: under U1 **C9, D9, E9**; next to J1 **D4,
+   E4**. Check with the multimeter that C8–C11, D8–D11, E8–E11, D3–D5 and
+   E3–E5 do **not** beep.
+3. **Wire links** (insulated wire):
+   - **L3**: E7 → D7 (short)
+   - **L2**: D6 → B6
+   - **L7**: E2 → F2 (short; feedback)
+   - **L4**: D14 → A14 (+5 V to the driver)
+   - **L6**: D3 → J3 (3.3 V)
+   - **L5**: I18 → B18 (long)
+4. **Resistors**:
+   - **R2** 100 Ω lying flat from **C15 to G15**.
+   - **R5** 10 kΩ lying flat from **F12 to K12**.
+   - **R1** 100 kΩ standing upright between **B7 and C7**.
+   - **R4** 4.7 kΩ standing upright between **J16 and K16**.
+5. **IC socket for U1**: pins 1–4 in **B8, C8, D8, E8**, pins 8–5 in **B11,
+   C11, D11, E11**. Notch up, pin 1 at **B8**.
+6. **C1** 100 nF between **B12 and D12**; **C4** 1 nF between **E6 and F6**.
+7. **C3** 4.7 µF: **+ in A5**, − (stripe) in B5.
+8. **D1** P6KE6.8A standing upright: **band (cathode) in G17**, other end in
+   I17.
+9. **J1** pin header: **A1 = 5V, B1 = GND, C1 = PWM, D1 = 3V3, E1 = FB**.
+10. **J2** screw terminal, openings to the right: **G19 = PWM (brown)**,
+    **I19 = GND (blue)**, **K19 = FB (black)**.
+
+#### Checks before power
+
+Without U1 in its socket:
+
+| Measure between | Expect | If not |
+|---|---|---|
+| J1 5V – J1 GND | no short (rises as C3 charges) | bridge on rows A–B |
+| D8 – D11 (socket pin 3 – pin 6) | open | cut D9 incomplete. **Important**: this one shorts 5 V to GND |
+| C8 – C11 (socket pin 2 – pin 7) | open | cut C9 incomplete |
+| Socket pin 6 (D11) – J1 5V | 0 Ω | L4 |
+| J2 PWM – socket pin 7 (C11) | 100 Ω | R2 |
+| J2 GND – J1 GND | 0 Ω | L5 |
+| Socket pin 4 (E8) – J1 GND | 0 Ω | L3 / L2 |
+| J1 3V3 – J1 GND | no short | cut D4 incomplete |
+| J1 3V3 – J2 FB | 4.7 kΩ | R4, L6 |
+| J1 FB – J2 FB | 10 kΩ | R5, L7, cut E4 |
+
+#### Power-up and test
+
+1. Connect the five jumper wires exactly as for the
+   [12 V board](#first-power-up) (pins 2, 6, 12 or 13 on the Rock 5C, 17,
+   16), with the Pi shut down.
+2. Power up the Pi. Socket pin 6 (D11) against GND: **about 5 V**. J1 FB
+   against GND: **3.3 V**.
+3. Shut down, insert U1 (notch up, pin 1 at B8).
+4. Set up the PWM as in [Testing the output](#testing-the-output). Without
+   the pump connected, J2 PWM against J2 GND should read:
+
+   | `duty_cycle` | Duty | Expect at J2 |
+   |---|---|---|
+   | `0` | 0 % | 0 V |
+   | `1000000` | 50 % | about 2.5 V |
+   | `2000000` | 100 % | about 5 V |
+
+5. Connect the pump and check it as in
+   [Connecting the pump](#connecting-the-pump) and
+   [Checking the feedback signal](#checking-the-feedback-signal).
+   **Additionally**, with the pump connected and the PWM at 100 %
+   (`2000000`), measure J2 PWM against J2 GND: this is the real voltage at
+   the pump input under load. **It must be at least 4.2 V.** If it is
+   lower, the margin is too small for reliable operation: build the 12 V
+   board instead.
 
 ---
 

@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Stripboard layout of the OSCoST PWM pump driver (TC4427 gate driver).
+"""Stripboard layouts of the OSCoST PWM pump driver (TC4427 gate driver).
+
+Two variants: the 12 V board (option 1, with a 5 V -> 12 V DC/DC module)
+and the simplified 5 V board (option 1 simplified, driver runs from the
+Pi's 5 V).
 
 Single source of truth for the layout drawings in docs/img/. The script
   1. computes which holes are connected (copper strips, cuts, components,
@@ -241,7 +245,8 @@ def draw_components():
                 out.append(f"<rect x='{hx(x)-11}' y='{hy(y)-11}' width='22' height='22' fill='#222'/>")
                 out.append(f"<rect x='{hx(x)-4}' y='{hy(y)-4}' width='8' height='8' fill='#e6c200'/>")
                 out.append(text(hx(x) + 18, hy(y) + 4, pin, 10, anchor="start", color="#222", weight="bold"))
-            out.append(text(min(xs), min(ys) - 18, label, 12, weight="bold"))
+            ly = min(ys) - 18 if min(ys) - 18 > M - 10 else max(ys) + 30
+            out.append(text(min(xs), ly, label, 12, weight="bold"))
         elif kind == "screw2":
             x0, y0 = min(xs) - 14, min(ys) - 22
             out.append(f"<rect x='{x0}' y='{y0}' width='30' height='{max(ys)-min(ys)+44}' rx='3' fill='#2f7d32'/>")
@@ -307,9 +312,9 @@ def draw_links():
         for (X, Y) in ((X1, Y1), (X2, Y2)):
             out.append(f"<circle cx='{X}' cy='{Y}' r='4.5' fill='#bbb' stroke='{c}' stroke-width='2'/>")
         if name == "L5":
-            out.append(text(X1 - 10, hy(10) + 4, name, 10, anchor="end", color=c, weight="bold"))
+            out.append(text(X1 - 10, hy(max(y1, y2) - 1) + 4, name, 10, anchor="end", color=c, weight="bold"))
         elif name == "L6":
-            out.append(text(X1 + 10, hy(10) + 4, name, 10, anchor="start", color=c, weight="bold"))
+            out.append(text(X1 + 10, hy(max(y1, y2) - 2) + 4, name, 10, anchor="start", color=c, weight="bold"))
         elif name == "L7":
             out.append(text(X1 - 8, Y2 + 16, name, 10, anchor="middle", color=c, weight="bold"))
         else:
@@ -335,8 +340,10 @@ def component_side_svg():
     out += draw_links()
     out += draw_components()
     out += cut_marks(False)
-    out.append(text(hx(9) + 15, hy(7) + 32, "3 cuts under U1 (column 9)", 10, color="#c0392b", weight="bold"))
-    out.append(text(hx(4), hy(7) + 22, "2 cuts (col. 4)", 10, color="#c0392b", weight="bold"))
+    u1_cut_y = max(y for (x, y) in CUTS if x == 9)
+    j1_cut_y = max(y for (x, y) in CUTS if x == 4)
+    out.append(text(hx(9) + 15, hy(u1_cut_y) + 32, "3 cuts under U1 (column 9)", 10, color="#c0392b", weight="bold"))
+    out.append(text(hx(4), hy(j1_cut_y) + 22, "2 cuts (col. 4)", 10, color="#c0392b", weight="bold"))
     ly = hy(H) + 72
     out += legend(ly, [
         (lambda x, y: f"<rect x='{x}' y='{y-6}' width='22' height='12' fill='{COPPER}' opacity='0.5'/>",
@@ -347,7 +354,7 @@ def component_side_svg():
          "wire link (insulated)"),
     ])
     out.append(text(M - 20, ly + 28, "View: component side, strips run left to right. "
-                    "Rows A–M, columns 1–20.", 11, anchor="start", color="#555"))
+                    f"Rows A–{chr(ord('A') + H - 1)}, columns 1–{W}.", 11, anchor="start", color="#555"))
     out.append("</svg>")
     return "\n".join(out)
 
@@ -381,19 +388,86 @@ def copper_side_svg():
     return "\n".join(out)
 
 
+# --- simplified 5 V variant ---------------------------------------------------
+# Same board without the DC/DC module: the TC4427 runs from the Pi's 5 V.
+# R2 is 100 Ω and D1 a 6.8 V TVS. Rows A and B of the 12 V board are gone.
+FIVE_V = {
+    "name": "5 V (option 1 simplified)",
+    "prefix": "pwm-driver-5v",
+    "W": 20, "H": 11,
+    "CUTS": [(9, 3), (9, 4), (9, 5), (4, 4), (4, 5)],
+    "COMPONENTS": {
+        "J1": ("J1", "to Pi", {"5V": (1, 1), "GND": (1, 2), "PWM": (1, 3), "3V3": (1, 4), "FB": (1, 5)}, "header3"),
+        "C3": ("C3", "4.7 µF", {"+": (5, 1), "-": (5, 2)}, "elko"),
+        "R1": ("R1", "100 kΩ", {"a": (7, 3), "b": (7, 2)}, "res_up"),
+        "U1": ("U1", "TC4427", {
+            "1": (8, 2), "2": (8, 3), "3": (8, 4), "4": (8, 5),
+            "8": (11, 2), "7": (11, 3), "6": (11, 4), "5": (11, 5)}, "dip8"),
+        "C1": ("C1", "100 nF", {"a": (12, 4), "b": (12, 2)}, "cer"),
+        "R2": ("R2", "100 Ω 0.5 W", {"a": (15, 3), "b": (15, 7)}, "res"),
+        "D1": ("D1", "P6KE6.8A", {"K": (17, 7), "A": (17, 9)}, "tvs_up"),
+        "J2": ("J2", "to pump", {"PWM": (19, 7), "GND": (19, 9), "FB": (19, 11)}, "screw2"),
+        "R4": ("R4", "4.7 kΩ", {"a": (16, 10), "b": (16, 11)}, "res_up"),
+        "R5": ("R5", "10 kΩ", {"a": (12, 11), "b": (12, 6)}, "res"),
+        "C4": ("C4", "1 nF", {"a": (6, 6), "b": (6, 5)}, "cer"),
+    },
+    "LINKS": {
+        "L2": ((6, 4), (6, 2)),     # U1 GND (pin 3) -> GND
+        "L3": ((7, 5), (7, 4)),     # U1 IN B (pin 4) -> GND
+        "L4": ((14, 4), (14, 1)),   # U1 VDD (pin 6) -> +5 V
+        "L5": ((18, 9), (18, 2)),   # pump GND -> GND
+        "L6": ((3, 4), (3, 10)),    # 3.3 V from J1 -> row J
+        "L7": ((2, 5), (2, 6)),     # feedback from J1 -> row F
+    },
+    "NETLIST": {
+        "GND": {"J1.GND", "C3.-", "R1.b", "U1.1", "U1.8", "U1.3", "U1.4",
+                "C1.b", "D1.A", "J2.GND", "C4.b"},
+        "+5V": {"J1.5V", "C3.+", "U1.6", "C1.a"},
+        "+3V3": {"J1.3V3", "R4.a"},
+        "FB_GPIO": {"J1.FB", "R5.b", "C4.a"},
+        "FB_PUMP": {"R5.a", "R4.b", "J2.FB"},
+        "PWM_IN": {"J1.PWM", "R1.a", "U1.2"},
+        "OUT_A": {"U1.7", "R2.a"},
+        "PUMP_PWM": {"R2.b", "D1.K", "J2.PWM"},
+        "NC_OUT_B": {"U1.5"},
+    },
+}
+
+TWELVE_V = {
+    "name": "12 V (option 1)",
+    "prefix": "pwm-driver",
+    "W": W, "H": H, "CUTS": CUTS, "COMPONENTS": COMPONENTS,
+    "LINKS": LINKS, "NETLIST": NETLIST,
+}
+
+
+def use(variant):
+    """Make a variant the active layout for check() and the drawing code."""
+    global W, H, CUTS, COMPONENTS, LINKS, NETLIST
+    W, H = variant["W"], variant["H"]
+    CUTS, COMPONENTS = variant["CUTS"], variant["COMPONENTS"]
+    LINKS, NETLIST = variant["LINKS"], variant["NETLIST"]
+
+
 def main():
-    errors = check()
-    if errors:
-        print("LAYOUT ERRORS:")
-        for e in errors:
-            print("  -", e)
-        sys.exit(1)
     root = Path(__file__).resolve().parents[2]
     img = root / "docs" / "img"
     img.mkdir(parents=True, exist_ok=True)
-    (img / "pwm-driver-stripboard-top.svg").write_text(component_side_svg(), encoding="utf-8")
-    (img / "pwm-driver-stripboard-copper.svg").write_text(copper_side_svg(), encoding="utf-8")
-    print("layout OK, nets:", ", ".join(NETLIST))
+    failed = False
+    for variant in (TWELVE_V, FIVE_V):
+        use(variant)
+        errors = check()
+        if errors:
+            failed = True
+            print(f"LAYOUT ERRORS in {variant['name']}:")
+            for e in errors:
+                print("  -", e)
+            continue
+        (img / f"{variant['prefix']}-stripboard-top.svg").write_text(component_side_svg(), encoding="utf-8")
+        (img / f"{variant['prefix']}-stripboard-copper.svg").write_text(copper_side_svg(), encoding="utf-8")
+        print(f"{variant['name']}: layout OK, nets:", ", ".join(NETLIST))
+    if failed:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

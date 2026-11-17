@@ -270,8 +270,9 @@ the feedback signal can confirm the pump reacts.
 
 #### Output circuit (per pump)
 
-Build instructions, parts lists and layouts for the two practical options
-(a TC4427 driver board, or a ready-made optocoupler module) are in
+Build instructions, parts lists and layouts for the practical options (a
+TC4427 driver board at 12 V, the same board simplified to run from the
+Pi's 5 V, or a ready-made optocoupler module) are in
 [Hardware needed](HARDWARE.md#pwm-pump-output).
 
 ```

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="470" viewBox="0 0 680 470" font-family="Helvetica, Arial, sans-serif">
+  <title>PWM driver board: 12 V (option 1) versus 5 V (option 1 simplified)</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="#5F5E5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <style>
+    .h { font-size: 14px; font-weight: bold; fill: #2C2C2A; }
+    .s { font-size: 12px; fill: #5F5E5A; }
+    .t1 { font-size: 14px; font-weight: bold; fill: #085041; }
+    .s1 { font-size: 12px; fill: #0F6E56; }
+    .t2 { font-size: 14px; font-weight: bold; fill: #3C3489; }
+    .s2 { font-size: 12px; fill: #534AB7; }
+    .tg { font-size: 14px; font-weight: bold; fill: #444441; }
+    .sg { font-size: 12px; fill: #5F5E5A; }
+    .b1 { fill: #E1F5EE; stroke: #0F6E56; stroke-width: 0.8; }
+    .b2 { fill: #EEEDFE; stroke: #534AB7; stroke-width: 0.8; }
+    .bg { fill: #F1EFE8; stroke: #5F5E5A; stroke-width: 0.8; }
+    .arr { stroke: #5F5E5A; stroke-width: 1.5; fill: none; }
+  </style>
+  <rect width="680" height="470" fill="white"/>
+
+  <text class="h" x="40" y="30">Option 1: 12 V</text>
+  <text class="s" x="40" y="48">9 parts for the output: U1, U2, R1–R3, C1–C3, D1 (P6KE15A)</text>
+  <rect class="b1" x="40" y="62" width="104" height="56" rx="8"/>
+  <text class="t1" x="92" y="85" text-anchor="middle">Pi</text>
+  <text class="s1" x="92" y="104" text-anchor="middle">5 V supply</text>
+  <rect class="b1" x="164" y="62" width="104" height="56" rx="8"/>
+  <text class="t1" x="216" y="85" text-anchor="middle">DC/DC</text>
+  <text class="s1" x="216" y="104" text-anchor="middle">5 V → 12 V</text>
+  <rect class="b1" x="288" y="62" width="104" height="56" rx="8"/>
+  <text class="t1" x="340" y="85" text-anchor="middle">TC4427</text>
+  <text class="s1" x="340" y="104" text-anchor="middle">switches 12 V</text>
+  <rect class="b1" x="412" y="62" width="104" height="56" rx="8"/>
+  <text class="t1" x="464" y="85" text-anchor="middle">R2 470 Ω</text>
+  <text class="s1" x="464" y="104" text-anchor="middle">short protection</text>
+  <rect class="bg" x="536" y="62" width="104" height="56" rx="8"/>
+  <text class="tg" x="588" y="85" text-anchor="middle">Pump input</text>
+  <text class="sg" x="588" y="104" text-anchor="middle">needs ≥ 4 V</text>
+  <line class="arr" x1="144" y1="90" x2="162" y2="90" marker-end="url(#arrow)"/>
+  <line class="arr" x1="268" y1="90" x2="286" y2="90" marker-end="url(#arrow)"/>
+  <line class="arr" x1="392" y1="90" x2="410" y2="90" marker-end="url(#arrow)"/>
+  <line class="arr" x1="516" y1="90" x2="534" y2="90" marker-end="url(#arrow)"/>
+
+  <text class="h" x="40" y="158">Option 1 simplified: 5 V</text>
+  <text class="s" x="40" y="176">6 parts for the output: U1, R1, R2, C1, C3, D1 (P6KE6.8A)</text>
+  <rect class="b2" x="40" y="190" width="104" height="56" rx="8"/>
+  <text class="t2" x="92" y="213" text-anchor="middle">Pi</text>
+  <text class="s2" x="92" y="232" text-anchor="middle">5 V supply</text>
+  <rect x="164" y="190" width="104" height="56" rx="8" fill="none" stroke="#888780" stroke-width="0.8" stroke-dasharray="4 4"/>
+  <text class="s" x="216" y="208" text-anchor="middle">no DC/DC</text>
+  <rect class="b2" x="288" y="190" width="104" height="56" rx="8"/>
+  <text class="t2" x="340" y="213" text-anchor="middle">TC4427</text>
+  <text class="s2" x="340" y="232" text-anchor="middle">switches 5 V</text>
+  <rect class="b2" x="412" y="190" width="104" height="56" rx="8"/>
+  <text class="t2" x="464" y="213" text-anchor="middle">R2 100 Ω</text>
+  <text class="s2" x="464" y="232" text-anchor="middle">smaller drop</text>
+  <rect class="bg" x="536" y="190" width="104" height="56" rx="8"/>
+  <text class="tg" x="588" y="213" text-anchor="middle">Pump input</text>
+  <text class="sg" x="588" y="232" text-anchor="middle">needs ≥ 4 V</text>
+  <line class="arr" x1="144" y1="218" x2="286" y2="218" marker-end="url(#arrow)"/>
+  <line class="arr" x1="392" y1="218" x2="410" y2="218" marker-end="url(#arrow)"/>
+  <line class="arr" x1="516" y1="218" x2="534" y2="218" marker-end="url(#arrow)"/>
+
+  <text class="h" x="40" y="290">Voltage at the pump input</text>
+  <line x1="270" y1="300" x2="270" y2="412" stroke="#E24B4A" stroke-width="1.2" stroke-dasharray="4 3"/>
+  <text class="s" x="276" y="310" fill="#A32D2D">threshold ≈ 4 V</text>
+  <line x1="600" y1="300" x2="600" y2="412" stroke="#888780" stroke-width="0.8" stroke-dasharray="4 3"/>
+  <text class="s" x="594" y="310" text-anchor="end">pump max 15 V</text>
+
+  <text class="s" x="40" y="334">Option 1 worst</text>
+  <rect class="b1" x="150" y="321" width="225" height="18" rx="3"/>
+  <text class="s" x="381" y="334">7.5 V</text>
+  <text class="s" x="40" y="358">Option 1 typical</text>
+  <rect class="b1" x="150" y="345" width="318" height="18" rx="3"/>
+  <text class="s" x="474" y="358">10.6 V</text>
+  <text class="s" x="40" y="382">Simplified worst</text>
+  <rect class="b2" x="150" y="369" width="120" height="18" rx="3"/>
+  <text class="s" x="282" y="382">4.0 V</text>
+  <text class="s" x="40" y="406">Simplified typical</text>
+  <rect class="b2" x="150" y="393" width="141" height="18" rx="3"/>
+  <text class="s" x="297" y="406">4.7 V</text>
+
+  <line x1="150" y1="418" x2="630" y2="418" stroke="#888780" stroke-width="0.8"/>
+  <text class="s" x="150" y="434" text-anchor="middle">0</text>
+  <text class="s" x="270" y="434" text-anchor="middle">4</text>
+  <text class="s" x="390" y="434" text-anchor="middle">8</text>
+  <text class="s" x="510" y="434" text-anchor="middle">12</text>
+  <text class="s" x="630" y="434" text-anchor="middle">16 V</text>
+  <text class="s" x="40" y="458">Worst: Pi 5 V at 4.75 V, DC/DC at 11 V, pump draws 7.5 mA. Typical: 5.0 V, 12 V, about 3 mA.</text>
+</svg>
