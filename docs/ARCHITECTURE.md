@@ -270,8 +270,9 @@ oscost/
 │  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; MAX31865, DS18x20, DS2482 drivers
 │  ├─ oscost-sim/        # thermal model of collector + store, used for tests and dry runs
 │  ├─ oscost-config/     # config schema, validation, migrations between schema versions, revision store
+│  ├─ oscost-web/        # web interface: server-rendered pages (maud), htmx handlers, SSE streams
 │  └─ oscostd/           # daemon: scheduler, tasks, HTTP API, MQTT, VictoriaMetrics push + buffer, systemd
-├─ web/                  # web interface (Svelte + TypeScript), built to static files embedded in oscostd
+├─ assets/               # vendored htmx, htmx SSE extension, uPlot, CSS, icons (embedded in the binary)
 └─ docs/
 ```
 
@@ -467,20 +468,45 @@ Config changes can switch pumps, so they are applied carefully:
 
 ### 7.4 Technology
 
-- **Frontend**: Svelte + TypeScript, built to static files and **embedded in
-  the `oscostd` binary** (for example with `rust-embed`). No separate web
-  server, nothing to install on the device, works offline in the local
-  network. Mobile-friendly layout, since it is often used on a phone next to
-  the store.
-- **API**: JSON over HTTP (axum), the same API the frontend uses, documented
-  as OpenAPI. Home Assistant, scripts and future apps use it too.
-- **Live updates**: Server-Sent Events push the state once per control cycle
-  (1 Hz) to the overview, and live readings to the setup wizard.
-- **Schema-driven forms**: parameter names, units, ranges, defaults and
-  help texts are defined once in Rust (`oscost-config`) and exported to the
-  frontend as JSON Schema / generated TypeScript types. A new parameter
-  appears in the interface without hand-written form code, and frontend and
-  backend can't disagree about valid values.
+The interface is **server-rendered HTML with htmx**. There is no separate
+frontend app and no JavaScript build: `cargo build` produces the complete
+program, web interface included.
+
+- **Rendering**: pages and page fragments are rendered in Rust with
+  [maud](https://maud.lambda.xyz/) (HTML as a Rust macro, checked at compile
+  time, so a broken template is a compile error, not a runtime error). They
+  live in `oscost-web` and are served by axum.
+- **htmx** turns forms and buttons into partial page updates: a changed
+  field is validated by the server as you type, and only the affected part of
+  the page is replaced. Every page also works as a plain HTML form without
+  JavaScript, just less smoothly.
+- **Live updates**: Server-Sent Events, via the htmx SSE extension. The
+  overview receives updated HTML fragments (temperatures, pump states, the
+  system diagram) once per control cycle. The setup wizard streams live
+  sensor readings the same way.
+- **System diagram**: an SVG rendered by the server. Values and states are
+  elements in the SVG that the SSE stream replaces.
+- **Charts**: [uPlot](https://github.com/leeoniya/uPlot), a small and fast
+  time-series library, and the only real piece of JavaScript. The history
+  page gives it data from VictoriaMetrics, fetched through the daemon.
+- **Forms built from the config definitions**: parameter names, units,
+  ranges, defaults and help texts are defined once in Rust (`oscost-config`).
+  `oscost-web` builds the settings forms from these definitions and shows
+  the validation errors that `oscost-config` returns, next to the field.
+  Interface and controller can't disagree about valid values, because it's
+  the same code. A new parameter appears in the interface without
+  hand-written form code.
+- **Assets** (htmx, its SSE extension, uPlot, CSS, icons) are **vendored**
+  into `assets/` with pinned versions and checksums, and embedded in the
+  binary. No CDN, so the interface works with no internet connection, and
+  there are no npm dependencies to keep updated.
+- **CSS**: one small hand-written stylesheet with a mobile-first layout,
+  since the interface is often used on a phone next to the store. No CSS
+  framework that needs a build step.
+- **JSON API**: the same daemon also offers a JSON API (documented as
+  OpenAPI) for Home Assistant, scripts and future apps. The web pages don't
+  depend on it; they talk HTML to the server. Both use the same validation
+  and access rules.
 
 ### 7.5 Access and security
 
@@ -571,7 +597,3 @@ measurement in phase 2. To be decided.
   Breakouts first is the faster way to the bench milestone.
 - 1-Wire master: kernel `w1-gpio` or DS2482? Depends on cable lengths and
   how many DS18x20 sensors are planned.
-- Web frontend: Svelte (proposed), or an all-Rust frontend (Leptos/WASM), or
-  server-rendered HTML with htmx? Svelte is the most practical for a
-  form-heavy, live-updating interface. All-Rust avoids a Node toolchain in
-  CI, but the ecosystem is smaller.

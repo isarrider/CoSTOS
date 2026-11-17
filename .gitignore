@@ -1,10 +1,6 @@
 # Rust build output
 /target/
 
-# Web frontend
-/web/node_modules/
-/web/dist/
-
 # Editors and OS
 .idea/
 .vscode/
