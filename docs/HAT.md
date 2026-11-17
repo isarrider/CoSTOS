@@ -11,6 +11,16 @@ real system: the bring-up plan (section 9) tests every block on its own,
 and the pump only gets connected once its output and the watchdog have
 been checked on the bench.
 
+The HAT comes in **two editions** that share everything except the
+sensor inputs:
+
+- **1-Wire edition** (sections 1–10): 1 Pt1000 input (collector) plus two
+  1-Wire buses for DS18x20 sensors. For new installations and anyone
+  replacing their sensors.
+- **PT edition** ([section 11](#11-pt-edition-8--pt1000)): up to 8 Pt1000
+  inputs and no 1-Wire, for installations that keep their existing
+  Pt1000 sensors, as most commercial controllers use them.
+
 ---
 
 ## 1. Scope
@@ -488,3 +498,87 @@ estimated here; it gets quoted with the BOM.
 | D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
 | D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |
 | D11 | VBus receiver on the HAT? | **No**: VBus is only needed while the BX Plus is still connected (shadow mode, switchable phase). The existing loose adapter plugs onto pins 1, 6 and 10 on top of the stacking header until then; after the switch-over it goes away and the UART is free |
+| D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board (section 11): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measured with up to 8 × MAX31865 rather than one multi-channel ADC, whose input protection would need two pins per sensor and distort 2-wire readings |
+
+---
+
+## 11. PT edition (8 × Pt1000)
+
+For installations that keep their Pt1000 sensors: a controller such as
+the RESOL BX Plus measures every sensor as a 2-wire Pt1000, and those
+sensors already sit in their sleeves with their cables in place.
+
+![OSCoST HAT PT edition mockup](img/hat-pt-mockup.svg)
+
+### 11.1 What differs from the 1-Wire edition
+
+| | 1-Wire edition | PT edition |
+|---|---|---|
+| Pt1000 inputs | 1 (PT1), PT2 footprint not fitted | **up to 8 (S1–S8)**, fit 2, 4 or 8 |
+| 1-Wire | 2 buses (GPIO4, GPIO17) | none |
+| Sensor terminals | PT1 2-way, 1W-A/1W-B 3-way | **one two-level block, 8 positions**: upper and lower level of position *n* are the two wires of sensor S*n* |
+| Chip selects | CE0 (CE1 for PT2) | CE0 through a **74LVC138** 1-of-8 decoder |
+| 3-wire jumpers | JP2–JP4 | none: 2-wire only (FORCE+ tied to RTDIN+, RTDIN− to FORCE−, FORCE2 to GND) |
+| Everything else | power input, 12 V, PUMP1/2, REL1/2, watchdog, AND gates, feedback, header, EEPROM footprint | **identical** |
+
+### 11.2 Pt1000 channels
+
+Each channel is the PT1 circuit of the 1-Wire edition (section 4.3,
+[circuit diagram](img/hat-sch-sensors.svg)) in its 2-wire form:
+MAX31865, 4.3 kΩ 0.1 % reference resistor, 10 nF across the RTD inputs,
+100 nF at VDD and DVDD, PESD5V0 ESD diode on each terminal wire. All
+eight share SCLK, MOSI and MISO (SPI0); unfitted channels leave MISO
+undriven.
+
+### 11.3 Chip select through a decoder
+
+The Pi has only two hardware chip selects. The 74LVC138 turns three GPIOs
+into eight:
+
+| Decoder pin | Connected to | Pi pin |
+|---|---|---|
+| A0, A1, A2 | GPIO4, GPIO17, GPIO27 (free in this edition) | 7, 11, 13 |
+| /E1 (enable) | CE0 = GPIO8 | 24 |
+| /E2 | GND | |
+| E3 | +3V3 | |
+| /Y0 … /Y7 | CS of MAX31865 S1 … S8 | |
+
+OSCoST sets A0–A2 to the channel number, then runs the SPI transfer on
+CE0: the kernel's own chip select enables the decoder, so the timing stays
+exact and only the addressed chip sees it. While CE0 is idle (high) every
+output is high and no chip is selected, also while the Pi boots. CE1
+(GPIO7) stays free.
+
+Raspberry Pi configuration: as in section 6, without the two
+`w1-gpio` lines, and with `gpio=4,17,27=op,dl` added.
+
+### 11.4 Software
+
+- OSCoST **detects the fitted channels** at start: it writes and reads
+  back the configuration register of each address; an unfitted channel
+  answers with 0x00 or 0xFF.
+- The board edition is chosen in the setup wizard (Settings → Hardware);
+  sensor S*n* is channel *n*.
+- Each MAX31865 runs in automatic conversion mode with the 50 Hz mains
+  filter; OSCoST reads all channels once per second.
+
+### 11.5 Space and cost
+
+- **Space:** eight SSOP-20 chips with their reference resistors fit where
+  the 1-Wire edition has PT1, PT2, the DS2482 footprint and the 1-Wire
+  parts (see the mockup). Tight but plausible on one side; checked with a
+  real placement in KiCad before the PT edition is committed.
+- **Cost** with 8 channels, compared with the 1-Wire edition (section
+  8.1): plus 7 × (MAX31865 + reference resistor + capacitors + ESD), the
+  decoder and the two-level block; minus the 1-Wire parts and two
+  terminals.
+
+| | 1-Wire edition | PT edition, 8 channels |
+|---|---|---|
+| Parts, single quantity (DigiKey) | ≈ €35 | ≈ €105 |
+| Assembled, 5 boards (JLCPCB, incl. VAT and shipping) | ≈ €33 per board | ≈ €65–70 per board |
+
+The MAX31865 is the cost driver (€8.80 at DigiKey, about €4 at LCSC for
+assembled boards). Fitting only 4 channels saves about 4 × €5 per board
+when assembled.
+

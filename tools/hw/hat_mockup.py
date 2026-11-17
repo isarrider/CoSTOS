@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
-"""Draws docs/img/hat-mockup.svg, the to-scale top view of the OSCoST HAT
-(1 mm = 8 px). Usage: python3 tools/hw/hat_mockup.py file > docs/img/hat-mockup.svg
-("widget" instead of "file" gives a variant for inline display in chat)."""
+"""Draws the to-scale top view of the OSCoST HAT (1 mm = 8 px).
+
+  python3 tools/hw/hat_mockup.py file    > docs/img/hat-mockup.svg      (1-Wire edition)
+  python3 tools/hw/hat_mockup.py file pt > docs/img/hat-pt-mockup.svg   (PT edition)
+
+("widget" instead of "file" gives a variant for inline display in chat.)"""
 import sys
 widget = sys.argv[1] == "widget"
+pt = len(sys.argv) > 2 and sys.argv[2] == "pt"
 out = []
 def t(x, y, s, size=12, color=None, weight=400, anchor="start", on_board=True):
     cls = "th" if weight == 500 else "ts"
@@ -20,8 +24,12 @@ H = 550
 head = (f'<svg width="100%" viewBox="0 0 680 {H}" role="img">' if widget else
         f'<svg xmlns="http://www.w3.org/2000/svg" width="680" height="{H}" viewBox="0 0 680 {H}" font-family="Helvetica, Arial, sans-serif">')
 out.append(head)
-out.append('<title>OSCoST HAT mockup, top view</title>')
-out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, with the 40-pin header along the top, Pt1000 and 1-Wire terminals on the left edge, power, relay and pump terminals on the bottom edge, and the chips placed next to their connectors.</desc>')
+if pt:
+    out.append('<title>OSCoST HAT PT edition mockup, top view</title>')
+    out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, PT edition: a two-level terminal block with eight Pt1000 inputs on the left edge, eight MAX31865 converters with a 1-of-8 chip-select decoder, and the same power, relay, pump and watchdog section as the 1-Wire edition.</desc>')
+else:
+    out.append('<title>OSCoST HAT mockup, top view</title>')
+    out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, with the 40-pin header along the top, Pt1000 and 1-Wire terminals on the left edge, power, relay and pump terminals on the bottom edge, and the chips placed next to their connectors.</desc>')
 if not widget:
     out.append(f'<rect width="680" height="{H}" fill="white"/>')
 # board
@@ -36,8 +44,9 @@ for i in range(20):
         out.append(f'<rect x="{x-3:.1f}" y="{y-3}" width="6" height="6" fill="#C9A227"/>')
 t(340, 98, "40-pin header to the Pi (stacking header for the Pi 5 cooler)", 11, "#E8F5E9", 400, "middle")
 # EEPROM footprint
-out.append('<rect x="320" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
-t(384, 124, "ID EEPROM, not fitted", 11, "#C8E6C9")
+ex = 420 if pt else 320
+out.append(f'<rect x="{ex}" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+t(ex + 64, 124, "ID EEPROM, not fitted", 11, "#C8E6C9")
 # left terminals
 def term_v(y0, n, name, sub, fitted=True):
     h = 28 * n
@@ -54,10 +63,23 @@ def term_v(y0, n, name, sub, fitted=True):
         out.append(f'<circle cx="72" cy="{cy}" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="{cy}" x2="77" y2="{cy}" stroke="#5F6468" stroke-width="1.5"/>')
     t(118, y0 + h/2 - 2, name, 12, "#ffffff", 500)
     t(118, y0 + h/2 + 13, sub, 11, "#C8E6C9")
-term_v(110, 2, "PT1", "collector")
-term_v(178, 2, "PT2", "not fitted", fitted=False)
-term_v(246, 3, "1W-A", "DS18x20")
-term_v(342, 3, "1W-B", "DS18x20")
+def term_pt8(y0):
+    """Two-level terminal block: 8 positions, upper and lower level per sensor."""
+    h = 28 * 8
+    out.append(f'<rect x="58" y="{y0}" width="60" height="{h}" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>')
+    out.append(f'<line x1="87" y1="{y0}" x2="87" y2="{y0+h}" stroke="#8A7F5F" stroke-width="1"/>')
+    for k in range(8):
+        cy = y0 + 14 + 28 * k
+        for cx in (72, 103):
+            out.append(f'<circle cx="{cx}" cy="{cy}" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="{cx-5}" y1="{cy}" x2="{cx+5}" y2="{cy}" stroke="#5F6468" stroke-width="1.5"/>')
+        t(126, cy + 4, f"S{k+1}", 12, "#ffffff", 500)
+if pt:
+    term_pt8(110)
+else:
+    term_v(110, 2, "PT1", "collector")
+    term_v(178, 2, "PT2", "not fitted", fitted=False)
+    term_v(246, 3, "1W-A", "DS18x20")
+    term_v(342, 3, "1W-B", "DS18x20")
 # bottom terminals
 def term_h(x0, n, name, pins, fitted=True):
     w = 28 * n
@@ -79,13 +101,19 @@ term_h(284, 2, "REL2", ["+5V", "OUT"], fitted=False)
 term_h(352, 3, "PUMP1", ["PWM", "GND", "FB"])
 term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"], fitted=False)
 # chips, left column
-chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
-out.append('<rect x="205" y="178" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
-t(255, 198, "MAX31865 #2", 12, "#E8F5E9", 500, "middle")
-t(255, 213, "not fitted", 11, "#C8E6C9", 400, "middle")
-out.append('<rect x="205" y="246" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
-t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
-t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
+if pt:
+    for k in range(8):
+        col, row = k // 4, k % 4
+        chip(160 + col * 86, 110 + row * 46, 78, 38, "MAX31865", f"S{k+1}")
+    chip(340, 148, 86, 46, "74LVC138", "CS 1 of 8")
+else:
+    chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
+    out.append('<rect x="205" y="178" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+    t(255, 198, "MAX31865 #2", 12, "#E8F5E9", 500, "middle")
+    t(255, 213, "not fitted", 11, "#C8E6C9", 400, "middle")
+    out.append('<rect x="205" y="246" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+    t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
+    t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
 # bottom rows
 chip(196, 368, 78, 46, "Protection", "5 V input")
 chip(282, 368, 78, 46, "Relay", "MOSFET")
@@ -95,15 +123,21 @@ chip(282, 304, 78, 46, "Watchdog", "heartbeat")
 chip(368, 304, 78, 46, "AND gate", "PWM gating")
 chip(454, 304, 78, 46, "Feedback", "input 1")
 # LEDs
-for x, col, lab in [(196, "#4CAF50", "PWR"), (222, "#4CAF50", "WD"), (246, "#FFB300", "R1"), (270, "#FFB300", "R2")]:
+for x, col, lab in [(196 if not pt else 170, "#4CAF50", "PWR"), (222 if not pt else 196, "#4CAF50", "WD"),
+                    (246 if not pt else 222, "#FFB300", "R1"), (270 if not pt else 248, "#FFB300", "R2")]:
     if lab == "R2":
         out.append(f'<circle cx="{x}" cy="316" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
     else:
         out.append(f'<circle cx="{x}" cy="316" r="6" fill="{col}" stroke="#0F3A20"/>')
     t(x, 340, lab, 11, "#E8F5E9", 400, "middle")
 # logo
-t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
-t(470, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
-t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals.", 11, None, 400, "start", on_board=False)
+if pt:
+    t(500, 210, "OSCoST HAT PT", 14, "#ffffff", 500, "middle")
+    t(500, 230, "rev A · 8 × Pt1000", 11, "#C8E6C9", 400, "middle")
+else:
+    t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
+    t(470, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
+t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
+  + ("; S1–S8 on a two-level block." if pt else "."), 11, None, 400, "start", on_board=False)
 out.append('</svg>')
 print("\n".join(out))

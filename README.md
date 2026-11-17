@@ -63,7 +63,8 @@ Mains wiring belongs in the hands of a qualified electrician.
 - [Hardware needed](docs/HARDWARE.md): parts lists and build instructions,
   starting with the PWM pump output.
 - [HAT specification](docs/HAT.md): the planned plug-on board that
-  combines all of it (draft).
+  combines all of it, in two editions: 1 Pt1000 + 1-Wire, or up to
+  8 Pt1000 for installations that keep their existing sensors.
 - [Reference installation](docs/installation.md): the system OSCoST is
   built to control first.
 

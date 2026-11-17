@@ -1,0 +1,173 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="550" viewBox="0 0 680 550" font-family="Helvetica, Arial, sans-serif">
+<title>OSCoST HAT PT edition mockup, top view</title>
+<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, PT edition: a two-level terminal block with eight Pt1000 inputs on the left edge, eight MAX31865 converters with a 1-of-8 chip-select decoder, and the same power, relay, pump and watchdog section as the 1-Wire edition.</desc>
+<rect width="680" height="550" fill="white"/>
+<rect x="80" y="30" width="520" height="452" rx="24" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>
+<circle cx="108" cy="58" r="11" fill="#C9A227"/><circle cx="108" cy="58" r="6" fill="#F4F1E8"/>
+<circle cx="572" cy="58" r="11" fill="#C9A227"/><circle cx="572" cy="58" r="6" fill="#F4F1E8"/>
+<circle cx="108" cy="450" r="11" fill="#C9A227"/><circle cx="108" cy="450" r="6" fill="#F4F1E8"/>
+<circle cx="572" cy="450" r="11" fill="#C9A227"/><circle cx="572" cy="450" r="6" fill="#F4F1E8"/>
+<rect x="137" y="38" width="406" height="40" rx="2" fill="#111111"/>
+<rect x="144.0" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="144.0" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="164.3" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="164.3" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="184.6" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="184.6" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="205.0" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="205.0" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="225.3" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="225.3" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="245.6" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="245.6" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="265.9" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="265.9" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="286.2" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="286.2" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="306.6" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="306.6" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="326.9" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="326.9" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="347.2" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="347.2" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="367.5" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="367.5" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="387.8" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="387.8" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="408.2" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="408.2" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="428.5" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="428.5" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="448.8" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="448.8" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="469.1" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="469.1" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="489.4" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="489.4" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="509.8" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="509.8" y="65" width="6" height="6" fill="#C9A227"/>
+<rect x="530.1" y="45" width="6" height="6" fill="#C9A227"/>
+<rect x="530.1" y="65" width="6" height="6" fill="#C9A227"/>
+<text class="ts" x="340" y="98" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">40-pin header to the Pi (stacking header for the Pi 5 cooler)</text>
+<rect x="420" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
+<text class="ts" x="484" y="124" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">ID EEPROM, not fitted</text>
+<rect x="58" y="110" width="60" height="224" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<line x1="87" y1="110" x2="87" y2="334" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="72" cy="124" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="124" x2="77" y2="124" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="124" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="124" x2="108" y2="124" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="128" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S1</text>
+<circle cx="72" cy="152" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="152" x2="77" y2="152" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="152" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="152" x2="108" y2="152" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="156" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S2</text>
+<circle cx="72" cy="180" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="180" x2="77" y2="180" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="180" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="180" x2="108" y2="180" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="184" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S3</text>
+<circle cx="72" cy="208" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="208" x2="77" y2="208" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="208" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="208" x2="108" y2="208" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="212" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S4</text>
+<circle cx="72" cy="236" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="236" x2="77" y2="236" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="236" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="236" x2="108" y2="236" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="240" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S5</text>
+<circle cx="72" cy="264" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="264" x2="77" y2="264" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="264" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="264" x2="108" y2="264" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="268" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S6</text>
+<circle cx="72" cy="292" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="292" x2="77" y2="292" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="292" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="292" x2="108" y2="292" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="296" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S7</text>
+<circle cx="72" cy="320" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="320" x2="77" y2="320" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="103" cy="320" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="320" x2="108" y2="320" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="126" y="324" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S8</text>
+<rect x="148" y="450" width="56" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="162" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="162" y1="461" x2="162" y2="471" stroke="#5F6468" stroke-width="1.5"/>
+<text class="ts" x="162" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">+5V</text>
+<circle cx="190" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="190" y1="461" x2="190" y2="471" stroke="#5F6468" stroke-width="1.5"/>
+<text class="ts" x="190" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">GND</text>
+<text class="th" x="176.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">PWR</text>
+<rect x="216" y="450" width="56" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="230" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="230" y1="461" x2="230" y2="471" stroke="#5F6468" stroke-width="1.5"/>
+<text class="ts" x="230" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">+5V</text>
+<circle cx="258" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="258" y1="461" x2="258" y2="471" stroke="#5F6468" stroke-width="1.5"/>
+<text class="ts" x="258" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">OUT</text>
+<text class="th" x="244.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">REL1</text>
+<rect x="284" y="450" width="56" height="32" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
+<circle cx="298" cy="466" r="4" fill="#C9A227"/>
+<text class="ts" x="298" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">+5V</text>
+<circle cx="326" cy="466" r="4" fill="#C9A227"/>
+<text class="ts" x="326" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">OUT</text>
+<text class="th" x="312.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">REL2 (n.f.)</text>
+<rect x="352" y="450" width="84" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="366" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="366" y1="461" x2="366" y2="471" stroke="#5F6468" stroke-width="1.5"/>
+<text class="ts" x="366" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">PWM</text>
+<circle cx="394" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="394" y1="461" x2="394" y2="471" stroke="#5F6468" stroke-width="1.5"/>
+<text class="ts" x="394" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">GND</text>
+<circle cx="422" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="422" y1="461" x2="422" y2="471" stroke="#5F6468" stroke-width="1.5"/>
+<text class="ts" x="422" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">FB</text>
+<text class="th" x="394.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">PUMP1</text>
+<rect x="448" y="450" width="84" height="32" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
+<circle cx="462" cy="466" r="4" fill="#C9A227"/>
+<text class="ts" x="462" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">PWM</text>
+<circle cx="490" cy="466" r="4" fill="#C9A227"/>
+<text class="ts" x="490" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">GND</text>
+<circle cx="518" cy="466" r="4" fill="#C9A227"/>
+<text class="ts" x="518" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">FB</text>
+<text class="th" x="490.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">PUMP2 (n.f.)</text>
+<rect x="160" y="110" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="199.0" y="126.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="199.0" y="141.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S1</text>
+<rect x="160" y="156" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="199.0" y="172.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="199.0" y="187.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S2</text>
+<rect x="160" y="202" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="199.0" y="218.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="199.0" y="233.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S3</text>
+<rect x="160" y="248" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="199.0" y="264.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="199.0" y="279.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S4</text>
+<rect x="246" y="110" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="285.0" y="126.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="285.0" y="141.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S5</text>
+<rect x="246" y="156" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="285.0" y="172.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="285.0" y="187.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S6</text>
+<rect x="246" y="202" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="285.0" y="218.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="285.0" y="233.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S7</text>
+<rect x="246" y="248" width="78" height="38" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="285.0" y="264.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
+<text class="ts" x="285.0" y="279.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">S8</text>
+<rect x="340" y="148" width="86" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="383.0" y="168.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">74LVC138</text>
+<text class="ts" x="383.0" y="183.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">CS 1 of 8</text>
+<rect x="196" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="235.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Protection</text>
+<text class="ts" x="235.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">5 V input</text>
+<rect x="282" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="321.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Relay</text>
+<text class="ts" x="321.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">MOSFET</text>
+<rect x="368" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="407.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">TC4427</text>
+<text class="ts" x="407.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">pump driver</text>
+<rect x="454" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="493.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">DC/DC</text>
+<text class="ts" x="493.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">5 V → 12 V</text>
+<rect x="282" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="321.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Watchdog</text>
+<text class="ts" x="321.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">heartbeat</text>
+<rect x="368" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="407.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">AND gate</text>
+<text class="ts" x="407.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">PWM gating</text>
+<rect x="454" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
+<text class="th" x="493.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Feedback</text>
+<text class="ts" x="493.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">input 1</text>
+<circle cx="170" cy="316" r="6" fill="#4CAF50" stroke="#0F3A20"/>
+<text class="ts" x="170" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">PWR</text>
+<circle cx="196" cy="316" r="6" fill="#4CAF50" stroke="#0F3A20"/>
+<text class="ts" x="196" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">WD</text>
+<circle cx="222" cy="316" r="6" fill="#FFB300" stroke="#0F3A20"/>
+<text class="ts" x="222" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R1</text>
+<circle cx="248" cy="316" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>
+<text class="ts" x="248" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R2</text>
+<text class="th" x="500" y="210" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#ffffff">OSCoST HAT PT</text>
+<text class="ts" x="500" y="230" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">rev A · 8 × Pt1000</text>
+<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; S1–S8 on a two-level block.</text>
+</svg>
