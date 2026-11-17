@@ -28,8 +28,10 @@ OSCoST without risking the system.
 - Be **observable**: every input, decision and output is exported (Influx
   line protocol / VictoriaMetrics, MQTT, HTTP), so the existing Grafana
   dashboards keep working.
-- Make the configuration **declarative** (TOML): sensors, outputs and
-  functions are wired up in config, not in code.
+- Make **everything configurable in the web interface**: status, sensors,
+  outputs, control functions, integrations and users. No config files to
+  edit by hand. Sensors, outputs and functions are wired up in config, not
+  in code, and the web interface is the editor for that config (section 7).
 
 ### Non-goals (for now)
 
@@ -97,7 +99,7 @@ Safety comes in layers. Each layer assumes the one above it can fail.
 | **Output enable via an external watchdog**: a charge-pump or retriggerable monostable that only enables the output stage while the SBC toggles a heartbeat GPIO | Covers a hung kernel or a GPIO stuck high, which the internal watchdog can miss. |
 | **SoC hardware watchdog** (`/dev/watchdog`) | Reboots a hung system. |
 | **Independent overtemperature cut-out** on the store (capillary thermostat in series with the solar pump) | Last line of defence that does not depend on OSCoST at all. Many systems already have one. Check. |
-| **Manual changeover switch** RESOL ↔ OSCoST per output (during migration) | Lets you fall back to the RESOL controller in seconds. See section 8. |
+| **Manual changeover switch** RESOL ↔ OSCoST per output (during migration) | Lets you fall back to the RESOL controller in seconds. See section 9. |
 
 ### 4.2 Software layer
 
@@ -151,7 +153,7 @@ The existing Pt1000 sensors are reused.
 - Collector sensor cables are long and outdoors, so add surge protection on
   that input (RESOL sells an SP10 for exactly this).
 - Calibration: a per-channel offset in config, checked against the RESOL
-  readings during shadow mode (section 8).
+  readings during shadow mode (section 9).
 
 ### 5.2 Switching outputs
 
@@ -202,7 +204,9 @@ oscost/
 │  ├─ oscost-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
 │  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, sysfs PWM, MAX31865 driver
 │  ├─ oscost-sim/        # thermal model of collector + store, used for tests and dry runs
-│  └─ oscostd/           # daemon: config, scheduler, tasks, HTTP/MQTT/Influx, systemd integration
+│  ├─ oscost-config/     # config schema, validation, migrations between schema versions, revision store
+│  └─ oscostd/           # daemon: scheduler, tasks, HTTP API, MQTT/Influx, systemd integration
+├─ web/                  # web interface (Svelte + TypeScript), built to static files embedded in oscostd
 └─ docs/
 ```
 
@@ -241,9 +245,12 @@ config:
   network can never delay a control cycle. The control task takes the latest
   sensor snapshot, and a snapshot older than a configured limit counts as a
   sensor fault.
-- **Configuration**: TOML (figment, as in vbus2influx), fully validated at
-  start-up. Invalid config means the daemon refuses to start, so outputs
-  stay OFF. Hot reload is not planned for the first version.
+- **Configuration** is owned by the daemon and edited only through the web
+  interface or its API (section 7). It is stored as a versioned document in
+  `/var/lib/oscost/` (readable for backups, not meant for hand editing),
+  fully validated before it is applied, and applied **live** at a control
+  cycle boundary, without a restart. An invalid or missing config at start-up
+  means outputs stay OFF and the web interface opens the setup wizard.
 - **Persistent state** (heat quantity counters, operating hours): small file
   written atomically, at most every few minutes, to spare the SD card or eMMC.
 - **Manual mode**: per output OFF / AUTO / ON (with timeout), through the API.
@@ -253,7 +260,7 @@ config:
 
 | Interface | Purpose |
 |---|---|
-| **HTTP** (axum) | Status page, JSON API, manual mode. Read-only without authentication. Writes need a token. |
+| **Web interface + HTTP API** (axum) | Status, configuration, manual mode, history, events. See section 7. |
 | **Influx line protocol** | Same idea as vbus2influx, so Grafana and VictoriaMetrics keep working. Choose field names so existing dashboards need little rework. |
 | **MQTT** with Home Assistant discovery | Sensors, outputs and alarms appear in HA automatically. Writes (manual mode) are optional and off by default. |
 | **Prometheus `/metrics`** | Optional, cheap to add. |
@@ -272,7 +279,103 @@ Not planned: emulating VBus to be read by other RESOL tools.
 
 ---
 
-## 7. Testing strategy
+## 7. Web interface
+
+The web interface is the only user interface. It shows the live state of the
+system and is where **everything** is configured: from first setup (which
+sensor is on which input) to control parameters and integrations. Nobody
+should ever need to edit a file or open a shell to run OSCoST.
+
+### 7.1 Pages
+
+| Page | Content |
+|---|---|
+| **Overview** | System diagram (collector, pipes, store, pumps) with live temperatures, pump state and speed, ΔT, current heat output. Active alarms and safety interventions on top. Updates live. |
+| **History** | Charts of the last 24 h – 7 days from an in-memory/ring-file buffer (temperatures, pump speed, heat quantity). Long-term history stays in Grafana/VictoriaMetrics. |
+| **Manual mode** | Per output OFF / AUTO / ON / speed %, with a mandatory timeout after which it returns to AUTO. Clearly shows that the safety limits still apply. |
+| **Events** | Log of state changes, sensor faults, safety interventions and config changes (who, when, what). |
+| **Settings → Hardware** | Board, sensor inputs (type, name, live reading, calibration offset), outputs (relay/SSR/PWM, PWM profile and frequency, **test button**), flowmeter. |
+| **Settings → System** | Hydraulic layout (which sensor is collector/store bottom/store top, which output is the solar pump) and the control functions with their parameters (ΔT on/off, setpoint, store max, optional functions). Each parameter has a short explanation, unit, allowed range and default. |
+| **Settings → Integrations** | InfluxDB/VictoriaMetrics, MQTT + Home Assistant discovery, with a "test connection" button. |
+| **Settings → Users & access** | Users, passwords, API tokens. |
+| **Settings → Backup** | Download/upload the whole config, list of config revisions with diff and one-click rollback. |
+| **About / Diagnostics** | Version, uptime, watchdog state, board temperature, update check. |
+
+### 7.2 Setup wizard
+
+On first start (or after a factory reset) there is no valid config, so all
+outputs stay OFF and the interface opens a wizard:
+
+1. Create the admin user.
+2. Choose the board (Pi / Rock 5C) and the sensor/output hardware.
+3. **Assign sensors**: every input shows its live temperature, so you can
+   identify the collector sensor by its reading (or by warming a sensor in
+   your hand) instead of guessing.
+4. **Assign and test outputs**: switch each output on for a few seconds and
+   check that the right pump or valve runs. PWM pumps: test a few speeds.
+5. Choose a system layout (single store first; templates for more later)
+   and review the default parameters.
+6. Summary, then activate. Only now does automatic control start.
+
+### 7.3 How config changes are applied
+
+Config changes can switch pumps, so they are applied carefully:
+
+- **Validation** happens in `oscost-config`, the same code the daemon uses.
+  The API returns errors per field, and the interface shows them next to the
+  field. Cross-field rules are validated too (ΔT_off < ΔT_on, every function
+  has its sensors assigned, no output used twice).
+- **Hard safety limits are not configurable.** Collector emergency shutdown
+  and the absolute store limit can be set lower, never above the compiled-in
+  maximum.
+- **Draft → review → apply.** Edits are collected in a draft. Before applying,
+  the interface shows a diff against the active config. Applying is atomic and
+  takes effect at the next control cycle.
+- **Hardware changes** (sensor/output assignment, PWM profile) put the
+  affected outputs into OFF while they are applied, and are flagged in the
+  review step.
+- **Revisions**: every applied config is kept as a numbered revision with
+  author, time and an optional comment. Any revision can be restored.
+- **Concurrent edits**: each change carries the revision it was based on. If
+  someone else applied a change in the meantime, the interface asks to
+  reload instead of silently overwriting it.
+
+### 7.4 Technology
+
+- **Frontend**: Svelte + TypeScript, built to static files and **embedded in
+  the `oscostd` binary** (for example with `rust-embed`). No separate web
+  server, nothing to install on the device, works offline in the local
+  network. Mobile-friendly layout, since it is often used on a phone next to
+  the store.
+- **API**: JSON over HTTP (axum), the same API the frontend uses, documented
+  as OpenAPI. Home Assistant, scripts and future apps use it too.
+- **Live updates**: Server-Sent Events push the state once per control cycle
+  (1 Hz) to the overview, and live readings to the setup wizard.
+- **Schema-driven forms**: parameter names, units, ranges, defaults and
+  help texts are defined once in Rust (`oscost-config`) and exported to the
+  frontend as JSON Schema / generated TypeScript types. A new parameter
+  appears in the interface without hand-written form code, and frontend and
+  backend can't disagree about valid values.
+
+### 7.5 Access and security
+
+The interface can switch pumps, so it needs login:
+
+- Users with roles: **viewer** (status and history only) and **admin**
+  (manual mode, settings). Optional: status pages viewable without login in
+  the local network.
+- Passwords stored as Argon2 hashes, session cookies (`HttpOnly`,
+  `SameSite=Strict`), CSRF protection on all writes, rate-limited login.
+- API tokens per integration, revocable, with the same roles.
+- HTTP by default in the local network, with optional built-in TLS (own
+  certificate or self-signed). Not meant to be exposed to the internet
+  directly; use a VPN or reverse proxy for remote access.
+- A **local recovery** path (for example a reset command on the device)
+  for a lost admin password.
+
+---
+
+## 8. Testing strategy
 
 1. **Unit and property tests** on `oscost-core` and `oscost-safety`.
 2. **Replay tests**: feed recorded VBus data (temperatures plus RESOL relay
@@ -288,7 +391,7 @@ Not planned: emulating VBus to be read by other RESOL tools.
 
 ---
 
-## 8. Migration from the DeltaSol BX Plus
+## 9. Migration from the DeltaSol BX Plus
 
 | Phase | What runs | Exit criteria |
 |---|---|---|
@@ -305,22 +408,25 @@ measurement in phase 2. To be decided.
 
 ---
 
-## 9. Milestones
+## 10. Milestones
 
 1. `oscost-core` + `oscost-safety` with ΔT control, speed control, store max
    and collector emergency shutdown. Tests and a replay tool for vbus2influx
    data.
 2. `oscost-sim` and simulation tests in CI.
 3. HAL + Linux backend: MAX31865, GPIO outputs, PWM, watchdog. Bench setup.
-4. `oscostd`: config, scheduler, systemd, HTTP status, Influx output.
-5. MQTT + Home Assistant discovery, manual mode.
-6. Shadow mode on the real system.
-7. Heat quantity, optional functions (cooling, tube collector, frost).
-8. Switch over.
+4. `oscostd` + `oscost-config`: scheduler, systemd, config store with
+   revisions, JSON API, Influx output.
+5. Web interface: overview, setup wizard, all settings pages, users/login,
+   manual mode.
+6. MQTT + Home Assistant discovery.
+7. Shadow mode on the real system.
+8. Heat quantity, optional functions (cooling, tube collector, frost).
+9. Switch over.
 
 ---
 
-## 10. Open questions
+## 11. Open questions
 
 - **Installation details** for `docs/installation.md`: which sensors and
   relays the BX Plus uses here, which pumps (standard or high-efficiency
@@ -335,3 +441,8 @@ measurement in phase 2. To be decided.
   Breakouts first is the faster way to the bench milestone.
 - Do any values have to be compatible with existing vbus2influx dashboards
   (measurement and field names)?
+- Web frontend: Svelte (proposed), or an all-Rust frontend (Leptos/WASM), or
+  server-rendered HTML with htmx? Svelte is the most practical for a
+  form-heavy, live-updating interface. All-Rust avoids a Node toolchain in
+  CI, but the ecosystem is smaller.
+- Should status pages be viewable without login in the local network?
