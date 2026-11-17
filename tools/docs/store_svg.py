@@ -10,16 +10,16 @@ Usage: python3 tools/docs/store_svg.py > docs/img/store-reference.svg
 """
 
 STORE = {
-    "name": "Combination store with fresh-water coil",
+    "name": "TWL Hygiene-Kombispeicher KER-2 800 (800 l)",
     "height": 1845,          # floor to top of the flange
     "body_top": 1785,        # top of the dome
     "stand": 125,            # height of the stand ring
-    "diameter": 640,         # vessel, without insulation
+    "diameter": 790,         # vessel, without insulation
     "stand_diameter": 600,
     "coils": [
         # name, bottom, top (mm), connections (top, bottom) on the right side
-        {"name": "Coil 1 (upper)", "bottom": 1060, "top": 1380},
-        {"name": "Coil 2 (lower)", "bottom": 300, "top": 810},
+        {"name": "Upper coil, 1.8 m²", "bottom": 1060, "top": 1380},
+        {"name": "Lower coil, 2.6 m²", "bottom": 300, "top": 810},
     ],
     "dhw": {"name": "Fresh-water coil (DHW)", "bottom": 330, "top": 1700},
     # side, height, size, kind: coil | water | sleeve
@@ -60,7 +60,7 @@ def main():
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
          'font-family="Helvetica, Arial, sans-serif">',
          "<title>Store of the reference installation</title>",
-         "<desc>Combination store, 640 mm diameter, 1845 mm high, with a fresh-water coil in the centre, "
+         "<desc>Combination store TWL KER-2 800, 800 litres, 790 mm diameter, 1845 mm high, with a fresh-water coil in the centre, "
          "two heat-exchanger coils on the right and store-water connections and sensor sleeves on both sides. "
          "Heights in mm above the floor.</desc>",
          "<style>.t{font-size:12px;fill:#222}.s{font-size:11px;fill:#555}.h{font-size:15px;font-weight:bold;fill:#222}</style>",
@@ -69,7 +69,7 @@ def main():
         f'<text x="{x:.1f}" y="{yy:.1f}" class="{c}" text-anchor="{a}"'
         + (f' style="fill:{col}"' if col else "") + f">{s}</text>")
     t(20, 28, st["name"], "h")
-    t(20, 46, "Heights in mm above the floor · Ø 640 mm · 1845 mm high", "s")
+    t(20, 46, "Heights in mm above the floor · vessel Ø 790 mm · 1845 mm high", "s")
     # floor, stand, vessel
     o.append(f'<path d="M{CX-200} {FLOOR} H{CX+200}" stroke="#999" stroke-width="1.5"/>')
     sr = st["stand_diameter"] / 2 * S

@@ -110,10 +110,11 @@ stopped, 5–75 % when running) before OSCoST relies on them.
 
 ## Store
 
-One combination store (Kombispeicher) with a fresh-water coil for domestic
-hot water in the centre and two heat-exchanger coils. Drawn from the
-manufacturer's dimension drawing; the web interface will draw the store on
-its overview page from the same data (see
+**TWL Hygiene-Kombispeicher KER-2 800** (art. no. KER2.0800): one 800 l
+combination store with a stainless corrugated-tube coil for fresh domestic
+hot water in the centre and two smooth-tube heat-exchanger coils. Redrawn
+from the manufacturer's dimension drawing; the web interface will draw the
+store on its overview page from the same data (see
 [ARCHITECTURE 7.1](ARCHITECTURE.md#71-pages)), generated here by
 `python3 tools/docs/store_svg.py > docs/img/store-reference.svg`.
 
@@ -121,23 +122,25 @@ its overview page from the same data (see
 
 | | |
 |---|---|
-| Vessel | Ø 640 mm, 1845 mm high incl. the top flange, on a 125 mm stand ring |
-| Volume | **800 l** (stated). Note: Ø 640 × 1845 mm only holds about 500 l, so the dimension drawing may be for another size of the same series; check the type plate or the circumference without insulation (about 2.0 m for Ø 640, about 2.5 m for Ø 790) |
-| Fresh-water coil | centre, cold (KW) and hot water (WW) ¾" at the top |
-| Coil 1 (upper) | 1" connections at 1380 and 1060 mm |
-| Coil 2 (lower) | 1" connections at 810 and 300 mm |
+| Vessel | 800 l, Ø 790 mm (without insulation), 1845 mm high incl. the top flange, on a Ø 600 × 125 mm stand ring; 231 kg empty |
+| Store water | max. **95 °C**, max. 4.5 bar (test pressure 6 bar) |
+| Fresh-water coil | stainless 1.4404, 5.8 m², 29.2 l, max. 10 bar / 110 °C; cold (KW) and hot water (WW) ¾" at the top |
+| Upper coil | 1.8 m², 10.4 l, max. 16 bar / 110 °C, water/glycol; 1" at 1380 and 1060 mm |
+| Lower coil | 2.6 m², 15.1 l, max. 16 bar / 110 °C, water/glycol; 1" at 810 and 300 mm |
 | Store-water connections | 1½" at 1560, 970, 660, 170 mm (right) and 905 mm (left) |
 | ½" sleeves | 1280, 455 mm (right); 1270, 560 mm (left) |
 
-Still open: which coil the solar circuit uses (normally the lower one),
-what feeds the other coil, which store-water connections the heating
-circuit (S6–S8) uses, and which sleeves hold S2 (store bottom) and S3
-(store top).
+- The store's 95 °C limit bounds OSCoST's store maximum and its emergency
+  store shutdown: both have to stay below 95 °C.
+- Still open: which coil the solar circuit uses (normally the lower one),
+  what feeds the other coil, which store-water connections the heating
+  circuit (S6–S8) uses, and which sleeves hold S2 (store bottom) and S3
+  (store top).
 
 ## Open points
 
 - Sensor types (Pt1000 on every input?).
-- Store: dimensions vs. 800 l, coil and sleeve assignment (see [Store](#store)).
+- Store: coil and sleeve assignment (see [Store](#store)).
 - Collector: flat-plate or evacuated tube, area.
 - Heat transfer fluid: glycol or water, glycol percentage.
 - Flowmeter (V40 or similar) present?
