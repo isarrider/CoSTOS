@@ -213,6 +213,15 @@ The existing Pt1000 sensors are reused.
     scratchpad state and treats this reading as a fault instead of a real
     85 °C. This matters, because 85 °C is a realistic store temperature.
   - −127 °C / all bits set: bus read failure.
+  - Implausible jump between two readings (faster than the water can
+    change temperature): treated like a CRC error.
+- **Every glitch is counted**, per sensor and kind
+  (`oscost_sensor_errors_total{sensor="…",kind="crc|missing|power_on|read|jump"}`
+  in VictoriaMetrics, and a counter per sensor on the Hardware page). A
+  retried glitch is invisible to the control loop, but a rising counter
+  shows a marginal cable or connector long before the sensor fails.
+- **Topology**: one line per bus (daisy chain), not a star of separate
+  cables per sensor; stubs to each sensor kept short.
 - Clone chips are common and sometimes behave differently (conversion
   time, power-on value). The bus scan shows the chip type, and the driver
   is tested against a few known clones.
@@ -703,14 +712,11 @@ measurement in phase 2. To be decided.
 
 ## 11. Open questions
 
-- **Installation details** for `docs/installation.md`: which sensors and
-  relays the BX Plus uses here, other pumps or valves besides the solar
-  pump, single or multi-store, flat-plate or
-  evacuated tube collectors, glycol or not, V40 flowmeter present or not.
+- **Installation details**: the remaining open points in
+  [installation.md](installation.md#open-points).
 - Is there already an independent store overtemperature cut-out?
 - Shadow mode: second set of sensors, or use the RESOL values over VBus at
   first?
-- Off-the-shelf boards (MAX31865 breakouts, DIN-rail SSRs) or a custom HAT?
-  Breakouts first is the faster way to the bench milestone.
-- 1-Wire master: kernel `w1-gpio` or DS2482? Depends on cable lengths and
-  how many DS18x20 sensors are planned.
+- Settled: custom HAT ([HAT.md](HAT.md)); 1-Wire via kernel `w1-gpio` on
+  two buses (HAT D4); the reference installation keeps a Pt1000 only on the
+  collector and moves S2–S8 to DS18B20 on two daisy-chained buses.
