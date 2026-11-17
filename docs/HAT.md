@@ -39,7 +39,7 @@ untested circuit goes into a manufactured board.
 | Boards | Raspberry Pi 4, Raspberry Pi 5 |
 | Size | Raspberry Pi HAT: 65 × 56.5 mm, 4 × M2.5 mounting holes matching the Pi |
 | Header | 40-pin female, with a stacking/extra-tall header option for the Pi 5 active cooler |
-| Connectors | Field connections on the left and bottom edges, pluggable 3.5 mm terminal blocks (see 7) |
+| Connectors | Field connections on the left and bottom edges, fixed 3.5 mm screw terminals (see 7) |
 | Component height | Low enough for a standard enclosure; the DC/DC module is the tallest part |
 | ID EEPROM | Footprint for the Raspberry Pi HAT ID EEPROM on pins 27/28, not fitted in rev A (D6) |
 
@@ -345,18 +345,22 @@ sudo rpi-eeprom-config --edit     # add: PSU_MAX_CURRENT=5000
 ## 7. Field connectors
 
 22 terminal positions don't fit along one 65 mm edge: at 5.08 mm pitch
-they would need about 112 mm. So the connectors use **3.5 mm pluggable
-terminal blocks** on **two edges**, as in the [mockup](#mockup):
+they would need about 112 mm. So the connectors use **fixed 3.5 mm screw
+terminals** on **two edges**, as in the [mockup](#mockup):
 
 - **Bottom edge** (power and outputs): PWR, REL1, REL2, PUMP1, PUMP2 (REL2 and PUMP2 not fitted in rev A).
 - **Left edge** (sensors): PT1, PT2, 1W-A, 1W-B.
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
 
-Pluggable means a fixed socket on the board and a removable screw plug
-for each cable: the HAT can be pulled off the Pi without unscrewing any
-wire. Fixed screw terminals (one part, soldered in) would cost about €4
-less per board, but every wire would have to be undone to remove the HAT.
+Fixed means one block per connector, soldered to the board, with the
+cable screwed straight into it. Pluggable terminals (a soldered socket and
+a removable screw plug) would let the HAT come off without undoing any
+wire, but cost about €4 more per board; for a controller that stays in its
+cabinet that isn't worth it (D10). To swap the Pi or the HAT, label the
+wires and unscrew them.
+
+![Pluggable versus fixed screw terminal, side view](img/terminal-types.svg)
 
 All labelled on the silkscreen:
 
@@ -400,10 +404,10 @@ are the Pi, the DIN-rail supply, the SSR and the sensors.
 | Part | Qty | ≈ € |
 |---|---|---|
 | MAX31865AAP+ (Pt1000 converter) | 1 | 8.80 |
-| 3.5 mm pluggable terminals, socket and plug (J1, J2, J4, J6, J8, J9) | 6 | 7.00 |
 | PCB, ⅓ of an AISLER set of 3 (≈ €19) | — | 6.50 |
 | B0512S-1WR3 DC/DC | 1 | 3.00 |
 | 40-pin stacking header and 4 spacers | 1 | 3.00 |
+| 3.5 mm fixed screw terminals (J1, J2, J4, J6, J8, J9) | 6 | 3.00 |
 | Ideal diode: LM74700-Q1 + CSD17575Q3 | 2 | 2.50 |
 | Resistors and capacitors, about 25 (the 0.1 % 4.3 kΩ is about €0.80 of it) | — | 2.50 |
 | TC4427 | 1 | 1.30 |
@@ -416,11 +420,10 @@ are the Pi, the DIN-rail supply, the SSR and the sensors.
 | 74LVC1G08 | 1 | 0.20 |
 | 100 mA polyfuse | 1 | 0.20 |
 | AO3400A, 1N4148W | 2 | 0.20 |
-| **Total** | | **≈ 39** |
+| **Total** | | **≈ 35** |
 
 The watchdog with AND gate and relay supply switch is about €1.50–2 of
-this (D8). Fixed screw terminals instead of pluggable ones would save
-about €4 (see section 7).
+this (D8). Pluggable terminals would add about €4 (D10).
 
 ## 9. Bring-up plan (rev A)
 
@@ -457,3 +460,4 @@ about €4 (see section 7).
 | D7 | Hand assembly or AISLER assembly? | **Decide on the AISLER quote** once the BOM exists; all parts are hand-solderable |
 | D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts for a second, independent way to stop the pump, e.g. when the SSR fails short-circuited |
 | D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
+| D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |

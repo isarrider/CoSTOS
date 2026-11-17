@@ -316,7 +316,7 @@ def sheet_power(path):
     s.text(632, 150, "→ Pi pins 2, 4", "n")
     s.text(632, 165, "→ U2, U7, LEDs", "n")
     s.note(20, 380, [
-        "J1: 3.5 mm pluggable terminal from the 5.1 V DIN-rail supply.",
+        "J1: 3.5 mm screw terminal from the 5.1 V DIN-rail supply.",
         "D1 clamps spikes; a reversed supply makes D1 conduct and blows F1.",
         "Q1 + U1 form an ideal diode (≈ 10 mV drop at 3 A): it blocks",
         "reverse polarity and back-feeding into J1 when the Pi's USB-C",

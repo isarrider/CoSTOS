@@ -147,5 +147,5 @@
 <text class="ts" x="270" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R2</text>
 <text class="th" x="470" y="190" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#ffffff">OSCoST HAT</text>
 <text class="ts" x="470" y="210" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">rev A · 65 × 56.5 mm</text>
-<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: 3.5 mm pluggable terminal blocks.</text>
+<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals.</text>
 </svg>

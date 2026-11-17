@@ -104,6 +104,6 @@ for x, col, lab in [(196, "#4CAF50", "PWR"), (222, "#4CAF50", "WD"), (246, "#FFB
 # logo
 t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
 t(470, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
-t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: 3.5 mm pluggable terminal blocks.", 11, None, 400, "start", on_board=False)
+t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals.", 11, None, 400, "start", on_board=False)
 out.append('</svg>')
 print("\n".join(out))

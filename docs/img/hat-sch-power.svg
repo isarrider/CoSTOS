@@ -76,7 +76,7 @@
 <text x="620" y="108" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
 <text x="632" y="150" class="n" text-anchor="start">→ Pi pins 2, 4</text>
 <text x="632" y="165" class="n" text-anchor="start">→ U2, U7, LEDs</text>
-<text x="20" y="380" class="n" text-anchor="start">J1: 3.5 mm pluggable terminal from the 5.1 V DIN-rail supply.</text>
+<text x="20" y="380" class="n" text-anchor="start">J1: 3.5 mm screw terminal from the 5.1 V DIN-rail supply.</text>
 <text x="20" y="395" class="n" text-anchor="start">D1 clamps spikes; a reversed supply makes D1 conduct and blows F1.</text>
 <text x="20" y="410" class="n" text-anchor="start">Q1 + U1 form an ideal diode (≈ 10 mV drop at 3 A): it blocks</text>
 <text x="20" y="425" class="n" text-anchor="start">reverse polarity and back-feeding into J1 when the Pi's USB-C</text>
