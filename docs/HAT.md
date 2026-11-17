@@ -48,7 +48,7 @@ untested circuit goes into a manufactured board.
 Top view to scale. The placement shows that everything fits; the real
 layout is done in KiCad.
 
-![HAT mockup, top view](img/hat-mockup.svg)
+![HAT mockup, top view](img/hat-mockup.svg?v=549b278bdb)
 
 ## 3. Block diagram
 
