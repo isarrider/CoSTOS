@@ -105,9 +105,17 @@ layout is done in KiCad.
 
 ### 4.3 Pt1000 inputs
 
-- **Two MAX31865** (SSOP-20, hand-solderable), each with its own 4.3 kΩ
-  0.1 % reference resistor, the input filter from the datasheet and ESD
-  protection on the terminal.
+- **Two MAX31865 positions** (SSOP-20, hand-solderable), each with its own
+  4.3 kΩ 0.1 % reference resistor, the input filter from the datasheet and
+  ESD protection on the terminal. **Rev A fits only #1 (PT1, collector).**
+  #2 and its PT2 terminal stay unfitted: a second collector sensor, the
+  hot flow line or precise heat metering can be added later without a new
+  board.
+- **The collector needs a Pt1000:** the cable to the roof usually has only
+  two wires, which is exactly what a Pt1000 needs. A DS18x20 would need
+  three (normal powered mode) and only goes up to 125 °C. The cable's
+  resistance shows up as a small fixed offset (about 0.25 K for 20 m of
+  0.75 mm²), corrected by the per-sensor calibration value.
 - 2-wire connection by default; solder jumpers for 3-wire sensors.
 - On SPI0, with the two hardware chip selects: CE0 (pin 24) for #1, CE1
   (pin 26) for #2.
@@ -223,7 +231,7 @@ numbers behind GPIO 18/19 differ, which is software configuration.
 | I²C SDA / SCL (DS2482, only if fitted) | 3 / 5 | I2C1 | I2C1 |
 | SPI MOSI / MISO / SCLK | 19 / 21 / 23 | SPI0 | SPI0 |
 | SPI CE0 (MAX31865 #1) | 24 | GPIO 8 | GPIO 8 |
-| SPI CE1 (MAX31865 #2) | 26 | GPIO 7 | GPIO 7 |
+| SPI CE1 (MAX31865 #2, only if fitted) | 26 | GPIO 7 | GPIO 7 |
 | PWM 1 | 12 | GPIO 18, PWM0 channel 0 | GPIO 18, RP1 PWM0 channel 2 |
 | PWM 2 | 35 | GPIO 19, PWM0 channel 1 | GPIO 19, RP1 PWM0 channel 3 |
 | Feedback 1 | 16 | GPIO 23 | GPIO 23 |
@@ -315,7 +323,7 @@ All labelled on the silkscreen:
 | PUMP1 | PWM, GND, FB | pump 1 signal cable (brown, blue, black) |
 | PUMP2 | PWM, GND, FB | pump 2 signal cable |
 | PT1 | +, − | Pt1000 sensor 1 (collector) |
-| PT2 | +, − | Pt1000 sensor 2 |
+| PT2 | +, − | Pt1000 sensor 2 (not fitted in rev A) |
 | 1W-A, 1W-B | 3V3, DQ, GND | DS18x20 sensors |
 | REL1 | +5V, OUT | SSR / relay 1 (pump mains) |
 | REL2 | +5V, OUT | SSR / relay 2 |
@@ -354,8 +362,8 @@ All labelled on the silkscreen:
    heartbeat.
 6. PWM outputs into a 1 kΩ dummy load, then the real pump (as in
    [Connecting the pump](HARDWARE.md#connecting-the-pump)).
-7. Pt1000 inputs with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C),
-   then real sensors.
+7. Pt1000 input with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C),
+   then the real collector sensor on its 2-wire cable.
 8. 1-Wire bus scan on both buses, with one, then five DS18x20 each. On
    the Pi 5, check that `w1-gpio` works reliably through the RP1 chip;
    otherwise fit the DS2482.
@@ -367,7 +375,7 @@ All labelled on the silkscreen:
 |---|---|---|
 | D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
 | D2 | One or two PWM outputs? | **Two**: the TC4427 has two channels anyway |
-| D3 | How many Pt1000 inputs? | **Two** (collector + one spare), on the two hardware chip selects |
+| D3 | How many Pt1000 inputs? | **Two on the board, one fitted**: PT1 for the collector; PT2 (MAX31865 #2, its parts and terminal) stays unfitted until needed |
 | D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
 | D5 | Power the Pi from the HAT? | **Yes**: one supply cable for everything, with fuse, TVS and ideal diode on the HAT (4.7) |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |

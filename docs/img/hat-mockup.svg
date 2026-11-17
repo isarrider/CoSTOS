@@ -55,12 +55,12 @@
 <circle cx="72" cy="124" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="124" x2="77" y2="124" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="152" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="152" x2="77" y2="152" stroke="#5F6468" stroke-width="1.5"/>
 <text class="th" x="118" y="136.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">PT1</text>
-<text class="ts" x="118" y="151.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">Pt1000</text>
-<rect x="58" y="178" width="54" height="56" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
-<circle cx="72" cy="192" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="192" x2="77" y2="192" stroke="#5F6468" stroke-width="1.5"/>
-<circle cx="72" cy="220" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="220" x2="77" y2="220" stroke="#5F6468" stroke-width="1.5"/>
-<text class="th" x="118" y="204.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">PT2</text>
-<text class="ts" x="118" y="219.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">Pt1000</text>
+<text class="ts" x="118" y="151.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">collector</text>
+<rect x="58" y="178" width="54" height="56" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
+<circle cx="96" cy="192" r="4" fill="#C9A227"/>
+<circle cx="96" cy="220" r="4" fill="#C9A227"/>
+<text class="th" x="118" y="204.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#E8F5E9">PT2</text>
+<text class="ts" x="118" y="219.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">not fitted</text>
 <rect x="58" y="246" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="72" cy="260" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="260" x2="77" y2="260" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="288" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="288" x2="77" y2="288" stroke="#5F6468" stroke-width="1.5"/>
@@ -110,9 +110,9 @@
 <rect x="205" y="110" width="100" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="255.0" y="130.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
 <text class="ts" x="255.0" y="145.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">Pt1000 #1</text>
-<rect x="205" y="178" width="100" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="255.0" y="198.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">MAX31865</text>
-<text class="ts" x="255.0" y="213.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">Pt1000 #2</text>
+<rect x="205" y="178" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
+<text class="th" x="255" y="198" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">MAX31865 #2</text>
+<text class="ts" x="255" y="213" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">not fitted</text>
 <rect x="205" y="246" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
 <text class="th" x="255" y="266" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">DS2482</text>
 <text class="ts" x="255" y="281" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">not fitted</text>

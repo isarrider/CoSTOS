@@ -39,16 +39,23 @@ t(340, 98, "40-pin header to the Pi (stacking header for the Pi 5 cooler)", 11, 
 out.append('<rect x="320" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
 t(384, 124, "ID EEPROM, not fitted", 11, "#C8E6C9")
 # left terminals
-def term_v(y0, n, name, sub):
+def term_v(y0, n, name, sub, fitted=True):
     h = 28 * n
+    if not fitted:
+        out.append(f'<rect x="58" y="{y0}" width="54" height="{h}" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+        for k in range(n):
+            out.append(f'<circle cx="96" cy="{y0 + 14 + 28 * k}" r="4" fill="#C9A227"/>')
+        t(118, y0 + h/2 - 2, name, 12, "#E8F5E9", 500)
+        t(118, y0 + h/2 + 13, sub, 11, "#C8E6C9")
+        return
     out.append(f'<rect x="58" y="{y0}" width="54" height="{h}" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>')
     for k in range(n):
         cy = y0 + 14 + 28 * k
         out.append(f'<circle cx="72" cy="{cy}" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="{cy}" x2="77" y2="{cy}" stroke="#5F6468" stroke-width="1.5"/>')
     t(118, y0 + h/2 - 2, name, 12, "#ffffff", 500)
     t(118, y0 + h/2 + 13, sub, 11, "#C8E6C9")
-term_v(110, 2, "PT1", "Pt1000")
-term_v(178, 2, "PT2", "Pt1000")
+term_v(110, 2, "PT1", "collector")
+term_v(178, 2, "PT2", "not fitted", fitted=False)
 term_v(246, 3, "1W-A", "DS18x20")
 term_v(342, 3, "1W-B", "DS18x20")
 # bottom terminals
@@ -67,7 +74,9 @@ term_h(352, 3, "PUMP1", ["PWM", "GND", "FB"])
 term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"])
 # chips, left column
 chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
-chip(205, 178, 100, 46, "MAX31865", "Pt1000 #2")
+out.append('<rect x="205" y="178" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+t(255, 198, "MAX31865 #2", 12, "#E8F5E9", 500, "middle")
+t(255, 213, "not fitted", 11, "#C8E6C9", 400, "middle")
 out.append('<rect x="205" y="246" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
 t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
 t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
