@@ -741,6 +741,32 @@ layout, parts list, tests and documentation, and had no upgrade path.
 
 ![OSCoST HAT, Lite build, top view](img/hat-lite-mockup.svg)
 
+**Why no dedicated Lite board:** the comparison that decided D19, both
+Lite variants against the normal build (single-quantity parts; 🟢 good,
+🟡 medium, 🔴 weak):
+
+| | **Normal HAT** (1-Wire edition) | **HAT Lite** (own board) | **Lite as build option** | **Saved: Lite (own board)** | **Saved: Lite build option** |
+|---|---|---|---|---|---|
+| ***What's left out*** | | | | | |
+| 12 V converter + its load resistor | 🟢 12 V pump signal, large margin | 🟡 5 V, small margin (≈ 4.7 V against 4 V) | 🟡 5 V via a 0 Ω link; converter can be fitted later | **€3.05** | **€3.05** |
+| Relay output REL1 (switch chip, MOSFET, diode, terminal, R1 LED) | 🟢 cut-off relay (option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | 🟡 not fitted, spot stays | **€1.55** | **€1.55** |
+| Second 1-Wire bus (terminal, ESD, pull-up) | 🟢 2 buses | 🟡 1 bus | 🟡 1 fitted, 1W-B can be fitted later | **€0.65** | **€0.65** |
+| PWR LED | 🟢 | 🟡 none (WD shows power too) | 🟡 not fitted | **€0.15** | **€0.15** |
+| 0 Ω link for 5 V | — | — | one extra part | — | **−€0.01** |
+| ***Kept on all three*** | | | | | |
+| MAX31865 for the collector, watchdog + PWM gating, all field-line protection, PUMP1 with feedback, WD and PUMP1 LEDs, tall header, full outline | 🟢 | 🟢 | 🟢 | — | — |
+| PT2, PUMP2, REL2, DS2482 spots for later | 🟢 | 🔴 none | 🟢 | — | — |
+| ***Totals*** | | | | | |
+| Parts, single quantity | ≈ €30 | ≈ €24.60 | ≈ €24.60 | **≈ €5.40** | **≈ €5.39** |
+| Assembled, batch of 5 (estimate) | ≈ €29 | ≈ €24 | ≈ €24 | **≈ €5** | **≈ €5** |
+| Extra design work | — | 🔴 second board, layout, parts list, tests, docs | 🟢 one extra part and a second parts list | — | — |
+| Upgrade later to the full HAT | — | 🔴 buy a new board | 🟢 solder the missing parts on | — | — |
+
+Both savings columns come out the same: the saving comes only from parts
+that are not fitted, empty footprints cost nothing, and a dedicated board
+would have the same outline. The dedicated board would only add a second
+design to maintain and remove the upgrade path.
+
 ### 12.1 Rule: it may fail, but it may not break anything
 
 The Lite build may stop working; it must never leave the pump running or
