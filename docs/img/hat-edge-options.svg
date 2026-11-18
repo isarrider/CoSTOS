@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1572 580" font-family="Helvetica, Arial, sans-serif">
+<style>.t{font-size:12px;fill:#222}.w{font-size:11px;fill:#fff;font-weight:bold}.g{font-size:10px;fill:#C8E6C9}.n{font-size:11.5px;fill:#333}.h{font-size:15px;font-weight:bold;fill:#222}.c{font-size:13px;font-weight:bold;fill:#2b6e2b}.big{font-size:17px;font-weight:bold;fill:#222}</style>
+<defs><marker id="ac0392b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#c0392b"/></marker></defs>
+<defs><marker id="a555" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#555"/></marker></defs>
+<rect width="1572" height="580" fill="white"/>
+<text x="18" y="34" class="big" text-anchor="start">OSCoST HAT (1-Wire edition) on a Pi 5 — where the field terminals go (top view, 1 mm = 5 px)</text>
+<g transform="translate(18,50)">
+<rect x="0" y="0" width="500" height="520" rx="10" fill="#fcfcfc" stroke="#bbb" stroke-width="1"/>
+<text x="14" y="26" class="h" text-anchor="start">A — current: power and pump at the front</text>
+<text x="486" y="26" class="c" text-anchor="end">±0</text>
+<rect x="45.0" y="60.0" width="425.0" height="280.0" rx="15.0" fill="#7fbf86" stroke="#4d8a55" stroke-width="1"/>
+<rect x="385.0" y="70.0" width="100.0" height="80.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="385.0" y="165.0" width="100.0" height="75.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="385.0" y="255.0" width="100.0" height="75.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<text x="425.0" y="106.0" class="n" text-anchor="middle">RJ45</text>
+<rect x="78.5" y="310.0" width="45.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="157.5" y="310.0" width="35.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="225.0" y="310.0" width="35.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="88.5" y="347.5" width="25.0" height="50.0" rx="2" fill="#444" stroke="none" stroke-width="1"/>
+<text x="101.0" y="412.5" class="n" text-anchor="middle">USB-C supply</text>
+<rect x="45.0" y="58.75" width="325.0" height="282.5" rx="15.0" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>
+<circle cx="62.5" cy="77.5" r="7.0" fill="#C9A227"/><circle cx="62.5" cy="77.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="352.5" cy="77.5" r="7.0" fill="#C9A227"/><circle cx="352.5" cy="77.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="62.5" cy="322.5" r="7.0" fill="#C9A227"/><circle cx="62.5" cy="322.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="352.5" cy="322.5" r="7.0" fill="#C9A227"/><circle cx="352.5" cy="322.5" r="4.0" fill="#F4F1E8"/>
+<rect x="80.5" y="65.0" width="254.0" height="25.0" rx="0" fill="#111" stroke="none" stroke-width="1"/>
+<rect x="32.5" y="110.0" width="35.0" height="35.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="43.5" cy="118.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="136.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="73.5" y="131.5" class="w" text-anchor="start">PT1</text>
+<rect x="32.5" y="165.0" width="35.0" height="52.5" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="43.5" cy="173.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="191.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="208.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="73.5" y="195.25" class="w" text-anchor="start">1W-A</text>
+<rect x="32.5" y="235.0" width="35.0" height="52.5" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="43.5" cy="243.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="261.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="278.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="73.5" y="265.25" class="w" text-anchor="start">1W-B</text>
+<rect x="85.0" y="315.0" width="35.0" height="35.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="102.5" y="310.0" class="w" text-anchor="middle">PWR</text>
+<rect x="140.0" y="315.0" width="35.0" height="35.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="157.5" y="310.0" class="w" text-anchor="middle">REL1</text>
+<rect x="225.0" y="315.0" width="52.5" height="35.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="251.25" y="310.0" class="w" text-anchor="middle">PUMP1</text>
+<line x1="32.5" y1="185.0" x2="5.0" y2="185.0" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ac0392b)"/>
+<line x1="250.0" y1="350.0" x2="250.0" y2="390.0" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ac0392b)"/>
+<text x="250.0" y="410.0" class="t" text-anchor="start">pump</text>
+<text x="2.5" y="170.0" class="t" text-anchor="end"></text>
+<line x1="485.0" y1="110.0" x2="520.0" y2="110.0" stroke="#555" stroke-width="2.5" marker-end="url(#a555)"/>
+<text x="18" y="430" class="n" text-anchor="start">short traces: PUMP1 next to driver and 12 V</text>
+<circle cx="10" cy="426" r="3" fill="#2b6e2b"/>
+<text x="18" y="448" class="n" text-anchor="start">field wiring leaves on two sides</text>
+<circle cx="10" cy="444" r="3" fill="#a33"/>
+<text x="18" y="466" class="n" text-anchor="start">pump cable next to the USB-C plug</text>
+<circle cx="10" cy="462" r="3" fill="#a33"/>
+<text x="18" y="484" class="n" text-anchor="start">PWR/REL1 occupy the front, unused with option A</text>
+<circle cx="10" cy="480" r="3" fill="#a33"/>
+</g>
+<g transform="translate(536,50)">
+<rect x="0" y="0" width="500" height="520" rx="10" fill="#fcfcfc" stroke="#bbb" stroke-width="1"/>
+<text x="14" y="26" class="h" text-anchor="start">B — pump moves to the left edge</text>
+<text x="486" y="26" class="c" text-anchor="end">≈ ±0</text>
+<rect x="45.0" y="60.0" width="425.0" height="280.0" rx="15.0" fill="#7fbf86" stroke="#4d8a55" stroke-width="1"/>
+<rect x="385.0" y="70.0" width="100.0" height="80.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="385.0" y="165.0" width="100.0" height="75.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="385.0" y="255.0" width="100.0" height="75.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<text x="425.0" y="106.0" class="n" text-anchor="middle">RJ45</text>
+<rect x="78.5" y="310.0" width="45.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="157.5" y="310.0" width="35.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="225.0" y="310.0" width="35.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="88.5" y="347.5" width="25.0" height="50.0" rx="2" fill="#444" stroke="none" stroke-width="1"/>
+<text x="101.0" y="412.5" class="n" text-anchor="middle">USB-C supply</text>
+<rect x="45.0" y="58.75" width="325.0" height="282.5" rx="15.0" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>
+<circle cx="62.5" cy="77.5" r="7.0" fill="#C9A227"/><circle cx="62.5" cy="77.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="352.5" cy="77.5" r="7.0" fill="#C9A227"/><circle cx="352.5" cy="77.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="62.5" cy="322.5" r="7.0" fill="#C9A227"/><circle cx="62.5" cy="322.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="352.5" cy="322.5" r="7.0" fill="#C9A227"/><circle cx="352.5" cy="322.5" r="4.0" fill="#F4F1E8"/>
+<rect x="80.5" y="65.0" width="254.0" height="25.0" rx="0" fill="#111" stroke="none" stroke-width="1"/>
+<rect x="32.5" y="105.0" width="35.0" height="35.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="43.5" cy="113.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="131.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="73.5" y="126.5" class="w" text-anchor="start">PT1</text>
+<rect x="32.5" y="147.5" width="35.0" height="52.5" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="43.5" cy="156.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="173.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="191.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="73.5" y="177.75" class="w" text-anchor="start">1W-A</text>
+<rect x="32.5" y="205.0" width="35.0" height="52.5" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="43.5" cy="213.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="231.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="248.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="73.5" y="235.25" class="w" text-anchor="start">1W-B</text>
+<rect x="32.5" y="262.5" width="35.0" height="52.5" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="43.5" cy="271.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="288.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="43.5" cy="306.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="73.5" y="292.75" class="w" text-anchor="start">PUMP1</text>
+<rect x="115.0" y="315.0" width="35.0" height="35.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="132.5" y="310.0" class="w" text-anchor="middle">PWR</text>
+<rect x="165.0" y="315.0" width="35.0" height="35.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="182.5" y="310.0" class="w" text-anchor="middle">REL1</text>
+<line x1="32.5" y1="210.0" x2="5.0" y2="210.0" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ac0392b)"/>
+<text x="175.0" y="390.0" class="n" text-anchor="start">PWR / REL1: only if used</text>
+<text x="2.5" y="170.0" class="t" text-anchor="end"></text>
+<line x1="485.0" y1="110.0" x2="520.0" y2="110.0" stroke="#555" stroke-width="2.5" marker-end="url(#a555)"/>
+<text x="18" y="430" class="n" text-anchor="start">sensors and pump leave on one side</text>
+<circle cx="10" cy="426" r="3" fill="#2b6e2b"/>
+<text x="18" y="448" class="n" text-anchor="start">front only has PWR/REL1, used rarely</text>
+<circle cx="10" cy="444" r="3" fill="#2b6e2b"/>
+<text x="18" y="466" class="n" text-anchor="start">USB-C side stays clear in option A</text>
+<circle cx="10" cy="462" r="3" fill="#2b6e2b"/>
+<text x="18" y="484" class="n" text-anchor="start">left edge is full: no room for more terminals</text>
+<circle cx="10" cy="480" r="3" fill="#a33"/>
+</g>
+<g transform="translate(1054,50)">
+<rect x="0" y="0" width="500" height="520" rx="10" fill="#fcfcfc" stroke="#bbb" stroke-width="1"/>
+<text x="14" y="26" class="h" text-anchor="start">C — everything on one two-level block</text>
+<text x="486" y="26" class="c" text-anchor="end">≈ +€1–2</text>
+<rect x="45.0" y="60.0" width="425.0" height="280.0" rx="15.0" fill="#7fbf86" stroke="#4d8a55" stroke-width="1"/>
+<rect x="385.0" y="70.0" width="100.0" height="80.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="385.0" y="165.0" width="100.0" height="75.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="385.0" y="255.0" width="100.0" height="75.0" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<text x="425.0" y="106.0" class="n" text-anchor="middle">RJ45</text>
+<rect x="78.5" y="310.0" width="45.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="157.5" y="310.0" width="35.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="225.0" y="310.0" width="35.0" height="37.5" rx="2" fill="#c4c8cc" stroke="#7a7f84" stroke-width="1"/>
+<rect x="88.5" y="347.5" width="25.0" height="50.0" rx="2" fill="#444" stroke="none" stroke-width="1"/>
+<text x="101.0" y="412.5" class="n" text-anchor="middle">USB-C supply</text>
+<rect x="45.0" y="58.75" width="325.0" height="282.5" rx="15.0" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>
+<circle cx="62.5" cy="77.5" r="7.0" fill="#C9A227"/><circle cx="62.5" cy="77.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="352.5" cy="77.5" r="7.0" fill="#C9A227"/><circle cx="352.5" cy="77.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="62.5" cy="322.5" r="7.0" fill="#C9A227"/><circle cx="62.5" cy="322.5" r="4.0" fill="#F4F1E8"/>
+<circle cx="352.5" cy="322.5" r="7.0" fill="#C9A227"/><circle cx="352.5" cy="322.5" r="4.0" fill="#F4F1E8"/>
+<rect x="80.5" y="65.0" width="254.0" height="25.0" rx="0" fill="#111" stroke="none" stroke-width="1"/>
+<rect x="32.5" y="110.0" width="50.0" height="140.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<line x1="57.5" y1="110.0" x2="57.5" y2="250.0" stroke="#8A7F5F"/>
+<circle cx="41.0" cy="118.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="118.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="41.0" cy="136.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="136.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="41.0" cy="153.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="153.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="41.0" cy="171.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="171.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="41.0" cy="188.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="188.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="41.0" cy="206.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="206.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="41.0" cy="223.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="223.75" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="41.0" cy="241.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<circle cx="66.0" cy="241.25" r="6.0" fill="#B0B6BA" stroke="#5F6468"/>
+<text x="95.0" y="122.75" class="g" text-anchor="start">PT1</text>
+<text x="95.0" y="140.25" class="g" text-anchor="start">1W-A</text>
+<text x="95.0" y="157.75" class="g" text-anchor="start">1W-A · 1W-B</text>
+<text x="95.0" y="175.25" class="g" text-anchor="start">1W-B</text>
+<text x="95.0" y="192.75" class="g" text-anchor="start">PUMP1</text>
+<text x="95.0" y="210.25" class="g" text-anchor="start">PUMP1 · REL1</text>
+<text x="95.0" y="227.75" class="g" text-anchor="start">REL1 · PWR</text>
+<text x="95.0" y="245.25" class="g" text-anchor="start">PWR</text>
+<line x1="32.5" y1="180.0" x2="5.0" y2="180.0" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ac0392b)"/>
+<text x="2.5" y="170.0" class="t" text-anchor="end">all</text>
+<line x1="485.0" y1="110.0" x2="520.0" y2="110.0" stroke="#555" stroke-width="2.5" marker-end="url(#a555)"/>
+<text x="18" y="430" class="n" text-anchor="start">all field wiring on one side, front clear</text>
+<circle cx="10" cy="426" r="3" fill="#2b6e2b"/>
+<text x="18" y="448" class="n" text-anchor="start">two-level block: lower row harder to reach</text>
+<circle cx="10" cy="444" r="3" fill="#a33"/>
+<text x="18" y="466" class="n" text-anchor="start">≈ €1–2 more than separate terminals</text>
+<circle cx="10" cy="462" r="3" fill="#a33"/>
+<text x="18" y="484" class="n" text-anchor="start">sensor, pump and power wires share one block</text>
+<circle cx="10" cy="480" r="3" fill="#a33"/>
+</g>
+</svg>

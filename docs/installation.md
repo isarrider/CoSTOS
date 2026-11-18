@@ -12,6 +12,8 @@ Status: **incomplete**. Open points are listed at the end.
 - RESOL DeltaSol BX Plus, read over VBus by
   [vbus2influx](https://github.com/isarrider/vbus2influx).
 - A **Raspberry Pi 5** already sits next to it and runs vbus2influx.
+  It has a **passive heatsink**, so the HAT's tall spacers (HAT D16)
+  clear it.
   OSCoST runs on this Pi (with the HAT), powered by the Pi's existing
   USB-C supply, which the HAT draws from through the header (HAT D15,
   [ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side) option A).

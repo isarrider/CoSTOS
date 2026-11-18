@@ -51,7 +51,7 @@ sensor inputs:
 |---|---|
 | Boards | Raspberry Pi 4, Raspberry Pi 5 |
 | Size | Raspberry Pi HAT: 65 × 56.5 mm, 4 × M2.5 mounting holes matching the Pi |
-| Header | 40-pin female, with a stacking/extra-tall header option for the Pi 5 active cooler |
+| Header | 40-pin female stacking header with tall spacers (≈ 16–17 mm) for every board (D16): clears the Pi 5 active cooler and most passive heatsinks, and works on a Pi 4 too |
 | Connectors | Field connections on the left and bottom edges, fixed 3.5 mm screw terminals (see 7) |
 | Component height | Low enough for a standard enclosure; the DC/DC module is the tallest part |
 | ID EEPROM | Footprint for the Raspberry Pi HAT ID EEPROM on pins 27/28, not fitted in rev A (D6) |
@@ -416,6 +416,12 @@ terminals** on **two edges**, as in the [mockup](#mockup):
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
 
+**Under discussion: where the field terminals go.** With the Pi powered
+over USB-C (D15) the USB-C cable leaves at the front edge, right below
+PWR, REL1 and PUMP1. Three arrangements are compared (1-Wire edition):
+
+![Three terminal arrangements on a Pi 5](img/hat-edge-options.svg)
+
 Fixed means one block per connector, soldered to the board, with the
 cable screwed straight into it. Pluggable terminals (a soldered socket and
 a removable screw plug) would let the HAT come off without undoing any
@@ -554,6 +560,7 @@ estimated here; it gets quoted with the BOM.
 | D13 | Measuring chip for the PT edition? | **One LTC2983**: 8 independent 2-wire Pt1000 inputs (18 of its 20 inputs), excitation, fault detection and linearisation built in, result in °C, buffered inputs for simple protection. Costs a little more than 2 × ADS124S08 but needs far less analog design and software, and it frees GPIO4 for a 1-Wire bus. Comparison in 11.6 |
 | D14 | Raspberry Pi or ESP32-P4 (Waveshare ESP32-P4-WIFI6-DEV-KIT, same form factor)? | **Raspberry Pi**: more people already own one, and Linux gives more flexibility. The P4 board is a possible later port; its pin check is in 2.1. On the P4, SCLK, REL1 and PWM2 would hit the RTC crystal and the audio amplifier |
 | D15 | How do the Pi, the HAT and the pump get their power? | **Option A** ([ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side)): the Pi's own USB-C supply in a socket (most people already have one), the pump permanently on 230 V and stopped over PWM only. Cheapest, no mains wiring, no switching wear, and the pump feedback works at all times. Accepted: one stop path instead of two. REL1 stays on the board for an optional cut-off relay (option C), which heating-profile pumps always need |
+| D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 
 ---
 
