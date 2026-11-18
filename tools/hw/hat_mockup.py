@@ -96,7 +96,6 @@ def term_h(x0, n, name, pins, fitted=True):
             out.append(f'<circle cx="{cx}" cy="466" r="4" fill="#C9A227"/>')
         t(cx, 512, pins[k], 11, None, 400, "middle", on_board=False)
     t(x0 + w/2, 440, name + ("" if fitted else " (n.f.)"), 12, "#ffffff" if fitted else "#E8F5E9", 500, "middle")
-term_h(148, 2, "PWR", ["+5V", "GND"])
 term_h(216, 2, "REL1", ["+5V", "OUT"])
 term_h(284, 2, "REL2", ["+5V", "OUT"], fitted=False)
 if pt:
@@ -123,7 +122,7 @@ else:
     t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
 # bottom rows
 chip(196, 368, 78, 46, "TC4427", "pump driver")
-chip(282, 368, 78, 46, "Protection", "5 V input")
+chip(282, 368, 78, 46, "Bulk C", "5 V from the Pi")
 chip(368, 368, 78, 46, "Relay", "MOSFET")
 chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
 chip(282, 304, 78, 46, "Feedback", "input 1")

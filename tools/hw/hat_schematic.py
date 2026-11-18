@@ -276,51 +276,23 @@ class Sheet:
 
 # ======================================================================
 def sheet_power(path):
-    s = Sheet(1180, 650, "OSCoST HAT rev A: power input and 12 V supply",
-              "Power terminal, fuse, TVS, ideal diode and power LED feeding the 5 V rail of the Pi and the HAT; "
-              "isolated 5 to 12 V DC/DC for the pump drivers; table of the 40-pin header connections.")
-    s.heading(20, 30, "1 · Power input (powers the Pi through header pins 2/4)")
-    t = s.term(56, 130, "J1", "PWR", [(0, "+5V"), (50, "GND")], conn="r")
-    s.wire(t["GND"], (110, 180)); s.gnd(110, 180)
-    s.wire(t["+5V"], (110, 130))
-    s.part("F", 110, 130, "r", "F1", "5 A slow")
-    s.wire((170, 130), (340, 130)); s.dot(200, 130)
-    s.wire((200, 130), (200, 140))
-    s.part("TVS", 200, 180, "u", "D1", "SMBJ5.0A", lab="r")
-    s.wire((200, 180), (200, 190)); s.gnd(200, 190)
-    # Q1: source left (340), drain right (400), gate down (370, 160)
-    s.add('<g transform="translate(370 130) scale(1 -1) rotate(90)">'
-          '<path class="w" d="M-30 0 H-14 M-14 -14 V14"/>'
-          '<path class="w" d="M-8 -17 V-7 M-8 -5 V5 M-8 7 V17" style="stroke-width:2.5"/>'
-          '<path class="w" d="M-8 -12 H0 V-30 M-8 12 H0 V30 M-8 0 H0 V12"/>'
-          f'<path d="M-8 0 L-1 -4 L-1 4 Z" fill="{INK}"/></g>')
-    s.text(370, 96, '<tspan class="r">Q1</tspan> N-MOSFET 30 V, &lt; 5 mΩ', "v", "middle")
-    s.text(370, 82, "e.g. CSD17575Q3", "n", "middle")
-    s.text(346, 148, "S", "num", "middle"); s.text(394, 148, "D", "num", "middle")
-    s.wire((400, 130), (620, 130))
-    u1 = s.ic(290, 230, 180, 100, "U1", "LM74700-Q1", [
-        ("t", 30, "ANODE", None), ("t", 80, "GATE", None), ("t", 150, "CATHODE", None),
-        ("l", 30, "EN", None), ("l", 60, "VCAP", None), ("b", 150, "GND", None)], sub="ideal-diode controller")
-    s.wire(u1["ANODE"], (320, 130)); s.dot(320, 130)
-    s.wire(u1["GATE"], (370, 160))
-    s.wire(u1["CATHODE"], (440, 130)); s.dot(440, 130)
-    s.wire(u1["EN"], (250, 260), (250, 200), (320, 200)); s.dot(320, 200); s.dot(250, 200)
-    s.part("C", 270, 290, "l", "C1", "100 nF", lab="b")
-    s.wire((230, 290), (230, 200), (250, 200))
-    s.wire(u1["GND"], (440, 350)); s.gnd(440, 350)
-    # 5 V rail
+    s = Sheet(1180, 650, "OSCoST HAT rev A: 5 V from the Pi and 12 V supply",
+              "The HAT takes 5 V from header pins 2 and 4 (the Pi runs from its own USB-C supply, no power input "
+              "on the HAT); bulk capacitor and power LED; isolated 5 to 12 V DC/DC for the pump drivers; table of the 40-pin header connections.")
+    s.heading(20, 30, "1 · 5 V from the Pi (header pins 2/4, no power input, D18)")
+    s.flag(200, 130, "+5V from Pi pins 2, 4", side="L")
+    s.wire((200, 130), (620, 130))
     s.dot(490, 130); s.part("CP", 490, 130, "d", "C2", "100 µF", lab="r"); s.gnd(490, 170)
     s.dot(560, 130); s.part("R", 560, 130, "d", "R1", "1 kΩ", lab="r")
     s.part("LED", 560, 190, "d", "D2", "PWR green", lab="r"); s.gnd(560, 230)
     s.rail(620, 130, "+5V")
-    s.text(632, 150, "→ Pi pins 2, 4", "n")
-    s.text(632, 165, "→ U2, U7, LEDs", "n")
-    s.note(20, 380, [
-        "J1: 3.5 mm screw terminal from the 5.1 V DIN-rail supply.",
-        "D1 clamps spikes; a reversed supply makes D1 conduct and blows F1.",
-        "Q1 + U1 form an ideal diode (≈ 10 mV drop at 3 A): it blocks",
-        "reverse polarity and back-feeding into J1 when the Pi's USB-C",
-        "is plugged in. EN tied to ANODE: always on while J1 has power.",
+    s.text(632, 150, "→ U2, U7, LEDs", "n")
+    s.note(20, 300, [
+        "The Pi runs from its own USB-C supply (D15); the HAT draws",
+        "< 200 mA from header pins 2/4, behind the Pi's own input",
+        "protection, so it needs no fuse, TVS or ideal diode (D18).",
+        "Earlier drafts had J1, F1, D1, Q1, U1 and C1 here (power input",
+        "with ideal diode); those reference designators stay unused.",
     ])
     # ---- 12 V DC/DC ----
     s.heading(20, 490, "2 · 12 V for the pump drivers")
@@ -345,7 +317,7 @@ def sheet_power(path):
     s.heading(hx, 30, "3 · 40-pin header (Pi 4 / Pi 5)")
     rows = [
         ("+3V3", "1, 17", "", "from the Pi"),
-        ("+5V", "2, 4", "", "to the Pi"),
+        ("+5V", "2, 4", "", "from the Pi"),
         ("GND", "6, 9, 14, 20, 25, 30, 34, 39", "", ""),
         ("1W_A", "7", "4", "1-Wire bus A"),
         ("1W_B", "11", "17", "1-Wire bus B"),

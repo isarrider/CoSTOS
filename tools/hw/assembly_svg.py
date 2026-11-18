@@ -68,7 +68,7 @@ def assembly():
         rect(o, x, y, 7 * S, n * 3.5 * S, "#E9E2CC", "#8A7F5F", rx=2)
         txt(o, P(5.5, 0)[0], y + n * 3.5 * S / 2 + 4, lab, "w")
     # bottom terminals
-    for (xx, n, lab) in [(14, 2, "PWR"), (24, 2, "REL1")]:
+    for (xx, n, lab) in [(24, 2, "REL1")]:
         x, y = P(xx, 51)
         rect(o, x, y, n * 3.5 * S, 7 * S, "#E9E2CC", "#8A7F5F", rx=2)
         txt(o, x + n * 3.5 * S / 2, y - 6, lab, "w", "middle")
@@ -87,7 +87,7 @@ def assembly():
     # notes under the top view
     ny = P(0, 74)[1]
     txt(o, ox, ny, "• The HAT covers the left 65 mm; Ethernet and USB stay free on the right.", "n")
-    txt(o, ox, ny + 16, "• Sensor and pump terminals face left (D17); the front edge keeps PWR/REL1, above the", "n")
+    txt(o, ox, ny + 16, "• Sensor and pump terminals face left (D17); the front edge keeps only REL1, above the", "n")
     txt(o, ox, ny + 32, "  Pi's USB-C and µHDMI sockets; the USB-C plug fits below the HAT (check in KiCad).", "n")
 
     # ---------- side view (looking at the front edge)
@@ -120,10 +120,10 @@ def assembly():
     rect(o, x, y, 65 * S, 1.6 * S, GREEN, GREEN_D)
     txt(o, x + 65 * S + 8, y + 9, "OSCoST HAT", "tb")
     # terminals on the HAT, seen from the front
-    for (xx, w_) in [(14, 7), (24, 7)]:
+    for (xx, w_) in [(24, 7)]:
         x, y = Q(xx, HZ + 1.6 + 8.5)
         rect(o, x, y, w_ * S, 8.5 * S, "#E9E2CC", "#8A7F5F", rx=2)
-    txt(o, Q(24, 0)[0], Q(0, HZ + 12)[1], "PWR    REL1", "n", "middle")
+    txt(o, Q(27.5, 0)[0], Q(0, HZ + 12)[1], "REL1", "n", "middle")
     # height dimension
     xd = Q(-6, 0)[0]
     y1, y2 = Q(0, 0)[1], Q(0, HZ)[1]

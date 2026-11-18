@@ -435,7 +435,7 @@ would save about €35. Three slim options were compared instead:
 
 | | A: no mains work | B: minimal DIN | C: B + cut-off relay |
 |---|---|---|---|
-| 5 V supply | Pi USB-C supply in a socket (most people already have one) | Mean Well HDR-60-5 into the HAT's PWR terminal | as B |
+| 5 V supply | Pi USB-C supply in a socket (most people already have one) | Mean Well HDR-60-5, USB-C lead to the Pi | as B |
 | Pump | Permanently on 230 V, plug cord in a socket | Permanently on 230 V, existing circuit | L through a 16 A relay, 12 V coil, driven by REL1 |
 | Enclosure | Pi case | small DIN box, 4–6 TE | as B |
 | Electrician | not needed if the pump gets a plug cord | briefly | briefly |
@@ -998,7 +998,7 @@ The Pi rows include an SD card (≈ €10).
 
 | Base | What the board adds | 1-Wire edition | PT edition |
 |---|---|---|---|
-| Any Pi: HAT | stacking header and spacers (≈ €3) | ≈ €35 | ≈ €69 |
+| Any Pi: HAT | stacking header and spacers (≈ €3) | ≈ €35 (≈ €28 since D18) | ≈ €69 (≈ €65 since D18) |
 | ESP32-S3 on the board | instead of the header: module (≈ €4.50), 3.3 V regulator (≈ €1), USB-C (≈ €0.50), microSD slot (≈ €0.50) | ≈ €39 | ≈ €73 |
 | RP2350 (Pico 2 W) on the board | instead of the header: module (≈ €7.50, from memory), regulator (≈ €1), microSD slot (≈ €0.50) | ≈ €41 | ≈ €75 |
 

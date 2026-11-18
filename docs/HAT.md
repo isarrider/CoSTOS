@@ -32,18 +32,17 @@ sensor inputs:
 - Pt1000 temperature inputs
 - 1-Wire bus for DS18x20 sensors
 - Control outputs for external relays / SSRs
-- The **5 V power input for the whole controller**: the DIN-rail supply
-  feeds the HAT, and the HAT powers the Pi through the header
+- **No power input** (D18): the Pi is powered by its own USB-C supply and
+  the HAT takes its few hundred mA from header pins 2/4, like any HAT
 - Hardware watchdog that switches all relay outputs off when the software
   stops
 - Protection on every connection that leaves the board, status LEDs
 
 **Not on the HAT, deliberately:**
 
-- **Anything with 230 V.** The SSR or relay that switches the pump, the
-  5 V power supply and the fuse sit on a DIN rail in the enclosure, wired
-  by an electrician. The HAT only sends the relay a low-voltage control
-  signal and receives the supply's 5 V output.
+- **Anything with 230 V.** The pump's mains supply and an optional relay
+  or SSR stay off the board (ARCHITECTURE 5.6). The HAT only sends a relay
+  a low-voltage control signal.
 
 ## 2. Target boards and form factor
 
@@ -113,7 +112,7 @@ are in [ARCHITECTURE 13](ARCHITECTURE.md#13-platform-comparison-pi-or-microcontr
                 40-pin header
  ┌──────────────────┼──────────────────────────────────────────────────────┐
  │                  │                                                      │
- │  PWR 5 V in ─► fuse, TVS, ideal diode ─► 5 V ─► Pi (pins 2/4) + HAT     │
+ │  5 V from the Pi (pins 2/4) ─► bulk capacitor, power LED ─► HAT         │
  │  5 V ──► DC/DC 5→12 V ──► 12 V ─┐                                       │
  │                                 ▼                                       │
  │  PWM1 ─► AND ─► TC4427 ch A ─► R ─► TVS ─────────────────────► Pump 1   │ PWM / GND / FB
@@ -139,7 +138,7 @@ KiCad schematic will be the reference for the board itself. Faded parts
 are footprints that are not fitted in rev A. Regenerate with
 `python3 tools/hw/hat_schematic.py docs/img`.
 
-![Power input, 12 V supply and header](img/hat-sch-power.svg)
+![5 V from the Pi, 12 V supply and header](img/hat-sch-power.svg)
 
 ![Watchdog, PWM pump outputs and feedback inputs](img/hat-sch-pwm.svg)
 
@@ -148,8 +147,7 @@ are footprints that are not fitted in rev A. Regenerate with
 ![Pt1000 and 1-Wire inputs](img/hat-sch-sensors.svg)
 
 Part choices the drawings add to the text below (all to be confirmed
-when the BOM is made): ideal diode LM74700-Q1 with an N-MOSFET such as
-CSD17575Q3; relay supply switch TPS22918; AND gates 74LVC1G08; relay
+when the BOM is made): relay supply switch TPS22918; AND gates 74LVC1G08; relay
 MOSFETs AO3400A with 1N4148W flyback diodes; ESD diodes PESD5V0 on the
 sensor inputs; 100 mA polyfuse for the 1-Wire sensor supply; a 1.5 kΩ
 minimum load on the 12 V output, which keeps the unregulated DC/DC below
@@ -266,56 +264,30 @@ the 13 V TVS standoff at light load.
   [Safety](ARCHITECTURE.md#41-hardware-layer-independent-of-software); the
   SoC watchdog and the systemd watchdog remain in addition.
 
-### 4.7 Power input (powers the Pi)
+### 4.7 Power: from the Pi (D18)
 
-**Default (D15): the Pi's own USB-C supply.** The HAT draws its few
-hundred mA through header pins 2/4, as any HAT does; most people already
-have a suitable supply. For a DIN-rail build (ARCHITECTURE 5.6 option B/C)
-a 5 V DIN-rail supply connects to the HAT's PWR terminal instead; the HAT
-then feeds its own circuits and, through header pins 2 and 4, the Pi, and
-the Pi's USB-C input stays unused.
+The HAT has **no power input**. The Pi runs from its own USB-C supply
+(D15), and the HAT takes its 5 V from header pins 2/4 and its 3.3 V from
+pins 1/17, like any HAT. Its 5 V therefore sits behind the Pi's own input
+protection, so the HAT needs no fuse, TVS or ideal diode of its own; it
+only has a bulk capacitor and a power LED on its 5 V rail.
 
-**Powering through the Pi's USB-C works too.** All HAT circuits sit on the
-header side of the protection, so they run from whichever supply powers
-the 5 V rail: the PWR terminal, or a supply in the Pi's USB-C socket (the
-HAT then draws its few hundred mA through header pins 2/4, as any HAT
-does). That is the easy way on the bench; in the installation the PWR
-terminal saves a separate USB-C supply. **Use one supply at a time**: the
-ideal diode keeps current from flowing back into the PWR terminal, but the
-Pi's USB-C input is not designed to be fed backwards from the header.
-
-Feeding 5 V into the header **bypasses the Pi's own input protection**, so
-the HAT has to provide it:
-
-- **Fuse** at the input (5 A slow-blow or a polyfuse of similar rating).
-- **TVS diode** against overvoltage spikes from the supply (e.g. SMBJ5.0A).
-- **Ideal diode** (a controller with an external MOSFET, low drop at 5 A):
-  protects against reversed polarity at the terminal, and prevents
-  back-feeding when the Pi's USB-C is also plugged in, for example on the
-  bench. A plain Schottky diode would drop too much voltage.
-- **Power LED** after the protection.
-
-Limits and settings:
-
-- The header's 5 V connections carry about **4.5 A**. That is enough for
-  the Pi, the HAT and light USB use; OSCoST needs no power-hungry USB
-  devices.
-- **Raspberry Pi 5:** without USB power negotiation it assumes a 3 A
-  supply, limits the USB ports to 600 mA and refuses to boot from USB.
-  With a 5 A supply, set `PSU_MAX_CURRENT=5000` in the bootloader EEPROM
-  configuration (`sudo rpi-eeprom-config --edit`); some Pi 5 boards don't
-  boot from GPIO power at all until this is set. The OSCoST install
-  instructions must include this step.
-- **Raspberry Pi 4:** no setting needed.
-- Supply: a regulated **5.1 V** DIN-rail supply, 3 A for a Pi 4 and 5 A
-  for a Pi 5, so the voltage at the Pi stays above 5 V after the
-  protection circuit.
+- **Supply:** the official Raspberry Pi USB-C supply (27 W for the Pi 5,
+  15 W for the Pi 4) or an equivalent. The Pi 5 negotiates 5 A over USB
+  power delivery, so no `PSU_MAX_CURRENT` setting is needed.
+- **DIN-rail builds** (ARCHITECTURE 5.6 options B/C): a 5 V DIN-rail
+  supply feeds the Pi through a short USB-C lead (5.1 V, 3 A for a Pi 4,
+  5 A for a Pi 5; a Pi 5 on a plain USB-C lead without power delivery
+  needs `PSU_MAX_CURRENT=5000` in its bootloader configuration).
+- **Earlier design** (rev A drafts before D18): a PWR terminal with fuse,
+  TVS and an LM74700 ideal diode powered the Pi through the header. It was
+  dropped because option A never uses it; it saved about €4 and nine parts.
 
 ### 4.8 Power budget
 
 | Rail | Source | Users | Estimated current |
 |---|---|---|---|
-| 5 V | HAT power input (from the DIN-rail supply) | **the Pi**, DC/DC, relay supply, LEDs | Pi 4 up to 3 A, Pi 5 up to 5 A; HAT itself < 200 mA with a relay coil, < 100 mA with an SSR (per extra fitted relay output up to +100 mA) |
+| 5 V | Pi header pins 2/4 (from the Pi's USB-C supply) | DC/DC, relay supply, LEDs | HAT < 200 mA with a relay coil, < 100 mA with an SSR (per extra fitted relay output up to +100 mA) |
 | 12 V | DC/DC on the HAT (1 W) | TC4427, PWM outputs | < 30 mA |
 | 3.3 V | Pi header pins 1/17 | MAX31865 × 2, DS18x20 sensors, pull-ups | < 30 mA |
 
@@ -380,13 +352,6 @@ dtoverlay=pwm-2chan
 [all]
 ```
 
-**Pi 5 bootloader EEPROM** (only when powered through the HAT's PWR
-terminal with a 5 A supply, see 4.7):
-
-```sh
-sudo rpi-eeprom-config --edit     # add: PSU_MAX_CURRENT=5000
-```
-
 **Not needed:**
 
 - No I²C, unless the optional DS2482 is fitted (then `dtparam=i2c_arm=on`
@@ -413,17 +378,17 @@ terminals** on **two edges**, as in the [mockup](#mockup):
 
 - **Left edge** (everything that is normally wired, D17): PT1, 1W-A,
   1W-B, PUMP1. The PT edition: the S1–S8 block and PUMP1.
-- **Front (bottom) edge** (rarely used or not fitted): PWR, REL1, REL2,
-  PT2, PUMP2 (REL2, PT2 and PUMP2 not fitted in rev A). The PT edition:
-  PWR, REL1, REL2, 1W-A, PUMP2.
+- **Front (bottom) edge** (rarely used or not fitted): REL1, REL2, PT2,
+  PUMP2 (REL2, PT2 and PUMP2 not fitted in rev A). The PT edition: REL1,
+  REL2, 1W-A, PUMP2. There is no power terminal (D18).
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
 
 **Where the field terminals go (decided: B, D17).** With the Pi powered
 over USB-C (D15) the USB-C cable leaves at the front edge. Moving PUMP1 to
 the left edge puts all wiring that is normally used on one side and
-leaves the front to the USB-C plug and to PWR/REL1, which option A doesn't
-use. The three arrangements compared (1-Wire edition):
+leaves the front to the USB-C plug and to REL1, which option A doesn't
+use. (The drawing still shows the PWR terminal, dropped later by D18.) The three arrangements compared (1-Wire edition):
 
 ![Three terminal arrangements on a Pi 5](img/hat-edge-options.svg)
 
@@ -440,7 +405,6 @@ All labelled on the silkscreen:
 
 | Connector | Pins | Function |
 |---|---|---|
-| PWR | +5V, GND | from the DIN-rail 5 V supply; powers HAT and Pi |
 | PUMP1 | PWM, GND, FB | pump 1 signal cable (brown, blue, black) |
 | PUMP2 | PWM, GND, FB | pump 2 signal cable (not fitted in rev A) |
 | PT1 | +, − | Pt1000 sensor 1 (collector) |
@@ -487,22 +451,22 @@ are the Pi, the DIN-rail supply, the SSR and the sensors.
 | PCB, ⅓ of an AISLER set of 3 (≈ €19) | — | 6.50 |
 | B0512S-1WR3 DC/DC | 1 | 3.00 |
 | 40-pin stacking header and 4 spacers | 1 | 3.00 |
-| 3.5 mm fixed screw terminals (J1, J2, J4, J6, J8, J9) | 6 | 3.00 |
-| Ideal diode: LM74700-Q1 + CSD17575Q3 | 2 | 2.50 |
+| 3.5 mm fixed screw terminals (PT1, 1W-A, 1W-B, PUMP1, REL1) | 5 | 2.50 |
 | Resistors and capacitors, about 25 (the 0.1 % 4.3 kΩ is about €0.80 of it) | — | 2.50 |
 | TC4427 | 1 | 1.30 |
-| 5 A SMD fuse | 1 | 1.00 |
 | TPS22918 | 1 | 0.60 |
 | LEDs | 3 | 0.50 |
 | 74LVC1G123 | 1 | 0.40 |
-| SMBJ13A, SMBJ5.0A | 2 | 0.40 |
+| SMBJ13A | 1 | 0.20 |
 | PESD5V0 ESD diodes | 4 | 0.40 |
 | 74LVC1G08 | 1 | 0.20 |
 | 100 mA polyfuse | 1 | 0.20 |
 | AO3400A, 1N4148W | 2 | 0.20 |
-| **Total** | | **≈ 35** |
+| **Total** | | **≈ 28** |
 
-The watchdog with AND gate and relay supply switch is about €1.50–2 of
+Without the power input (D18). The rows add up to about €27; earlier
+versions of this list showed ≈ €35, which included the power input
+(≈ €4) and was rounded up generously. The watchdog with AND gate and relay supply switch is about €1.50–2 of
 this (D8). Pluggable terminals would add about €4 (D10). The PT edition's
 list is in [11.5](#115-space-and-cost).
 
@@ -527,12 +491,9 @@ estimated here; it gets quoted with the BOM.
 ## 9. Bring-up plan (rev A)
 
 1. Visual check, then resistance checks between all rails before power.
-2. Power input on its own, without the Pi: a lab supply with current
-   limit at the PWR terminal; check 5 V after the ideal diode, then
-   reversed polarity (nothing may conduct).
-3. With the Pi, powered only through the HAT: Pi boots (Pi 5 with
-   `PSU_MAX_CURRENT=5000`), 12 V and 3.3 V present. Then additionally plug
-   in the Pi's USB-C: no current may flow back into the PWR terminal.
+2. HAT on the Pi, Pi on its USB-C supply with a USB power meter: current
+   rises by well under 200 mA, power LED on.
+3. 12 V and 3.3 V present on the HAT.
 4. Watchdog: `WD_OK` low after boot, high while a test script toggles the
    heartbeat, low again 2–3 s after it stops.
 5. Relay output REL1 with an LED/resistor as dummy load, with and without
@@ -554,7 +515,7 @@ estimated here; it gets quoted with the BOM.
 | D2 | One or two PWM outputs and relay outputs? | **Two positions each, one fitted**: PUMP1 and REL1 for the solar pump; PUMP2 and REL2 stay unfitted until a second pump is added |
 | D3 | How many Pt1000 inputs? | **Two on the board, one fitted**: PT1 for the collector; PT2 (MAX31865 #2, its parts and terminal) stays unfitted until needed |
 | D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
-| D5 | Power the Pi from the HAT? | **Yes**: one supply cable for everything, with fuse, TVS and ideal diode on the HAT (4.7) |
+| D5 | Power the Pi from the HAT? | ~~Yes~~, replaced by D18: **no**, the Pi uses its own USB-C supply |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
 | D7 | Hand assembly or factory assembly? | **Factory-assembled, delivered fully soldered**; AISLER or JLCPCB decided on quotes once the BOM exists (8.2) |
 | D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts for a second, independent way to stop the pump, e.g. when the SSR fails short-circuited |
@@ -567,6 +528,7 @@ estimated here; it gets quoted with the BOM.
 | D15 | How do the Pi, the HAT and the pump get their power? | **Option A** ([ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side)): the Pi's own USB-C supply in a socket (most people already have one), the pump permanently on 230 V and stopped over PWM only. Cheapest, no mains wiring, no switching wear, and the pump feedback works at all times. Accepted: one stop path instead of two. REL1 stays on the board for an optional cut-off relay (option C), which heating-profile pumps always need |
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
+| D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
 
 ---
 
@@ -592,7 +554,7 @@ reference installation plans to use it (see
 | Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way, all on the left edge | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*) on the left edge, plus 1W-A 3-way at the front |
 | SPI | CE0 (CE1 for PT2) | CE0 for the LTC2983 |
 | Extra GPIOs | | LTC2983 /RESET on GPIO22 (pin 15), INTERRUPT (conversion done) on GPIO27 (pin 13) |
-| Everything else | power input, 12 V, PUMP1/2, REL1/2, watchdog, AND gates, feedback, header, EEPROM footprint | **identical** |
+| Everything else | 12 V, PUMP1/2, REL1/2, watchdog, AND gates, feedback, header, EEPROM footprint | **identical** |
 
 ### 11.2 Pt1000 inputs (LTC2983)
 
@@ -648,29 +610,28 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
   resistors and ESD diodes fit comfortably where the 1-Wire edition has
   PT1, PT2, the DS2482 footprint and the second 1-Wire bus (see the
   mockup).
-- **Cost** (estimates, comparison in 11.6): about **€67 per assembled
-  board** (5 boards, JLCPCB), about **€69 in single-quantity parts**:
+- **Cost** (estimates, comparison in 11.6): about **€63 per assembled
+  board** (5 boards, JLCPCB), about **€65 in single-quantity parts**
+  (without the power input, D18):
 
 | Part | Qty | ≈ € |
 |---|---|---|
 | LTC2983 (8 × Pt1000; DigiKey $39.06 for one) | 1 | 39.00 |
 | PCB, ⅓ of an AISLER set of 3 (≈ €19) | — | 6.50 |
-| 3.5 mm fixed screw terminals: two-level 8-position block, PWR, REL1, PUMP1, 1W-A | 5 | 5.00 |
+| 3.5 mm fixed screw terminals: two-level 8-position block, REL1, PUMP1, 1W-A | 4 | 4.00 |
 | Resistors and capacitors, about 45 (incl. the 2 kΩ 0.1 % sense resistor and 16 protection resistors) | — | 3.80 |
 | B0512S-1WR3 DC/DC | 1 | 3.00 |
 | 40-pin stacking header and 4 spacers | 1 | 3.00 |
-| Ideal diode: LM74700-Q1 + CSD17575Q3 | 2 | 2.50 |
 | PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire) | 17 | 1.70 |
 | TC4427 | 1 | 1.30 |
-| 5 A SMD fuse | 1 | 1.00 |
 | TPS22918 | 1 | 0.60 |
 | LEDs | 3 | 0.50 |
 | 74LVC1G123 | 1 | 0.40 |
-| SMBJ13A, SMBJ5.0A | 2 | 0.40 |
+| SMBJ13A | 1 | 0.20 |
 | 74LVC1G08 | 1 | 0.20 |
 | 100 mA polyfuse | 1 | 0.20 |
 | AO3400A, 1N4148W | 2 | 0.20 |
-| **Total** | | **≈ 69** |
+| **Total** | | **≈ 65** |
 
   The LTC2983 is more than half of it; everything apart from the
   converter chip costs about €5 more than on the 1-Wire edition
@@ -688,7 +649,9 @@ with keeping the existing Pt1000 sensors. **Decided: LTC2983 (D13).** The
 other options stay documented as alternatives.
 
 Prices are single quantity at the time of writing; totals are estimates
-until a real BOM exists, and LCSC stock changes daily. 🟢 good,
+until a real BOM exists, and LCSC stock changes daily. The totals were
+made with the power input, since dropped (D18): subtract about €4 from
+every column. 🟢 good,
 🟡 medium, 🔴 weak.
 
 | | **8 × MAX31865** | **2 × ADS124S08** | **2 × AD7124-8** | **1 × LTC2986** | **1 × LTC2983** (chosen) | **1-Wire edition:** 1 × MAX31865 + 7 × DS18B20 |
@@ -772,9 +735,9 @@ damage the Pi. That gives four rules:
    resistors, ESD diodes, the TVS diode and the polyfuse. A short or a
    swapped wire on a terminal damages nothing. (230 V on a low-voltage
    terminal is beyond any HAT.)
-3. **No power path of its own.** The Lite HAT is powered by the Pi like
-   any HAT; with no power input there is nothing that can feed back into
-   the Pi or be wired the wrong way round.
+3. **No power path of its own.** Like the full HAT since D18, it is
+   powered by the Pi; there is nothing that can feed back into the Pi or
+   be wired the wrong way round.
 4. **The weakest part fails safe.** The pump signal is 5 V instead of
    12 V, so the pump sees about 4.7 V against its ~4 V threshold
    ([HARDWARE.md](HARDWARE.md#12-v-or-5-v)). If that ever isn't enough
@@ -786,7 +749,6 @@ damage the Pi. That gives four rules:
 | Left out | Saves | Consequence |
 |---|---|---|
 | 12 V DC/DC, minimum-load resistor | ≈ €3.20 | pump signal 5 V (rule 4) |
-| Power input: terminal, 5 A fuse, TVS, ideal diode | ≈ €4.20 | powered by the Pi's own USB-C supply only (the default anyway, D15) |
 | Relay output REL1, relay supply switch | ≈ €1.30 | no cut-off relay (option C) and **no heating-profile pumps**; the setup wizard refuses a heating profile on the Lite HAT |
 | Second 1-Wire bus (1W-B), DS2482 footprint, PT2 footprint | ≈ €0.80 | one bus for all DS18x20 (daisy chain) |
 | Third LED, EEPROM footprint | ≈ €0.30 | — |
@@ -812,8 +774,9 @@ support), and the tall header for the Pi 5 cooler.
 | 100 mA polyfuse, 1N4148W | 2 | 0.30 |
 | **Total** | | **≈ €25** |
 
-That is about €10 less than the 1-Wire edition (≈ €35, 8.1). Assembled
-in a batch of 5 it should come out clearly below the 1-Wire edition's
-≈ €33 per board, because it has fewer part types and joints; it gets
-quoted with the BOM. The MAX31865 is a third of the cost but stays: it
+Since the full HAT lost its power input too (D18, ≈ €28), the Lite HAT
+saves only about **€3 in parts**: the 12 V DC/DC, the relay output and
+the second 1-Wire bus. Assembled in a batch of 5 the gap may be a few
+euros more, because of fewer part types and joints; it gets quoted with
+the BOM. Whether the Lite HAT is still worth a separate board is open. The MAX31865 is a third of the cost but stays: it
 is what keeps the roof cable away from the Pi (rule 2).
