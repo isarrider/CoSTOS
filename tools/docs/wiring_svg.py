@@ -82,15 +82,15 @@ t(535, 445, "upper coil: heat pump", "o", "middle")
 t(560, 675, "lower coil: solar", "o", "middle")
 
 # ---------------- heating side
-rect(860, 120, 170, 70, "#f3e5f5", "#6a1b9a")
-t(945, 150, "Heat pump", "b", "middle")
-t(945, 168, "(only measured)", "n", "middle")
-rect(860, 560, 170, 70, "#fff8e1", "#8d6e63")
-t(945, 590, "House", "b", "middle")
-t(945, 608, "(heating / hot water)", "n", "middle")
-line([(945, 190), (945, 330), (630, 330)], HEAT, 5)
-line([(630, 420), (760, 420), (760, 595), (860, 595)], HEAT, 5)
-line([(1030, 595), (1100, 595), (1100, 155), (1030, 155)], HEAT, 5)
+rect(860, 120, 170, 70, "#fff8e1", "#8d6e63")
+t(945, 150, "House", "b", "middle")
+t(945, 168, "(heating / hot water)", "n", "middle")
+rect(860, 560, 170, 70, "#f3e5f5", "#6a1b9a")
+t(945, 590, "Heat pump", "b", "middle")
+t(945, 608, "(only measured)", "n", "middle")
+line([(860, 595), (760, 595), (760, 420), (630, 420)], HEAT, 5)   # heat pump -> upper coil, in at its lower end
+line([(630, 330), (945, 330), (945, 190)], HEAT, 5)               # upper coil out at its top -> house
+line([(1030, 155), (1100, 155), (1100, 595), (1030, 595)], HEAT, 5)  # house -> back to the heat pump
 
 # ---------------- wall sockets
 rect(100, 470, 140, 70, "#fafafa", "#999")
@@ -140,13 +140,13 @@ sensor(*s2, "S2 store bottom", "a", "start", 14, 4)
 sensor(*s3, "S3 store top", "a", "start", 14, 4)
 sensor(*s4, "S4 flow", "a", "start", 12, -10)
 sensor(*s5, "S5 return", "a", "end", 14, 18)
-# 1W-B: S7 -> S6 -> S8
-s6, s7, s8 = (800, 330), (760, 480), (1100, 380)
+# 1W-B: S6 -> S7 -> S8
+s6, s7, s8 = (760, 480), (800, 330), (1100, 380)
 line([(44, 700), (8, 700), (8, 841), (700, 841), (700, 480), (752, 480)], W1B, 4, dash=True)
 line([(768, 480), (800, 480), (800, 338)], W1B, 4, dash=True)
 line([(800, 322), (800, 300), (1070, 300), (1070, 380), (1092, 380)], W1B, 4, dash=True)
-sensor(*s6, "S6 after heat pump", "b", "end", 14, -12)
-sensor(*s7, "S7 after store", "b", "start", 14, 20)
+sensor(*s6, "S6 after heat pump", "b", "start", 14, 20)
+sensor(*s7, "S7 after store", "b", "end", 14, -12)
 sensor(*s8, "S8 back from house", "b", "start", 14, 4)
 # network
 line([(185, 800), (185, 856), (1220, 856), (1220, 630)], NET, 2.5, dash=True)
