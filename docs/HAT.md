@@ -537,12 +537,33 @@ BOM decide, D7). 🟢 good for one OSCoST board, 🟡 possible, 🔴 weak.
 | **AISLER** | 🟡 boards in sets of 3 | boards + stencil + parts + assembly fee, priced per project | Germany / EU | 🟡 no import VAT and customs handling, EU-sourced LTC2983; quote with the BOM |
 | **Eurocircuits** | 🟢 1–5 boards (PCB proto) | per project; stencil included | Germany, Hungary | 🔴 usually the most expensive; best for fast EU turnaround |
 
-What lowers the price at any service: few part types that are not stock
-parts. At JLCPCB that means choosing **basic or "preferred extended"
-parts** wherever possible (passives, AO3400A, 1N4148W, LEDs, terminals),
-so only the special chips (MAX31865, LTC2983, TC4427, 74LVC1G123,
-B0512S, TPS22918) carry a feeder fee. Once the BOM exists, quotes from
-JLCPCB, PCBWay, NextPCB and AISLER go into 8.2.
+**JLCPCB part categories.** The category of a part decides whether an
+order pays a loading fee for it, per part *type* (not per piece):
+
+| Category | What it is | Fee per part type (Economic PCBA) |
+|---|---|---|
+| **Basic** | a couple of thousand common parts, permanently loaded on the pick-and-place machines | 🟢 none |
+| **Preferred extended** | popular parts that are not permanently loaded but treated like basic ones (many were basic before) | 🟢 none |
+| **Extended** | everything else; a feeder is loaded just for this order | 🔴 ≈ $3 ($3.07) |
+
+The fee is why a $0.015 capacitor that is "extended" effectively costs
+$3.015 on a small order. Two catches: it applies to **Economic** PCBA only
+(Standard PCBA charges about $1.53 for every part type, basic or not),
+and parts move between categories, so the BOM is checked against the
+current lists just before ordering.
+
+**Design rule (D20):** in KiCad, every ordinary part (resistors,
+capacitors, AO3400A, 1N4148W, LEDs, TVS and ESD diodes, terminals) is
+chosen from JLCPCB's basic or preferred extended parts. Only the special
+chips without such an equivalent pay the fee: MAX31865, TC4427,
+74LVC1G123, 74LVC1G08, B0512S and TPS22918 (the LTC2983 of the PT edition
+is consigned). That is about six fees per order instead of fifteen or
+more, roughly €25–30 less per order, which matters most for a single
+controller (8.2). The same rule helps at other services: fewer special
+part types means less setup everywhere.
+
+Once the BOM exists, quotes from JLCPCB, PCBWay, NextPCB and AISLER go
+into 8.2.
 
 ## 9. Bring-up plan (rev A)
 
@@ -586,6 +607,7 @@ JLCPCB, PCBWay, NextPCB and AISLER go into 8.2.
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω). Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
+| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering |
 
 ---
 
