@@ -1067,4 +1067,20 @@ flexibility decided it (D14).
 If the port is ever done, the WIFI6-DEV-KIT under the same HAT is the
 simplest route. To keep that door open, `oscost-core` and `oscost-safety`
 should stay free of Linux dependencies (ideally `no_std`), so they run
-unchanged on a microcontroller.
+unchanged on a microcontroller:
+
+- **What it means:** these two crates only compute. They get temperatures,
+  settings and the time as plain values and return output commands. They
+  use only Rust's `core` and `alloc` libraries, not `std`, so no files,
+  threads, network, system clock or printing. Everything that touches
+  Linux stays in `oscost-hw-linux` and `oscostd`. This is section 6.1's
+  "pure, no I/O" rule, enforced by the compiler instead of by discipline.
+- **Advantages:** a later ESP32-P4 port rewrites only the hardware and
+  daemon parts, not the control logic and its tests; the compiler refuses
+  a file access or clock read slipped into the control code; the logic
+  stays small and easy to test and replay on the PC.
+- **Drawbacks:** a few conveniences need replacements (`HashMap` →
+  `BTreeMap` or a fixed-size map, `f32::exp` and friends from the `libm`
+  crate, no `println!` debugging inside the core, so debug output goes
+  through returned events), and contributors must keep to the rule.
+  Tests and the simulator still run on the PC with `std`.

@@ -63,6 +63,12 @@ layout is done in KiCad.
 
 ![HAT mockup, top view](img/hat-mockup.svg)
 
+On a Pi 5, top and side view: the HAT covers the left 65 mm, Ethernet and
+USB stay free, sensors leave to the left and the pump cable to the front.
+Heights are approximate and get fixed in KiCad.
+
+![Pi 5 with the OSCoST HAT, top and side view](img/pi-hat-assembly.svg)
+
 ### 2.1 Considered: Waveshare ESP32-P4-WIFI6-DEV-KIT
 
 The Waveshare ESP32-P4-WIFI6-DEV-KIT has the Pi form factor and a
@@ -727,3 +733,74 @@ the single Pt1000 (D9). Not taken, because it gives up:
 
 Solar control would cope with ±0.5–1 K, but for a controller meant to run
 10+ years the €30 is worth it.
+
+---
+
+## 12. HAT Lite (proposal)
+
+For people who want OSCoST as cheaply as possible. Status: **proposal**,
+not yet decided.
+
+![OSCoST HAT Lite, top view](img/hat-lite-mockup.svg)
+
+### 12.1 Rule: it may fail, but it may not break anything
+
+The Lite HAT may stop working; it must never leave the pump running or
+damage the Pi. That gives four rules:
+
+1. **Every fault ends in "pump stopped".** The PWM line has a pull-down
+   and goes through the watchdog-gated AND gate (4.6), and the Lite HAT
+   only supports **solar-profile pumps** (Wilo PWM2, Grundfos profile C),
+   where no signal or a low signal means stop. A crash, a hang, an
+   unpowered or missing HAT, a broken cable: the pump stops.
+2. **Field wiring can't reach the Pi.** The collector input keeps the
+   MAX31865 with its ±45 V input protection (the roof cable is the most
+   exposed line); the 1-Wire bus and the pump lines keep series
+   resistors, ESD diodes, the TVS diode and the polyfuse. A short or a
+   swapped wire on a terminal damages nothing. (230 V on a low-voltage
+   terminal is beyond any HAT.)
+3. **No power path of its own.** The Lite HAT is powered by the Pi like
+   any HAT; with no power input there is nothing that can feed back into
+   the Pi or be wired the wrong way round.
+4. **The weakest part fails safe.** The pump signal is 5 V instead of
+   12 V, so the pump sees about 4.7 V against its ~4 V threshold
+   ([HARDWARE.md](HARDWARE.md#12-v-or-5-v)). If that ever isn't enough
+   (long cable, a pump with a higher threshold), the pump simply doesn't
+   start, and the feedback input reports it.
+
+### 12.2 What it leaves out
+
+| Left out | Saves | Consequence |
+|---|---|---|
+| 12 V DC/DC, minimum-load resistor | ≈ €3.20 | pump signal 5 V (rule 4) |
+| Power input: terminal, 5 A fuse, TVS, ideal diode | ≈ €4.20 | powered by the Pi's own USB-C supply only (the default anyway, D15) |
+| Relay output REL1, relay supply switch | ≈ €1.30 | no cut-off relay (option C) and **no heating-profile pumps**; the setup wizard refuses a heating profile on the Lite HAT |
+| Second 1-Wire bus (1W-B), DS2482 footprint, PT2 footprint | ≈ €0.80 | one bus for all DS18x20 (daisy chain) |
+| Third LED, EEPROM footprint | ≈ €0.30 | — |
+
+Kept: MAX31865 (collector), one 1-Wire bus, PUMP1 with feedback input,
+watchdog + AND gating, all protection on field lines, the full 65 × 56.5 mm
+outline with four mounting holes (screw terminals need the mechanical
+support), and the tall header for the Pi 5 cooler.
+
+### 12.3 Cost (single-quantity parts, estimates)
+
+| Part | Qty | ≈ € |
+|---|---|---|
+| MAX31865AAP+ | 1 | 8.80 |
+| PCB, ⅓ of an AISLER set of 3 | — | 6.50 |
+| 40-pin header (tall) and 4 spacers | 1 | 3.00 |
+| TC4427 (on 5 V) | 1 | 1.30 |
+| Resistors and capacitors, about 15 (incl. the 0.1 % 4.3 kΩ) | — | 1.80 |
+| 3.5 mm fixed screw terminals (PT1, 1W, PUMP1) | 3 | 1.50 |
+| 74LVC1G123 + 74LVC1G08 | 2 | 0.60 |
+| PESD5V0 ESD diodes, SMBJ5.0A | 4 | 0.50 |
+| LEDs | 2 | 0.30 |
+| 100 mA polyfuse, 1N4148W | 2 | 0.30 |
+| **Total** | | **≈ €25** |
+
+That is about €10 less than the 1-Wire edition (≈ €35, 8.1). Assembled
+in a batch of 5 it should come out clearly below the 1-Wire edition's
+≈ €33 per board, because it has fewer part types and joints; it gets
+quoted with the BOM. The MAX31865 is a third of the cost but stays: it
+is what keeps the roof cable away from the Pi (rule 2).

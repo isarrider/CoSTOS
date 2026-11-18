@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1340 560" font-family="Helvetica, Arial, sans-serif">
+<style>.t{font-size:12px;fill:#222}.tb{font-size:12px;font-weight:bold;fill:#222}.w{font-size:12px;fill:#fff}.wb{font-size:12px;font-weight:bold;fill:#fff}.g{font-size:11px;fill:#C8E6C9}.n{font-size:11px;fill:#555}.h{font-size:16px;font-weight:bold;fill:#222}.o{font-size:11px;font-style:italic;fill:#777}</style>
+<rect x="0" y="0" width="1340" height="560" rx="0" fill="white" stroke="none" stroke-width="1" fill-opacity="1"/>
+<text x="20" y="30" class="h" text-anchor="start">Raspberry Pi 5 with the OSCoST HAT (1-Wire edition) — top and side view, to scale (1 mm = 6 px)</text>
+<rect x="110.0" y="80.0" width="510.0" height="336.0" rx="18.0" fill="#2f7d3a" stroke="#1b4d23" stroke-width="2" fill-opacity="1"/>
+<rect x="518.0" y="92.0" width="120.0" height="96.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
+<text x="578.0" y="144.0" class="t" text-anchor="middle">Ethernet</text>
+<rect x="518.0" y="206.0" width="120.0" height="90.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
+<text x="578.0" y="255.0" class="t" text-anchor="middle">USB 3</text>
+<rect x="518.0" y="314.0" width="120.0" height="90.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
+<text x="578.0" y="363.0" class="t" text-anchor="middle">USB 2</text>
+<rect x="150.2" y="380.0" width="54.0" height="45.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
+<text x="177.2" y="449.0" class="n" text-anchor="middle">USB-C power</text>
+<rect x="245.0" y="380.0" width="42.0" height="45.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
+<text x="266.0" y="449.0" class="n" text-anchor="middle">µHDMI</text>
+<rect x="326.0" y="380.0" width="42.0" height="45.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
+<text x="347.0" y="449.0" class="n" text-anchor="middle">µHDMI</text>
+<rect x="110.0" y="78.5" width="390.0" height="339.0" rx="18.0" fill="#1E5631" stroke="#0F3A20" stroke-width="2" fill-opacity="0.95"/>
+<circle cx="131.0" cy="101.0" r="8.399999999999999" fill="#C9A227"/><circle cx="131.0" cy="101.0" r="4.800000000000001" fill="#F4F1E8"/>
+<circle cx="479.0" cy="101.0" r="8.399999999999999" fill="#C9A227"/><circle cx="479.0" cy="101.0" r="4.800000000000001" fill="#F4F1E8"/>
+<circle cx="131.0" cy="395.0" r="8.399999999999999" fill="#C9A227"/><circle cx="131.0" cy="395.0" r="4.800000000000001" fill="#F4F1E8"/>
+<circle cx="479.0" cy="395.0" r="8.399999999999999" fill="#C9A227"/><circle cx="479.0" cy="395.0" r="4.800000000000001" fill="#F4F1E8"/>
+<rect x="152.6" y="86.0" width="304.79999999999995" height="30.0" rx="0" fill="#111" stroke="none" stroke-width="1" fill-opacity="1"/>
+<text x="305.0" y="140.0" class="g" text-anchor="middle">40-pin header</text>
+<rect x="95.0" y="140.0" width="42.0" height="42.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<text x="143.0" y="165.0" class="w" text-anchor="start">PT1</text>
+<rect x="95.0" y="224.0" width="42.0" height="63.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<text x="143.0" y="259.5" class="w" text-anchor="start">1W-A</text>
+<rect x="95.0" y="308.0" width="42.0" height="63.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<text x="143.0" y="343.5" class="w" text-anchor="start">1W-B</text>
+<rect x="158.0" y="386.0" width="42.0" height="42.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<text x="179.0" y="380.0" class="w" text-anchor="middle">PWR</text>
+<rect x="224.0" y="386.0" width="42.0" height="42.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<text x="245.0" y="380.0" class="w" text-anchor="middle">REL1</text>
+<rect x="326.0" y="386.0" width="63.0" height="42.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<text x="357.5" y="380.0" class="w" text-anchor="middle">PUMP1</text>
+<rect x="206.0" y="146.0" width="72.0" height="36.0" rx="2" fill="#151515" stroke="#3a3a3a" stroke-width="1" fill-opacity="1"/>
+<text x="242.0" y="168.0" class="w" text-anchor="middle">MAX31865</text>
+<rect x="290.0" y="260.0" width="180.0" height="54.0" rx="2" fill="#151515" stroke="#3a3a3a" stroke-width="1" fill-opacity="1"/>
+<text x="380.0" y="291.0" class="w" text-anchor="middle">watchdog · driver · DC/DC</text>
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#c0392b"/></marker></defs>
+<line x1="95.0" y1="200.0" x2="56.0" y2="200.0" stroke="#c0392b" stroke-width="2" marker-end="url(#a)"/>
+<text x="52.0" y="204.0" class="t" text-anchor="end">sensors</text>
+<line x1="434.0" y1="428.0" x2="482.0" y2="464.0" stroke="#c0392b" stroke-width="2" marker-end="url(#a)"/>
+<text x="486.0" y="468.0" class="t" text-anchor="start">pump cable</text>
+<line x1="638.0" y1="140.0" x2="680.0" y2="140.0" stroke="#c0392b" stroke-width="2" marker-end="url(#a)"/>
+<text x="684.0" y="144.0" class="t" text-anchor="start">network</text>
+<text x="110" y="524.0" class="n" text-anchor="start">• The HAT covers the left 65 mm; Ethernet and USB stay free on the right.</text>
+<text x="110" y="540.0" class="n" text-anchor="start">• Sensor terminals face left, pump/power terminals face the front edge, above the</text>
+<text x="110" y="556.0" class="n" text-anchor="start">  Pi's USB-C and µHDMI sockets: the USB-C plug fits below the HAT (check in KiCad).</text>
+<rect x="820.0" y="370.0" width="510.0" height="9.600000000000001" rx="0" fill="#2f7d3a" stroke="#1b4d23" stroke-width="1" fill-opacity="1"/>
+<text x="824.0" y="396.0" class="n" text-anchor="start">Pi 5 PCB</text>
+<rect x="1210.0" y="289.0" width="129.0" height="81.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
+<text x="1274.5" y="333.5" class="n" text-anchor="middle">RJ45</text>
+<rect x="910.0" y="310.0" width="240.0" height="60.0" rx="2" fill="#9aa3ab" stroke="#5f6468" stroke-width="1" fill-opacity="1"/>
+<text x="1030.0" y="344.0" class="w" text-anchor="middle">Pi 5 active cooler (≈ 10 mm)</text>
+<rect x="862.0" y="319.0" width="306.0" height="51.0" rx="0" fill="none" stroke="#C9A227" stroke-width="1.5" fill-opacity="1" stroke-dasharray="4 3"/>
+<text x="866.0" y="283.0" class="n" text-anchor="start">behind: GPIO pins + stacking header (dashed)</text>
+<rect x="833.8" y="268.0" width="14.399999999999999" height="102.0" rx="0" fill="#d4af37" stroke="#8a6d1f" stroke-width="1" fill-opacity="1"/>
+<rect x="1181.8" y="268.0" width="14.399999999999999" height="102.0" rx="0" fill="#d4af37" stroke="#8a6d1f" stroke-width="1" fill-opacity="1"/>
+<rect x="820.0" y="258.4" width="390.0" height="9.600000000000001" rx="0" fill="#1E5631" stroke="#0F3A20" stroke-width="1" fill-opacity="1"/>
+<text x="1218.0" y="267.4" class="tb" text-anchor="start">OSCoST HAT</text>
+<rect x="868.0" y="207.39999999999998" width="42.0" height="51.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<rect x="934.0" y="207.39999999999998" width="42.0" height="51.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<rect x="1036.0" y="207.39999999999998" width="63.0" height="51.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<text x="1066.0" y="196.0" class="n" text-anchor="middle">PWR  REL1   PUMP1</text>
+<line x1="784.0" y1="370.0" x2="784.0" y2="268.0" stroke="#333" marker-end="url(#a)" marker-start="url(#a)"/>
+<text x="778.0" y="323.0" class="t" text-anchor="end">≈ 17 mm</text>
+<text x="778.0" y="339.0" class="n" text-anchor="end">spacers</text>
+<text x="820" y="430.0" class="n" text-anchor="start">• Pi 5 with its active cooler under the HAT: spacers ≈ 16–17 mm and a stacking</text>
+<text x="820" y="446.0" class="n" text-anchor="start">  header; the exact height is fixed in KiCad against the cooler's datasheet.</text>
+<text x="820" y="462.0" class="n" text-anchor="start">• Pi 4 without cooler: standard 11–12 mm spacers.</text>
+<text x="820" y="478.0" class="n" text-anchor="start">• The stacking header also lets the VBus adapter plug on top during shadow mode.</text>
+</svg>
