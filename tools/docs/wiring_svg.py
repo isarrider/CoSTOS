@@ -5,7 +5,7 @@ daisy-chained buses, and the PWM pump. Sensor names follow the reference
 installation (docs/installation.md). Usage: python3 tools/docs/wiring_svg.py docs/img"""
 import os, subprocess, sys
 
-W, H = 1320, 1500
+W, H = 1320, 900
 HOT, COLD, HEAT = "#d84315", "#1e88e5", "#8e24aa"
 PT_C, W1A, W1B, PUMP_C, MAINS, USB, NET = "#6d4c41", "#2e7d32", "#00897b", "#f57c00", "#8B4513", "#212121", "#607d8b"
 o = []
@@ -98,40 +98,38 @@ t(170, 494, "Wall sockets", "b", "middle")
 t(170, 510, "house circuit,", "n", "middle")
 t(170, 524, "breaker + RCD", "n", "middle")
 
-# ---------------- the HAT (rendered from tools/hw/hat_mockup.py), on the Pi
-HX, HY, SC = 60, 905, 1.0
-mock = subprocess.run([sys.executable, os.path.join(os.path.dirname(__file__), "..", "hw", "hat_mockup.py"), "file"],
+# ---------------- the HAT on the Pi: real top view from tools/hw/hat_mockup.py,
+# scaled so its left-edge terminals (PT1, 1W-A, 1W-B, PUMP1) sit at y = 640/670/700/730
+SC = 0.36
+HX, HY = 44 - 58 * SC, 640 - 132 * SC
+mock = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "hw", "hat_mockup.py"), "file"],
                       capture_output=True, text=True, check=True).stdout
 inner = mock[mock.index(">") + 1:mock.rindex("</svg>")]
 inner = "\n".join(l for l in inner.split("\n")
                   if not l.startswith('<rect width="680"') and "Top view to scale" not in l
                   and not l.startswith("<title") and not l.startswith("<desc"))
-a(f'<g transform="translate({HX},{HY}) scale({SC})">{inner}</g>')
-t(200, HY + 6, "OSCoST HAT, 1-Wire edition, on the Raspberry Pi", "b")
-def term(ymid):
-    return (HX + 58 * SC, HY + ymid * SC)
-TPT1, TWA, TWB, TPUMP = term(132), term(208), term(298), term(388)
+a(f'<g transform="translate({HX:.1f},{HY:.1f}) scale({SC})">{inner}</g>')
+t(HX + 340 * SC, HY + 535 * SC, "OSCoST HAT on the Raspberry Pi", "b", "middle")
 
 # ---------------- cables
 # PT1: 2-wire up to the roof
-line([TPT1, (20, TPT1[1]), (20, 58), (276, 58), (283, 66)], PT_C, 3)
+line([(44, 640), (30, 640), (30, 58), (276, 58), (283, 66)], PT_C, 3)
 sensor(285, 68, "S1 Pt1000", "pt", "start", 16, -10)
-t(26, 400, "2-wire roof cable", "o")
-t(26, 414, "(existing)", "o")
+t(36, 400, "2-wire roof cable", "o")
+t(36, 414, "(existing)", "o")
 # pump: signal and mains
-line([TPUMP, (44, TPUMP[1]), (44, 1440), (720, 1440), (720, 880), (290, 880), (290, 296), (308, 296)], PUMP_C, 4)
+line([(44, 730), (22, 730), (22, 815), (290, 815), (290, 296), (308, 296)], PUMP_C, 4)
 line([(312, 314), (270, 314), (270, 505), (240, 505)], MAINS, 3)
-t(296, 760, "PUMP1: PWM · GND · FB", "o")
+t(296, 760, "PWM · GND · FB", "o")
 t(296, 774, "brown · blue · black", "o")
 t(276, 400, "230 V,", "o", "end")
 t(276, 414, "permanent", "o", "end")
 # Pi supply
-line([(150, 540), (150, 905)], USB, 3)
-t(158, 600, "USB-C supply to the Pi", "o")
-t(158, 614, "(under the HAT)", "o")
+line([(150, 603), (150, 540)], USB, 3)
+t(158, 580, "USB-C supply", "o")
 # 1W-A: S2 -> S3 -> S4 -> S5
 s2, s3, s4, s5 = (440, 700), (440, 300), (360, 380), (330, 480)
-line([TWA, (28, TWA[1]), (28, 1464), (745, 1464), (745, 868), (405, 868), (405, 700), (432, 700)], W1A, 4, dash=True)
+line([(44, 670), (14, 670), (14, 828), (405, 828), (405, 700), (432, 700)], W1A, 4, dash=True)
 line([(432, 700), (420, 700), (420, 300), (432, 300)], W1A, 4, dash=True)
 line([(432, 300), (395, 300), (395, 380), (368, 380)], W1A, 4, dash=True)
 line([(352, 380), (345, 380), (345, 480), (338, 480)], W1A, 4, dash=True)
@@ -141,21 +139,21 @@ sensor(*s4, "S4 flow", "a", "start", 12, -10)
 sensor(*s5, "S5 return", "a", "end", 14, 18)
 # 1W-B: S6 -> S7 -> S8
 s6, s7, s8 = (760, 480), (800, 330), (1100, 380)
-line([TWB, (36, TWB[1]), (36, 1452), (785, 1452), (785, 510), (760, 510), (760, 488)], W1B, 4, dash=True)
+line([(44, 700), (8, 700), (8, 841), (700, 841), (700, 480), (752, 480)], W1B, 4, dash=True)
 line([(768, 480), (800, 480), (800, 338)], W1B, 4, dash=True)
 line([(800, 322), (800, 300), (1070, 300), (1070, 380), (1092, 380)], W1B, 4, dash=True)
 sensor(*s6, "S6 after heat pump", "b", "start", 14, 20)
 sensor(*s7, "S7 after store", "b", "end", 14, -12)
 sensor(*s8, "S8 back from house", "b", "start", 14, 4)
 # network
-line([(HX + 600, HY + 330), (1150, HY + 330)], NET, 2.5, dash=True)
-rect(1150, HY + 295, 150, 70, "#e3f2fd", "#1565c0")
-t(1225, HY + 323, "Network", "b", "middle")
-t(1225, HY + 341, "VictoriaMetrics, web UI", "n", "middle")
-t(950, HY + 322, "Ethernet (from the Pi)", "o", "middle")
-t(780, 1468, "1-Wire bus A: one 3-wire cable, daisy chain", "o")
-t(780, 1488, "1-Wire bus B: one 3-wire cable, daisy chain", "o")
-t(780, 1448, "pump signal to PUMP1", "o")
+line([(200, 805), (200, 856), (1220, 856), (1220, 630)], NET, 2.5, dash=True)
+rect(1150, 560, 140, 70, "#e3f2fd", "#1565c0")
+t(1220, 588, "Network", "b", "middle")
+t(1220, 606, "VictoriaMetrics, web UI", "n", "middle")
+t(1000, 850, "Ethernet", "o", "middle")
+t(500, 822, "1-Wire bus A: one 3-wire cable, daisy chain", "o")
+t(500, 835, "", "o")
+t(720, 836, "1-Wire bus B: one 3-wire cable, daisy chain", "o")
 draw_sensors()
 
 # ---------------- legend and requirement
@@ -167,9 +165,9 @@ for i, (c, lab, d, w) in enumerate([(PT_C, "Pt1000, 2-wire", False, 3), (W1A, "1
     y = ly + 22 + i * 20
     line([(lx, y), (lx + 34, y)], c, w, dash=d)
     t(lx + 42, y + 4, lab, "n")
-rect(800, 1010, 500, 84, "#fff3e0", "#e65100", rx=6)
-t(815, 1032, "Required: a pump with a PWM input in the SOLAR profile", "b")
-t(815, 1052, "(Wilo PWM2 / iPWM2, Grundfos profile C): no signal = pump stops.", "n")
-t(815, 1072, "Heating profile (no signal = full speed): only with a cut-off relay.", "n")
+rect(560, 740, 560, 66, "#fff3e0", "#e65100", rx=6)
+t(575, 762, "Required: a high-efficiency pump with a PWM input in the SOLAR profile", "b")
+t(575, 780, "(Wilo PWM2 / iPWM2, Grundfos profile C): no signal or a broken cable = pump stops.", "n")
+t(575, 796, "A heating-profile pump (no signal = full speed) is not safe without a cut-off relay.", "n")
 a('</svg>')
 open(f"{sys.argv[1] if len(sys.argv) > 1 else '.'}/wiring-1wire-edition.svg", "w").write("\n".join(o))
