@@ -77,12 +77,15 @@
 <circle cx="72" cy="320" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="320" x2="77" y2="320" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="103" cy="320" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="98" y1="320" x2="108" y2="320" stroke="#5F6468" stroke-width="1.5"/>
 <text class="th" x="126" y="324" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">S8</text>
+<text class="ts" x="116" y="363" text-anchor="start" style="font-size:9px;font-weight:400;fill:#ffffff">PWM</text>
+<text class="ts" x="116" y="391" text-anchor="start" style="font-size:9px;font-weight:400;fill:#ffffff">GND</text>
+<text class="ts" x="116" y="419" text-anchor="start" style="font-size:9px;font-weight:400;fill:#ffffff">FB</text>
 <rect x="58" y="346" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="72" cy="360" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="360" x2="77" y2="360" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="388" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="388" x2="77" y2="388" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="416" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="416" x2="77" y2="416" stroke="#5F6468" stroke-width="1.5"/>
-<text class="th" x="118" y="386.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">PUMP1</text>
-<text class="ts" x="118" y="401.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">solar pump</text>
+<text class="th" x="143" y="386.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">PUMP1</text>
+<text class="ts" x="143" y="400.0" text-anchor="start" style="font-size:10px;font-weight:400;fill:#C8E6C9">pump</text>
 <rect x="216" y="450" width="56" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="230" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="230" y1="461" x2="230" y2="471" stroke="#5F6468" stroke-width="1.5"/>
 <text class="ts" x="230" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">+5V</text>

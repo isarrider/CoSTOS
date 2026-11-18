@@ -441,6 +441,35 @@ All labelled on the silkscreen:
 | REL1 | +5V, OUT | relay / SSR 1, optional: cut-off relay (option C), heating-profile pump, valve |
 | REL2 | +5V, OUT | SSR / relay 2 (not fitted in rev A) |
 
+### 7.1 Silkscreen: wiring instructions on the board (D21)
+
+The board carries as much wiring information as fits, so it can be wired
+without the docs open. Silkscreen is free on both sides at JLCPCB, so this
+costs nothing. Rules: text at least 1 mm high with a 0.15 mm line (most of
+it 1.2–1.4 mm), nothing printed over pads or under terminal bodies.
+
+| Where | What is printed | Read when | Readability |
+|---|---|---|---|
+| Top, at each terminal | Pin name next to every pin (+/−, 3V3/DQ/GND, PWM/GND/FB, +5V/OUT), terminal name and what it is for (PT1 collector, 1W-A, PUMP1 pump) | while wiring, HAT on the Pi | 🟢 the most useful text |
+| Top, small notes | LED names, "12 V" at R25 and "5 V (Lite)" at R26, outlines of unfitted parts, edition and revision | assembly, checking the LEDs | 🟢 |
+| Bottom, cheat sheet | Table of all terminals with pins and use, pump wire colours (brown · blue · black), the three safety rules (solar-profile pump only, no 230 V on the board, never R25 and R26 together), LED meanings, tick boxes for normal or Lite build, repository URL | before mounting, or with the HAT off | 🟡 hidden once on the Pi |
+| Bottom, QR code (10 × 10 mm) | link to the repository | any time, with a phone | 🟢 |
+
+Not printed: **DS18B20 wire colours**. They differ between makers (red /
+yellow / black is common, not guaranteed), so a printed colour could lead
+to wrong wiring; the pin names are safe. The pump colours are printed
+because they come from the pump maker's cable (Wilo: brown PWM, blue GND,
+black FB).
+
+The top-side pin names are in the [mockup](#mockup). The bottom side,
+seen from below (mirrored, so the left-edge terminals appear on the
+right):
+
+![HAT bottom side with the silkscreen cheat sheet](img/hat-bottom.svg)
+
+The PT edition gets the same layout with its own terminal table (S1–S8 as
+2-wire Pt1000, 1W-A at the front).
+
 ## 8. Manufacturing
 
 - **Design tool:** KiCad. Project in `hardware/hat/` in this repository,
@@ -618,6 +647,7 @@ into 8.2.
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω). Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering |
+| D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 
 ---
 

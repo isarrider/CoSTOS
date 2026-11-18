@@ -50,21 +50,23 @@ ex = 420 if pt else 320
 out.append(f'<rect x="{ex}" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
 t(ex + 64, 124, "ID EEPROM, not fitted", 11, "#C8E6C9")
 # left terminals
-def term_v(y0, n, name, sub, fitted=True):
+def term_v(y0, n, name, sub, pins, fitted=True):
     h = 28 * n
+    for k, p in enumerate(pins):  # pin names on the silkscreen, next to every pin (D21)
+        t(116, y0 + 17 + 28 * k, p, 9, "#ffffff")
     if not fitted:
         out.append(f'<rect x="58" y="{y0}" width="54" height="{h}" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
         for k in range(n):
             out.append(f'<circle cx="96" cy="{y0 + 14 + 28 * k}" r="4" fill="#C9A227"/>')
-        t(118, y0 + h/2 - 2, name, 12, "#E8F5E9", 500)
-        t(118, y0 + h/2 + 13, sub, 11, "#C8E6C9")
+        t(143, y0 + h/2 - 2, name, 12, "#E8F5E9", 500)
+        t(143, y0 + h/2 + 12, sub, 10, "#C8E6C9")
         return
     out.append(f'<rect x="58" y="{y0}" width="54" height="{h}" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>')
     for k in range(n):
         cy = y0 + 14 + 28 * k
         out.append(f'<circle cx="72" cy="{cy}" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="{cy}" x2="77" y2="{cy}" stroke="#5F6468" stroke-width="1.5"/>')
-    t(118, y0 + h/2 - 2, name, 12, "#ffffff", 500)
-    t(118, y0 + h/2 + 13, sub, 11, "#C8E6C9")
+    t(143, y0 + h/2 - 2, name, 12, "#ffffff", 500)
+    t(143, y0 + h/2 + 12, sub, 10, "#C8E6C9")
 def term_pt8(y0):
     """Two-level terminal block: 8 positions, upper and lower level per sensor."""
     h = 28 * 8
@@ -77,12 +79,12 @@ def term_pt8(y0):
         t(126, cy + 4, f"S{k+1}", 12, "#ffffff", 500)
 if pt:
     term_pt8(110)
-    term_v(346, 3, "PUMP1", "solar pump")
+    term_v(346, 3, "PUMP1", "pump", ["PWM", "GND", "FB"])
 else:
-    term_v(104, 2, "PT1", "collector")
-    term_v(166, 3, "1W-A", "DS18x20")
-    term_v(256, 3, "1W-B", "DS18x20")
-    term_v(346, 3, "PUMP1", "solar pump")
+    term_v(104, 2, "PT1", "collector", ["+", "−"])
+    term_v(166, 3, "1W-A", "DS18x20", ["3V3", "DQ", "GND"])
+    term_v(256, 3, "1W-B", "DS18x20", ["3V3", "DQ", "GND"])
+    term_v(346, 3, "PUMP1", "pump", ["PWM", "GND", "FB"])
 # bottom terminals
 def term_h(x0, n, name, pins, fitted=True):
     w = 28 * n
