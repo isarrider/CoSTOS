@@ -522,6 +522,28 @@ with two non-basic part types fewer, saves more per order (≈ €17) than
 its parts suggest (≈ €4.60). AISLER's assembly price is not estimated
 here; it gets quoted with the BOM.
 
+### 8.3 Assembly services compared
+
+The estimates in 8.2 use JLCPCB. Other services, as published in
+November 2026 (fees and promotions change often; real quotes with the
+BOM decide, D7). 🟢 good for one OSCoST board, 🟡 possible, 🔴 weak.
+
+| Service | Smallest assembled order | Fixed costs for a small order | Where | Fit for one OSCoST board |
+|---|---|---|---|---|
+| **JLCPCB** (Economic PCBA) | 🟡 2 boards | setup $8.18, **$3.07 per extended part type** (basic and "preferred extended" parts: none) | China | 🟢 cheapest per board today (8.2); one-sided only, which suits the HAT; LTC2983 usually consigned |
+| **PCBWay** | 🟢 1 board | assembly from about $29 plus parts; passives bought with overage (min. 50 pieces) | China | 🟡 true single board; the overage on cheap passives costs little |
+| **NextPCB** | 🟢 1 board | promotions for 1–10 boards: up to $200 off the SMT cost, minimum SMT cost $50 | China | 🟡 could be the cheapest single board while the promotion runs |
+| **Seeed Fusion** | 🟢 1 board assembled (5 bare boards made) | setup from $25; parts from its Open Parts Library | China | 🔴 limited parts library; the MAX31865 / LTC2983 may not be in it |
+| **AISLER** | 🟡 boards in sets of 3 | boards + stencil + parts + assembly fee, priced per project | Germany / EU | 🟡 no import VAT and customs handling, EU-sourced LTC2983; quote with the BOM |
+| **Eurocircuits** | 🟢 1–5 boards (PCB proto) | per project; stencil included | Germany, Hungary | 🔴 usually the most expensive; best for fast EU turnaround |
+
+What lowers the price at any service: few part types that are not stock
+parts. At JLCPCB that means choosing **basic or "preferred extended"
+parts** wherever possible (passives, AO3400A, 1N4148W, LEDs, terminals),
+so only the special chips (MAX31865, LTC2983, TC4427, 74LVC1G123,
+B0512S, TPS22918) carry a feeder fee. Once the BOM exists, quotes from
+JLCPCB, PCBWay, NextPCB and AISLER go into 8.2.
+
 ## 9. Bring-up plan (rev A)
 
 1. Visual check, then resistance checks between all rails before power.
