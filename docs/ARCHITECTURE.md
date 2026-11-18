@@ -40,7 +40,8 @@ OSCoST without risking the system.
   can do these. OSCoST starts with the solar side only.
 - A display and buttons on the device (general rule). The UI is a web
   page, plus (optional) Home Assistant over MQTT; the device itself only
-  has status LEDs.
+  has status LEDs: power, watchdog, pump (hardware-true) and a red alarm
+  LED with blink codes (HAT 4.8).
 - Wi-Fi (general rule). OSCoST connects over **wired Ethernet**; whatever
   platform it runs on must have an Ethernet port.
 - Certification. OSCoST is a hobby project. Mains wiring is done by a
@@ -543,8 +544,8 @@ config:
 
 Software plausibility checks, modelled on the BX Plus "function control"
 installer menu, with one addition. They cost no hardware. Each one raises
-an alarm on the web page, as a metric (`oscost_alarm{kind}`) and, when
-enabled, over MQTT. Thresholds and delays are configurable, and each check
+an alarm on the web page, as a metric (`oscost_alarm{kind}`), on the
+HAT's red ALARM LED (blink codes in HAT 4.8) and, when enabled, over MQTT. Thresholds and delays are configurable, and each check
 can be switched off.
 
 | Check | Detects | Typical cause | Action |

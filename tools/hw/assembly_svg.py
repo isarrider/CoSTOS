@@ -180,8 +180,8 @@ def lite():
     chip(400, 316, 150, 60, "Pump driver", "TC4427 on 5 V")
     chip(250, 316, 130, 60, "Feedback", "pull-up + clamp")
     # LEDs
-    for i, (lab, c) in enumerate([("WD", "#3fbf5f"), ("PUMP", "#f0a020")]):
-        x = 430 + i * 50
+    for i, (lab, c) in enumerate([("WD", "#3fbf5f"), ("PUMP", "#3fbf5f"), ("ALARM", "#e53935")]):
+        x = 420 + i * 50
         o.append(f'<circle cx="{x}" cy="150" r="7" fill="{c}"/>')
         txt(o, x, 172, lab, "g", "middle")
     txt(o, 470, 128, "OSCoST HAT Lite", "wb", "middle")

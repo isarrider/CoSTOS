@@ -84,6 +84,17 @@
 <text x="510" y="252" class="r" text-anchor="start">TP1</text>
 <polygon points="590,220 598,211 641,211 641,229 598,229" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="619.5" y="224" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
+<polygon points="450,470 442,461 399,461 399,479 442,479" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="420.5" y="474" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">ALARM</text>
+<text x="450" y="496" class="n" text-anchor="end">GPIO6 (pin 31)</text>
+<path class="w" d="M450 470 L500 470"/>
+<g transform="translate(500 470) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="516.0" y="498.0" class="r" text-anchor="start">R23</text>
+<text x="516.0" y="512.0" class="v" text-anchor="start">1 kΩ</text>
+<g transform="translate(500 530) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/><path class="w" d="M14 -12 L21 -20" style="stroke-width:1.5"/><path d="M21 -20 L16 -18 L20 -15 Z" fill="#222"/><path class="w" d="M22 -12 L29 -20" style="stroke-width:1.5"/><path d="M29 -20 L24 -18 L28 -15 Z" fill="#222"/></g>
+<text x="530.0" y="548.0" class="r" text-anchor="start">D13</text>
+<text x="530.0" y="562.0" class="v" text-anchor="start">ALARM red</text>
+<path d="M500 570 V580 M488 580 H512 M492 585 H508 M496 590 H504" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <text x="20" y="430" class="n" text-anchor="start">Timeout ≈ R3 · C5 ≈ 3 s (tuned at bring-up). Only rising</text>
 <text x="20" y="445" class="n" text-anchor="start">edges on B retrigger U3: OSCoST toggles HEARTBEAT once per</text>
 <text x="20" y="460" class="n" text-anchor="start">control cycle (1 s), so an edge arrives every 2 s. A line</text>
@@ -92,6 +103,7 @@
 <text x="20" y="505" class="n" text-anchor="start">first heartbeat, so nothing runs while the Pi boots.</text>
 <text x="20" y="520" class="n" text-anchor="start">JP1 forces WD_OK high for bench tests (open by default).</text>
 <text x="20" y="535" class="n" text-anchor="start">D3 shows U3's state, not the JP1 override.</text>
+<text x="20" y="550" class="n" text-anchor="start">D13 ALARM: software-driven (active alarms, blink codes).</text>
 <text x="640" y="30" class="h" text-anchor="start">5 · PWM pump outputs (12 V)</text>
 <rect x="860" y="70" width="100" height="300" rx="3" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
 <text x="910.0" y="218.0" class="r" text-anchor="middle">U6</text>
@@ -141,6 +153,15 @@
 <text x="794.0" y="162.0" class="v" text-anchor="end">100 kΩ</text>
 <path d="M810 180 V190 M798 190 H822 M802 195 H818 M806 200 H814" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <path class="w" d="M980 120 L990 120"/>
+<circle cx="975" cy="120" r="3.5" fill="#222"/>
+<path class="w" d="M975 120 L975 180"/>
+<g transform="translate(975 180) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="991.0" y="208.0" class="r" text-anchor="start">R22</text>
+<text x="991.0" y="222.0" class="v" text-anchor="start">4.7 kΩ</text>
+<g transform="translate(975 240) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/><path class="w" d="M14 -12 L21 -20" style="stroke-width:1.5"/><path d="M21 -20 L16 -18 L20 -15 Z" fill="#222"/><path class="w" d="M22 -12 L29 -20" style="stroke-width:1.5"/><path d="M29 -20 L24 -18 L28 -15 Z" fill="#222"/></g>
+<text x="1005.0" y="258.0" class="r" text-anchor="start">D12</text>
+<text x="1005.0" y="272.0" class="v" text-anchor="start">PUMP1</text>
+<path d="M975 280 V290 M963 290 H987 M967 295 H983 M971 300 H979" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <g transform="translate(990 120) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
 <text x="1020.0" y="106.0" class="v" text-anchor="middle"><tspan class="r">R9</tspan> 470 Ω</text>
 <path class="w" d="M1050 120 L1110 120"/>
@@ -187,6 +208,15 @@
 <path d="M810 390 V400 M798 400 H822 M802 405 H818 M806 410 H814" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <g opacity="0.42">
 <path class="w" d="M980 330 L990 330"/>
+<circle cx="975" cy="330" r="3.5" fill="#222"/>
+<path class="w" d="M975 330 L975 390"/>
+<g transform="translate(975 390) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="991.0" y="418.0" class="r" text-anchor="start">R24</text>
+<text x="991.0" y="432.0" class="v" text-anchor="start">4.7 kΩ</text>
+<g transform="translate(975 450) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/><path class="w" d="M14 -12 L21 -20" style="stroke-width:1.5"/><path d="M21 -20 L16 -18 L20 -15 Z" fill="#222"/><path class="w" d="M22 -12 L29 -20" style="stroke-width:1.5"/><path d="M29 -20 L24 -18 L28 -15 Z" fill="#222"/></g>
+<text x="1005.0" y="468.0" class="r" text-anchor="start">D14</text>
+<text x="1005.0" y="482.0" class="v" text-anchor="start">PUMP2</text>
+<path d="M975 490 V500 M963 500 H987 M967 505 H983 M971 510 H979" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <g transform="translate(990 330) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
 <text x="1020.0" y="316.0" class="v" text-anchor="middle"><tspan class="r">R10</tspan> 470 Ω</text>
 <path class="w" d="M1050 330 L1110 330"/>
@@ -218,6 +248,8 @@
 <text x="640" y="530" class="n" text-anchor="start">R9 limits the current into a shorted cable; D4 clamps</text>
 <text x="640" y="545" class="n" text-anchor="start">spikes from the pump cable. Terminal order = cable colours</text>
 <text x="640" y="560" class="n" text-anchor="start">brown (PWM), blue (GND), black (FB).</text>
+<text x="640" y="575" class="n" text-anchor="start">D12 shows what really reaches the pump: off = stop,</text>
+<text x="640" y="590" class="n" text-anchor="start">brighter = faster (≈ 2 mA at 12 V).</text>
 <text x="20" y="610" class="h" text-anchor="start">6 · Pump feedback inputs (open collector, 75 Hz)</text>
 <polygon points="120,710 112,701 69,701 69,719 112,719" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="90.5" y="714" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">P1_FB</text>

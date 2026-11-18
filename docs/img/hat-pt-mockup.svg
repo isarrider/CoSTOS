@@ -151,14 +151,18 @@
 <rect x="454" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="493.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">AND gate</text>
 <text class="ts" x="493.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">PWM gating</text>
-<circle cx="170" cy="316" r="6" fill="#4CAF50" stroke="#0F3A20"/>
-<text class="ts" x="170" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">PWR</text>
-<circle cx="196" cy="316" r="6" fill="#4CAF50" stroke="#0F3A20"/>
-<text class="ts" x="196" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">WD</text>
-<circle cx="222" cy="316" r="6" fill="#FFB300" stroke="#0F3A20"/>
-<text class="ts" x="222" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R1</text>
-<circle cx="248" cy="316" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>
-<text class="ts" x="248" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R2</text>
+<circle cx="440" cy="262" r="6" fill="#4CAF50" stroke="#0F3A20"/>
+<text class="ts" x="440" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">PWR</text>
+<circle cx="468" cy="262" r="6" fill="#4CAF50" stroke="#0F3A20"/>
+<text class="ts" x="468" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">WD</text>
+<circle cx="496" cy="262" r="6" fill="#4CAF50" stroke="#0F3A20"/>
+<text class="ts" x="496" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">PUMP</text>
+<circle cx="524" cy="262" r="6" fill="#E53935" stroke="#0F3A20"/>
+<text class="ts" x="524" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">ALM</text>
+<circle cx="552" cy="262" r="6" fill="#FFB300" stroke="#0F3A20"/>
+<text class="ts" x="552" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">R1</text>
+<circle cx="580" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>
+<text class="ts" x="580" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">R2</text>
 <text class="th" x="480" y="200" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#ffffff">OSCoST HAT PT</text>
 <text class="ts" x="480" y="220" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">rev A · 8 × Pt1000 + 1-Wire</text>
 <text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; S1–S8 and PUMP1 on the left, 1W-A at the front.</text>

@@ -128,14 +128,15 @@ chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
 chip(282, 304, 78, 46, "Feedback", "input 1")
 chip(368, 304, 78, 46, "Watchdog", "heartbeat")
 chip(454, 304, 78, 46, "AND gate", "PWM gating")
-# LEDs
-for x, col, lab in [(196 if not pt else 170, "#4CAF50", "PWR"), (222 if not pt else 196, "#4CAF50", "WD"),
-                    (246 if not pt else 222, "#FFB300", "R1"), (270 if not pt else 248, "#FFB300", "R2")]:
-    if lab == "R2":
-        out.append(f'<circle cx="{x}" cy="316" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
+# LEDs (row under the logo)
+for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
+                                     ("#E53935", "ALM", False), ("#FFB300", "R1", False), ("#FFB300", "R2", True)]):
+    x = 440 + k * 28
+    if nf:
+        out.append(f'<circle cx="{x}" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
     else:
-        out.append(f'<circle cx="{x}" cy="316" r="6" fill="{col}" stroke="#0F3A20"/>')
-    t(x, 340, lab, 11, "#E8F5E9", 400, "middle")
+        out.append(f'<circle cx="{x}" cy="262" r="6" fill="{col}" stroke="#0F3A20"/>')
+    t(x, 284, lab, 10, "#E8F5E9", 400, "middle")
 # logo
 if pt:
     t(480, 200, "OSCoST HAT PT", 14, "#ffffff", 500, "middle")

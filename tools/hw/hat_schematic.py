@@ -328,6 +328,7 @@ def sheet_power(path):
         ("HEARTBEAT", "18", "24", "watchdog"),
         ("REL1", "22", "25", "relay output 1"),
         ("REL2", "29", "5", "relay output 2 (n.f.)"),
+        ("ALARM", "31", "6", "alarm LED"),
         ("MOSI", "19", "10", "SPI0"),
         ("MISO", "21", "9", "SPI0"),
         ("SCLK", "23", "11", "SPI0"),
@@ -390,6 +391,11 @@ def sheet_pwm(path):
     s.add(f'<circle cx="500" cy="239" r="5" style="fill:white;stroke:{INK};stroke-width:2"/>')
     s.text(510, 252, "TP1", "r")
     s.flag(590, 220, "WD_OK", "R")
+    s.flag(450, 470, "ALARM", "L")
+    s.text(450, 496, "GPIO6 (pin 31)", "n", "end")
+    s.wire((450, 470), (500, 470))
+    s.part("R", 500, 470, "d", "R23", "1 kΩ", lab="r")
+    s.part("LED", 500, 530, "d", "D13", "ALARM red", lab="r"); s.gnd(500, 570)
     s.note(20, 430, [
         "Timeout ≈ R3 · C5 ≈ 3 s (tuned at bring-up). Only rising",
         "edges on B retrigger U3: OSCoST toggles HEARTBEAT once per",
@@ -399,6 +405,7 @@ def sheet_pwm(path):
         "first heartbeat, so nothing runs while the Pi boots.",
         "JP1 forces WD_OK high for bench tests (open by default).",
         "D3 shows U3's state, not the JP1 override.",
+        "D13 ALARM: software-driven (active alarms, blink codes).",
     ])
     # ---- PWM channels ----
     s.heading(640, 30, "5 · PWM pump outputs (12 V)")
@@ -422,6 +429,10 @@ def sheet_pwm(path):
         s.part("R", 810, y, "d", "R7" if n == 1 else "R8", "100 kΩ", lab="l"); s.gnd(810, y + 60)
         if nf: s.begin_nf()
         s.wire(u6["OUT A" if n == 1 else "OUT B"], (990, y))
+        s.dot(975, y); s.wire((975, y), (975, y + 60))
+        s.part("R", 975, y + 60, "d", "R22" if n == 1 else "R24", "4.7 kΩ", lab="r")
+        s.part("LED", 975, y + 120, "d", "D12" if n == 1 else "D14", f"PUMP{n}", lab="r")
+        s.gnd(975, y + 160)
         s.part("R", 990, y, "r", "R9" if n == 1 else "R10", "470 Ω")
         s.wire((1050, y), (1110, y)); s.dot(1070, y)
         s.wire((1070, y), (1070, y + 10))
@@ -439,6 +450,8 @@ def sheet_pwm(path):
         "R9 limits the current into a shorted cable; D4 clamps",
         "spikes from the pump cable. Terminal order = cable colours",
         "brown (PWM), blue (GND), black (FB).",
+        "D12 shows what really reaches the pump: off = stop,",
+        "brighter = faster (≈ 2 mA at 12 V).",
     ])
     # ---- feedback ----
     s.heading(20, 610, "6 · Pump feedback inputs (open collector, 75 Hz)")
