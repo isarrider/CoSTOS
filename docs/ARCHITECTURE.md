@@ -529,13 +529,13 @@ Pi; a later microcontroller port (13.5) comes for free. 🟢 low, 🟡 some,
 | # | Rule | Without it | With it | Effort |
 |---|---|---|---|---|
 | 1 | **`no_std`**: only `core` and `alloc`, no `std`; tests may use `std` (`#![cfg_attr(not(test), no_std)]`) | 🔴 "no I/O, no clock" is only a convention; a hidden file access or clock read can slip in | 🟢 the compiler refuses it; same code runs on the Pi, a microcontroller or in WebAssembly | 🟡 a few different tools (`BTreeMap`, `libm`), mostly at the start |
-| 2 | **Time and local time of day are inputs**, never read inside the core | 🔴 results depend on when the code runs; replays don't match | 🟢 fully deterministic: same inputs, same decisions; exact replay of the vbus2influx history | 🟢 the daemon passes two numbers in |
+| 2 | **Time and local time of day are inputs**, never read inside the core; the core counts in **whole seconds** (1 tick = 1 s = one control cycle) | 🔴 results depend on when the code runs; replays don't match | 🟢 fully deterministic: same inputs, same decisions; exact replay of the vbus2influx history | 🟢 the daemon passes two numbers in |
 | 3 | **Diagnostics leave the core as returned events**, no `println!` / logging inside | 🟡 debug output scattered through the logic | 🟢 every decision is visible in logs, web UI and tests | 🟢 |
 | 4 | **Measured values are `f32` inside a type that can only hold a finite value** | 🔴 a NaN from a bad sensor makes every comparison false: `t_store >= t_max` never becomes true, the store limit is silently off | 🟢 NaN can't exist in the core | 🟢 one small type |
 | 5 | **A failed sensor arrives as "no value" (`Option`)**, and safety checks treat "no value" as stop | 🔴 a fault can look like a plausible temperature | 🟢 every function has to handle the fault case explicitly | 🟢 |
 | 6 | **Counters are integers (`u64`)**: heat quantity in Wh, operating time in s, pump starts | 🔴 an `f32` total stops counting: at 1,000 kWh each 0.56 Wh step is already several % off, from ≈ 9,300 kWh (3–4 years) nothing is added at all, silently | 🟢 exact forever (`u64` Wh: never full) | 🟢 |
 | 7 | **Saturating arithmetic for counters** (`saturating_add`) | 🟡 a counter at its maximum wraps to 0 in a release build | 🟢 stays at the maximum | 🟢 |
-| 8 | **No 32-bit millisecond clocks** | 🔴 a `u32` in ms overflows after 49.7 days: the classic "fails after seven weeks" bug | 🟢 time in `u64` (ms: 585 million years) | 🟢 |
+| 8 | **No milliseconds in the core**: all times and durations are whole seconds as `u64` (min run time, delays, anti-seize run, ramps, statistics) | 🔴 ms counters invite the classic bug: a `u32` in ms overflows after 49.7 days ("fails after seven weeks") | 🟢 1 s is ample for a solar thermal system; `u64` seconds last 585 billion years | 🟢 simpler than ms |
 | 9 | **`overflow-checks = true`** in release builds of both crates | 🟡 integer overflow wraps silently in release builds | 🟢 a logic bug is caught instead of producing a wrong number | 🟢 one line in `Cargo.toml`, negligible speed cost |
 | 10 | **`#![forbid(unsafe_code)]`** | 🟡 memory safety could be switched off locally | 🟢 no memory buffer overflows possible at all | 🟢 one line |
 | 11 | **`.get(i)` instead of `[i]`** for indexing | 🟡 an out-of-range index stops the daemon (safe, the watchdog stops the pump, but control is lost) | 🟢 the missing value is handled like a sensor fault | 🟢 |
@@ -543,7 +543,11 @@ Pi; a later microcontroller port (13.5) comes for free. 🟢 low, 🟡 some,
 | 13 | **Tests for the edge cases**: sensor NaN or missing, counters near their maximum, 10 years of simulated runtime | 🟡 these bugs only show after years in the field | 🟢 found in CI in seconds | 🟡 written once |
 
 Not under these rules: `oscost-sim`, `oscost-config`, `oscost-hw-linux`,
-`oscost-web` and `oscostd` stay normal Rust with `std`.
+`oscost-web` and `oscostd` stay normal Rust with `std`. Finer timing exists
+only at the edges and never reaches the core: the hardware layer measures
+the pump feedback duty from edge timestamps (75 Hz signal) and hands the
+core a percentage, and the VictoriaMetrics protocol takes millisecond
+timestamps, which the daemon makes from the cycle's second.
 
 ### 6.2 Control functions (first version)
 
