@@ -3,7 +3,7 @@
 Status: **draft for discussion**. Nothing here is implemented yet.
 
 OSCoST is an open-source controller for solar thermal systems. It runs on a
-Raspberry Pi 4 or 5, is written in
+Raspberry Pi 4 or 5 (a Pi 3 B / B+ should work too), is written in
 Rust, and is meant to **replace** a commercial controller. The reference
 system is the one it replaces: a RESOL DeltaSol BX Plus that is read today by
 [vbus2influx](https://github.com/isarrider/vbus2influx).
@@ -70,7 +70,7 @@ Plus behaviour for this installation.
 ## 3. System overview
 
 ```
-             ┌────────────────────── Raspberry Pi 4 / 5 ────────────────────────────┐
+             ┌──────────────────── Raspberry Pi 3 / 4 / 5 ──────────────────────────┐
              │                                                                      │
  Pt1000 ───► │  sensors task ──► ┌──────────────┐    ┌──────────────┐               │
  sensors     │  (SPI / I²C)      │ control core │──► │  safety      │──► outputs ───┼──► PWM (watchdog-gated) ──► HE pump (230 V permanent)
@@ -439,7 +439,9 @@ op-amp. Not planned for the first hardware version.
 
 ### 5.5 Kernel interfaces
 
-The supported boards are the **Raspberry Pi 4 and Pi 5**. They differ more
+The supported boards are the **Raspberry Pi 4 and Pi 5**; the **Pi 3 B /
+B+** uses the same chip family as the Pi 4 and should work unchanged
+(untested, [HAT.md](HAT.md#raspberry-pi-3)). The Pi 4 and Pi 5 differ more
 than it seems: on the Pi 5, GPIO and PWM live in the separate RP1 chip,
 with different PWM chip and channel numbers. So the Linux backend uses the
 generic kernel interfaces only, not a Pi-specific library, and the same code
@@ -857,7 +859,7 @@ On first start (or after a factory reset) there is no valid config, so all
 outputs stay OFF and the interface opens a wizard:
 
 1. Create the admin user.
-2. Choose the board (Pi 4 / Pi 5) and the sensor/output hardware.
+2. Choose the board (Pi 3 / Pi 4 / Pi 5) and the sensor/output hardware.
 3. **Assign sensors**: every Pt1000 input and every DS18x20 found by the
    bus scan shows its live temperature, so you can identify each sensor by
    its reading (or by warming it in your hand: the one that rises is

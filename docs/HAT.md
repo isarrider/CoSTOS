@@ -81,7 +81,7 @@ until a real BOM exists. 🟢 good, 🟡 medium, 🔴 weak or missing.
 
 | | |
 |---|---|
-| Boards | Raspberry Pi 4, Raspberry Pi 5 |
+| Boards | Raspberry Pi 4, Raspberry Pi 5; Raspberry Pi 3 B / B+ should work (untested, see below) |
 | Size | Raspberry Pi HAT: 65 × 56.5 mm, 4 × M2.5 mounting holes matching the Pi |
 | Header | 40-pin female stacking header with tall spacers (≈ 16–17 mm) for every board (D16): clears the Pi 5 active cooler and most passive heatsinks, and works on a Pi 4 too |
 | Connectors | Field connections on the left and bottom edges, fixed 3.5 mm screw terminals (see 7) |
@@ -146,6 +146,28 @@ later port. If it is ever done, the "move the three signals" variant
 above is the starting point. The full cost and capability comparison of the Pi
 against the ESP32-S3, RP2350 and ESP32-P4, and the P4 boards considered,
 are in [ARCHITECTURE 13](ARCHITECTURE.md#13-platform-comparison-pi-or-microcontroller).
+
+### Raspberry Pi 3
+
+The Pi 3 B and B+ have the same 40-pin header, HAT size and mounting holes,
+and the same PWM, SPI and 1-Wire blocks as the Pi 4, so the HAT and the
+software should work unchanged. **Untested**: it gets checked in bring-up
+(9) if a Pi 3 is at hand. For someone with a spare Pi 3 it is the cheapest
+way in: with the Lite build, the HAT is then the only purchase.
+
+| | Pi 3 B / B+ | Pi 4 / Pi 5 |
+|---|---|---|
+| 40-pin header, HAT size, mounting holes | 🟢 same | 🟢 |
+| PWM (GPIO 18/19), SPI, 1-Wire, GPIO edge events | 🟢 same as the Pi 4, same overlays (6) | 🟢 |
+| CPU and RAM for OSCoST (1 Hz loop, web UI, local buffer) | 🟢 1 GB is plenty | 🟢 |
+| Power | 🟡 **micro-USB**, 5.1 V 2.5 A supply, not USB-C | 🟢 USB-C |
+| Ethernet | 🟡 100 Mbit (B), ≈ 300 Mbit (B+): plenty for the metrics | 🟢 Gigabit |
+| Tall spacers (D16) | 🟢 fit, with more air than needed | 🟢 |
+| Software | 🟢 the same 64-bit build (aarch64) | 🟢 |
+
+Not the Pi 3 A+: it has no Ethernet, and OSCoST uses no Wi-Fi. Older
+boards (Pi 2, Pi 1 B+) have the header but too little CPU and RAM, and are
+not considered.
 
 ## 3. Block diagram
 
@@ -318,7 +340,8 @@ protection, so the HAT needs no fuse, TVS or ideal diode of its own; it
 only has a bulk capacitor and a power LED on its 5 V rail.
 
 - **Supply:** the official Raspberry Pi USB-C supply (27 W for the Pi 5,
-  15 W for the Pi 4) or an equivalent. The Pi 5 negotiates 5 A over USB
+  15 W for the Pi 4) or an equivalent; for a Pi 3 its micro-USB supply
+  (5.1 V, 2.5 A). The Pi 5 negotiates 5 A over USB
   power delivery, so no `PSU_MAX_CURRENT` setting is needed.
 - **DIN-rail builds** (ARCHITECTURE 5.6 options B/C): a 5 V DIN-rail
   supply feeds the Pi through a short USB-C lead (5.1 V, 3 A for a Pi 4,
@@ -356,10 +379,10 @@ light pipes above them.
 
 ## 5. Pin assignment
 
-The same on the Raspberry Pi 4 and Pi 5. Only the PWM chip and channel
-numbers behind GPIO 18/19 differ, which is software configuration.
+The same on the Raspberry Pi 3, Pi 4 and Pi 5. Only the PWM chip and
+channel numbers behind GPIO 18/19 differ, which is software configuration.
 
-| Function | Header pin | Pi 4 | Pi 5 |
+| Function | Header pin | Pi 3 / Pi 4 | Pi 5 |
 |---|---|---|---|
 | 1-Wire bus A | 7 | GPIO 4 | GPIO 4 |
 | 1-Wire bus B | 11 | GPIO 17 | GPIO 17 |
@@ -401,6 +424,11 @@ dtoverlay=w1-gpio,gpiopin=17
 
 # Relay outputs and heartbeat: outputs, driven low as early as possible
 gpio=24,25,5=op,dl
+
+[pi3]
+# Same as the Pi 4 (untested on the Pi 3)
+dtoverlay=pwm-2chan,pin=18,func=2,pin2=19,func2=2
+dtparam=audio=off
 
 [pi4]
 # Two hardware PWM channels on GPIO 18 / 19
@@ -656,7 +684,8 @@ into 8.2.
 8. 1-Wire bus scan on both buses, with one, then five DS18x20 each. On
    the Pi 5, check that `w1-gpio` works reliably through the RP1 chip;
    otherwise fit the DS2482.
-9. Repeat steps 3–8 on the other board (Pi 4 ↔ Pi 5).
+9. Repeat steps 3–8 on the other board (Pi 4 ↔ Pi 5), and on a Pi 3 B / B+
+   if one is at hand.
 
 ## 10. Decisions
 
