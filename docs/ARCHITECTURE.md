@@ -296,6 +296,37 @@ range above, slow enough for clean edges over 3 m of cable). The pump
 itself must be set to the matching profile; the setup wizard asks for it and
 the feedback signal can confirm the pump reacts.
 
+#### PWM frequency: settable per output
+
+The frequency is a setting per PWM output (Settings → Hardware), not a
+constant. It costs nothing: the Pi's hardware PWM takes any period, and the
+HAT's TC4427 driver switches in nanoseconds, so nothing on the board
+depends on it.
+
+| | **Fixed 500 Hz** | **Settable per output** (chosen) |
+|---|---|---|
+| Wilo / Grundfos solar pumps | 🟢 inside every range (100–5000, 100–4000, some Wilo variants 100–1000 Hz) | 🟢 same default |
+| Pump or datasheet that asks for its nominal 1 kHz | 🟡 works, but outside the maker's nominal value | 🟢 set 1000 Hz |
+| Slow optocoupler in the signal path ([HARDWARE.md option 2](HARDWARE.md#option-2-optocoupler-module)) | 🔴 1–2 % duty error | 🟢 set 200 Hz, error halved |
+| PWM → 0–10 V converter modules, other loads (fans, valves) | 🔴 often need 1–3 kHz | 🟢 set what the module needs |
+| Risk of a wrong value | 🟢 none | 🟡 limited: range checked (below) |
+| Cost | — | none: one config field, already in the web UI |
+
+Rules:
+
+- **Default 500 Hz** (the RESOL uses 512 Hz). Pump presets carry the
+  range from the maker's datasheet; a custom profile accepts **100–4000 Hz**,
+  the range every listed pump accepts except the Wilo 100–1000 Hz variants,
+  whose preset limits it further.
+- A value outside the range is **refused when the config is saved or
+  loaded** (plausibility rule, 6.1), with the allowed range in the message;
+  OSCoST never runs an output at a frequency it has not checked.
+- At 4 kHz the edge rule (rise/fall ≤ T/500 = 0.5 µs) is still met: the
+  470 Ω series resistor with about 300 pF of 3 m cable gives about 0.3 µs.
+- The frequency only sets the period; the duty cycle (the speed) is
+  unaffected, so a change takes effect at once without a pump stop. The
+  watchdog gating and the "no signal = stop" behaviour do not depend on it.
+
 #### Pump requirement (safety)
 
 OSCoST's standard setup keeps the pump permanently on 230 V and stops it

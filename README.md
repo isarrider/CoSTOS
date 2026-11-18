@@ -49,7 +49,7 @@ installation, so that's the reference for which functions come first.
 
 - Raspberry Pi 4 or Raspberry Pi 5 with its own USB-C power supply
 - The [OSCoST HAT](docs/HAT.md) (1-Wire edition, its Lite build, or the PT
-  edition), or for a bench setup: an LTC2983 or MAX31865 for Pt1000
+  edition; [which one?](docs/HAT.md#which-hat-all-editions-compared)), or for a bench setup: an LTC2983 or MAX31865 for Pt1000
   sensors, a 4.7 kΩ pull-up for DS18x20 sensors
 - **A high-efficiency pump with a PWM input in the solar profile** (Wilo
   PWM2 / iPWM2 such as the Wilo Yonos PARA ST …/iPWM2, Grundfos profile

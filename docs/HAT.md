@@ -23,6 +23,38 @@ sensor inputs, plus a cheaper **Lite build** of the first
   their existing Pt1000 sensors, as most commercial controllers use them,
   and still want to add DS18x20 sensors.
 
+### Which HAT? All editions compared
+
+One table for choosing. Details: 1-Wire edition sections 1–10, Lite build
+[12](#12-lite-build-decided-d19), PT edition [11](#11-pt-edition-8--pt1000),
+costs [8.2](#82-fully-assembled-rough-estimate). Prices are estimates
+until a real BOM exists. 🟢 good, 🟡 medium, 🔴 weak or missing.
+
+| | **1-Wire edition** | **1-Wire, Lite build** | **PT edition** |
+|---|---|---|---|
+| **Best for** | new installations, or replacing the sensors anyway | a tight budget with a solar-profile pump | keeping the existing Pt1000 sensors (e.g. replacing a RESOL) |
+| ***Sensors*** | | | |
+| Pt1000 inputs | 🟡 1 (collector), 1 spare position | 🟡 1 (collector), 1 spare position | 🟢 **8** (S1–S8, LTC2983) |
+| 1-Wire buses for DS18x20 | 🟢 2 | 🟢 2 | 🟡 1 |
+| ***Outputs*** | | | |
+| PUMP1, PWM with feedback | 🟢 12 V drive, ≈ 10.6 V at the pump | 🟡 5 V drive, ≈ 4.7 V at the pump (threshold ~4 V) | 🟢 12 V drive |
+| PWM frequency | 🟢 settable, 100–4000 Hz ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)) | 🟢 same | 🟢 same |
+| REL1 (cut-off relay, valve, on/off load) | 🟢 yes | 🔴 not fitted | 🟢 yes |
+| Pumps | 🟢 solar profile; heating profile with a cut-off relay | 🟡 solar profile only | 🟢 solar profile; heating profile with a cut-off relay |
+| Unfitted spare positions | PT2, PUMP2, REL2, DS2482 | the same, plus REL1 and the DC/DC | PUMP2, REL2 |
+| ***The same on all*** | | | |
+| Watchdog with PWM gating, field-line protection, power from the Pi, PWR / WD / PUMP1 LEDs, silkscreen cheat sheet, size and tall header | 🟢 | 🟢 | 🟢 |
+| ***Cost*** (incl. 19 % VAT unless noted) | | | |
+| **Price for one** (smallest assembled order: 2 boards) | ≈ €90 | 🟢 **≈ €73** | 🔴 ≈ €158 |
+| Assembled, per board in a group order of 5 | ≈ €27 | 🟢 ≈ €20 | 🔴 ≈ €61 |
+| Build it yourself (parts + 3 bare PCBs) | ≈ €51 | 🟢 ≈ €45 | 🔴 ≈ €92 |
+| Parts for one board (excl. VAT) | ≈ €30 | ≈ €25.40 | ≈ €65 (LTC2983 ≈ €39 of it) |
+| **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €17** | 🔴 **≈ €68 more** |
+| ***Building and status*** | | | |
+| Hand soldering | 🟡 MAX31865, SSOP-20 | 🟡 same | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
+| Upgrade later | — | 🟢 to the normal build by soldering on U2, C4, R2, R25 (remove R26) and the REL1 parts | — |
+| Status | 🟡 rev A, designed first | 🟡 same board as the 1-Wire edition | 🔴 planned as the second board |
+
 ---
 
 ## 1. Scope
@@ -184,6 +216,9 @@ the 13 V TVS standoff at light load.
   what stops them. The documentation for the outputs must say so.)
 - Per output a 3-way terminal: **PWM, GND, FB**, in the cable's order
   (brown, blue, black).
+- **Frequency settable** per output in software, default 500 Hz, checked
+  range 100–4000 Hz; the driver does not depend on it
+  ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)).
 
 ### 4.2 Pump feedback inputs
 
