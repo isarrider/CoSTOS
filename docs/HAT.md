@@ -313,6 +313,17 @@ ALARM blink codes (software, same on all editions):
 Several alarms at once: the most severe pattern wins. The LEDs face up;
 a closed enclosure needs a window or light pipes above them.
 
+**Software and configuration:** PWR, WD, PUMP1 and R1 are pure hardware
+and need nothing. ALARM needs only the `gpio=…,6=op,dl` line in
+`config.txt` (section 6), so it is off from early boot; no overlay.
+`oscostd` drives GPIO 6 through the GPIO character device like the relay
+and heartbeat lines, and plays the blink pattern itself. The kernel LED
+subsystem (`dtoverlay=gpio-led` with a timer or pattern trigger) is
+deliberately not used: it would keep blinking the last pattern after
+`oscostd` has crashed. With the character device a crash freezes the
+LED, and the WD LED going dark then shows that nothing is controlling.
+On shutdown `oscostd` switches ALARM off.
+
 ### 4.9 Power budget
 
 | Rail | Source | Users | Estimated current |

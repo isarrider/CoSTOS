@@ -498,7 +498,7 @@ oscost/
 ├─ crates/
 │  ├─ oscost-core/       # control logic: pure, no I/O, no async, no clock (time is an input)
 │  ├─ oscost-safety/     # safety supervisor: pure, can only reduce outputs
-│  ├─ oscost-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
+│  ├─ oscost-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog, StatusLed
 │  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; LTC2983, MAX31865, DS18x20, DS2482 drivers
 │  ├─ oscost-sim/        # thermal model of collector + store, used for tests and dry runs
 │  ├─ oscost-config/     # config schema, validation, migrations between schema versions, revision store
