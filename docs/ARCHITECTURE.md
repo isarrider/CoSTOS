@@ -751,3 +751,38 @@ come first.
   (HAT D12, D13). The reference installation plans the PT edition and
   keeps its eight Pt1000 sensors; the 1-Wire edition with DS18B20 stays
   documented as the alternative.
+
+## 12. Related projects
+
+### DiSoCon2 (carletz/DiSoCon)
+
+An open-hardware ESP32-S3 differential solar controller with ESPHome
+firmware: a 4-layer control board (ESP32-S3, W5500 Ethernet, ATmega32U4 +
+ADS1115 for 4 Pt1000 inputs, RS-485) and a 2-layer 230 V power board
+(HLK-PM01 supply, two triacs for pumps, two relays for 3-way valves),
+LCD and buttons, in a 3D-printed DIN-rail case. About €40 in parts per
+controller.
+
+It is licensed **CC BY-NC-SA 4.0**, so nothing from it is copied into
+OSCoST (MIT). What we take from it as ideas:
+
+- **Wired Ethernet with a W5500 and an RJ45 jack on the board** works
+  for a controller in a boiler room. Any microcontroller version of
+  OSCoST should have wired Ethernet, not only Wi-Fi.
+- **Standalone first:** it keeps controlling with no network at all and
+  has a local display and buttons. OSCoST's control loop is local too; a
+  minimal local indication (status LEDs, maybe a small display) is worth
+  considering so the system state is visible without a phone.
+- **Low voltage and mains on separate boards,** joined by a ribbon cable.
+  OSCoST keeps mains off its board entirely (DIN-rail supply and SSR); if
+  an all-in-one option is ever wanted, a separate power board is the
+  pattern to follow (EMI filter, varistor, fuses, zero-cross detection).
+- **A cheap Pt1000 front-end:** a 0.1 % divider, an op-amp buffer and an
+  ADS1115 per 4 sensors is accurate enough for solar control. It has no
+  built-in fault detection or protection, which is why OSCoST prefers the
+  LTC2983 / MAX31865.
+- **Valve outputs for tank switching:** two relays for 3-way valves
+  (multi-store systems). OSCoST's REL2 position could serve the same
+  purpose later.
+- **Protection on every external line:** TVS diodes on sensor inputs,
+  ESD arrays, polyfuses on sensor supplies, as on the OSCoST HAT.
