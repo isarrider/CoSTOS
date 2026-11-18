@@ -30,14 +30,14 @@ def rect(o, x, y, w, h, fill, stroke="none", rx=0, sw=1, dash=False, op=1):
 def assembly():
     o = []
     S = 6.0                       # px per mm
-    W, H = 1340, 560
+    W, H = 1390, 560
     o.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Helvetica, Arial, sans-serif">')
     o.append(STYLE)
     rect(o, 0, 0, W, H, "white")
     txt(o, 20, 30, "Raspberry Pi 5 with the OSCoST HAT (1-Wire edition) — top and side view, to scale (1 mm = 6 px)", "h")
 
     # ---------- top view
-    ox, oy = 110, 80
+    ox, oy = 160, 80
     def P(x, y):  # mm -> px, y measured from the board's top edge (header side)
         return ox + x * S, oy + y * S
     # Pi board
@@ -63,12 +63,12 @@ def assembly():
     rect(o, x, y, 50.8 * S, 5 * S, "#111")
     txt(o, P(32.5, 0)[0], P(0, 10)[1], "40-pin header", "g", "middle")
     # left terminals (overhanging the edge)
-    for (yy, n, lab) in [(10, 2, "PT1"), (24, 3, "1W-A"), (38, 3, "1W-B")]:
+    for (yy, n, lab) in [(9, 2, "PT1"), (17.5, 3, "1W-A"), (29, 3, "1W-B"), (40.5, 3, "PUMP1")]:
         x, y = P(-2.5, yy)
         rect(o, x, y, 7 * S, n * 3.5 * S, "#E9E2CC", "#8A7F5F", rx=2)
         txt(o, P(5.5, 0)[0], y + n * 3.5 * S / 2 + 4, lab, "w")
     # bottom terminals
-    for (xx, n, lab) in [(8, 2, "PWR"), (19, 2, "REL1"), (36, 3, "PUMP1")]:
+    for (xx, n, lab) in [(14, 2, "PWR"), (24, 2, "REL1")]:
         x, y = P(xx, 51)
         rect(o, x, y, n * 3.5 * S, 7 * S, "#E9E2CC", "#8A7F5F", rx=2)
         txt(o, x + n * 3.5 * S / 2, y - 6, lab, "w", "middle")
@@ -82,17 +82,16 @@ def assembly():
         txt(o, x2 + dx, y2 + dy, lab, "t", anchor)
     o.append('<defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">'
              '<path d="M0,0 L6,3 L0,6 z" fill="#c0392b"/></marker></defs>')
-    arrow(P(-2.5, 20)[0], P(0, 20)[1], P(-9, 20)[0], P(0, 20)[1], "sensors", "end", -4, 4)
-    arrow(P(54, 58)[0], P(0, 58)[1], P(62, 64)[0], P(0, 64)[1], "pump cable", "start", 4, 4)
+    arrow(P(-2.5, 30)[0], P(0, 30)[1], P(-9, 30)[0], P(0, 30)[1], "sensors + pump", "end", -4, 4)
     arrow(P(88, 10)[0], P(0, 10)[1], P(95, 10)[0], P(0, 10)[1], "network", "start", 4, 4)
     # notes under the top view
     ny = P(0, 74)[1]
     txt(o, ox, ny, "• The HAT covers the left 65 mm; Ethernet and USB stay free on the right.", "n")
-    txt(o, ox, ny + 16, "• Sensor terminals face left, pump/power terminals face the front edge, above the", "n")
-    txt(o, ox, ny + 32, "  Pi's USB-C and µHDMI sockets: the USB-C plug fits below the HAT (check in KiCad).", "n")
+    txt(o, ox, ny + 16, "• Sensor and pump terminals face left (D17); the front edge keeps PWR/REL1, above the", "n")
+    txt(o, ox, ny + 32, "  Pi's USB-C and µHDMI sockets; the USB-C plug fits below the HAT (check in KiCad).", "n")
 
     # ---------- side view (looking at the front edge)
-    sx, sy = 820, 140            # left end of the Pi board, top of the Pi PCB
+    sx, sy = 870, 140            # left end of the Pi board, top of the Pi PCB
     def Q(x, z):                  # x along the board, z height above the Pi PCB top
         return sx + x * S, sy + 230 - z * S
     # Pi PCB
@@ -121,10 +120,10 @@ def assembly():
     rect(o, x, y, 65 * S, 1.6 * S, GREEN, GREEN_D)
     txt(o, x + 65 * S + 8, y + 9, "OSCoST HAT", "tb")
     # terminals on the HAT, seen from the front
-    for (xx, w_) in [(8, 7), (19, 7), (36, 10.5)]:
+    for (xx, w_) in [(14, 7), (24, 7)]:
         x, y = Q(xx, HZ + 1.6 + 8.5)
         rect(o, x, y, w_ * S, 8.5 * S, "#E9E2CC", "#8A7F5F", rx=2)
-    txt(o, Q(41, 0)[0], Q(0, HZ + 12)[1], "PWR  REL1   PUMP1", "n", "middle")
+    txt(o, Q(24, 0)[0], Q(0, HZ + 12)[1], "PWR    REL1", "n", "middle")
     # height dimension
     xd = Q(-6, 0)[0]
     y1, y2 = Q(0, 0)[1], Q(0, HZ)[1]
@@ -172,8 +171,9 @@ def lite():
         txt(o, x + w / 2, y + h / 2 - 3, title, "wb", "middle")
         txt(o, x + w / 2, y + h / 2 + 12, sub, "g", "middle")
 
-    term_l(120, 2, "PT1", "collector")
-    term_l(230, 3, "1W", "DS18x20")
+    term_l(110, 2, "PT1", "collector")
+    term_l(190, 3, "1W", "DS18x20")
+    term_l(300, 3, "PUMP1", "solar pump")
     chip(250, 118, 130, 60, "MAX31865", "Pt1000, ±45 V inputs")
     chip(250, 232, 130, 60, "Protection", "ESD, series R, polyfuse")
     chip(400, 232, 150, 60, "Watchdog + AND", "PWM gated off")
@@ -185,14 +185,6 @@ def lite():
         o.append(f'<circle cx="{x}" cy="150" r="7" fill="{c}"/>')
         txt(o, x, 172, lab, "g", "middle")
     txt(o, 470, 128, "OSCoST HAT Lite", "wb", "middle")
-    # bottom terminal
-    rect(o, 300, 432, 84, 54, "#E9E2CC", "#8A7F5F", rx=3)
-    for k in range(3):
-        cx = 314 + 28 * k
-        o.append(f'<circle cx="{cx}" cy="455" r="7" fill="#B0B6BA" stroke="#5F6468"/>'
-                 f'<line x1="{cx}" y1="450" x2="{cx}" y2="460" stroke="#5F6468" stroke-width="1.5"/>')
-    txt(o, 342, 424, "PUMP1", "wb", "middle")
-    txt(o, 342, 506, "PWM  GND  FB", "n", "middle")
     txt(o, 340, 530, "Top view to scale (1 mm = 8 px), same 65 × 56.5 mm outline and holes as the full HAT.", "n", "middle")
     txt(o, 340, 548, "Solar-profile pumps only (no signal = stop). No relay output, no 12 V, no power input.", "n", "middle")
     o.append('</svg>')

@@ -48,17 +48,23 @@
 <rect x="530.0799999999999" y="45" width="6" height="6" rx="0" fill="#C9A227" stroke="none" stroke-width="1" fill-opacity="1"/>
 <rect x="530.0799999999999" y="65" width="6" height="6" rx="0" fill="#C9A227" stroke="none" stroke-width="1" fill-opacity="1"/>
 <text x="340" y="98" class="g" text-anchor="middle">40-pin header (tall enough for the Pi 5 cooler) · powered from the Pi</text>
-<rect x="58" y="120" width="54" height="56" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
-<circle cx="72" cy="134" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="134" x2="77" y2="134" stroke="#5F6468" stroke-width="1.5"/>
-<circle cx="72" cy="162" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="162" x2="77" y2="162" stroke="#5F6468" stroke-width="1.5"/>
-<text x="118" y="146" class="wb" text-anchor="start">PT1</text>
-<text x="118" y="161" class="g" text-anchor="start">collector</text>
-<rect x="58" y="230" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
-<circle cx="72" cy="244" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="244" x2="77" y2="244" stroke="#5F6468" stroke-width="1.5"/>
-<circle cx="72" cy="272" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="272" x2="77" y2="272" stroke="#5F6468" stroke-width="1.5"/>
-<circle cx="72" cy="300" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="300" x2="77" y2="300" stroke="#5F6468" stroke-width="1.5"/>
-<text x="118" y="270" class="wb" text-anchor="start">1W</text>
-<text x="118" y="285" class="g" text-anchor="start">DS18x20</text>
+<rect x="58" y="110" width="54" height="56" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<circle cx="72" cy="124" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="124" x2="77" y2="124" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="152" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="152" x2="77" y2="152" stroke="#5F6468" stroke-width="1.5"/>
+<text x="118" y="136" class="wb" text-anchor="start">PT1</text>
+<text x="118" y="151" class="g" text-anchor="start">collector</text>
+<rect x="58" y="190" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<circle cx="72" cy="204" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="204" x2="77" y2="204" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="232" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="232" x2="77" y2="232" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="260" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="260" x2="77" y2="260" stroke="#5F6468" stroke-width="1.5"/>
+<text x="118" y="230" class="wb" text-anchor="start">1W</text>
+<text x="118" y="245" class="g" text-anchor="start">DS18x20</text>
+<rect x="58" y="300" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
+<circle cx="72" cy="314" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="314" x2="77" y2="314" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="342" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="342" x2="77" y2="342" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="370" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="370" x2="77" y2="370" stroke="#5F6468" stroke-width="1.5"/>
+<text x="118" y="340" class="wb" text-anchor="start">PUMP1</text>
+<text x="118" y="355" class="g" text-anchor="start">solar pump</text>
 <rect x="250" y="118" width="130" height="60" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1" fill-opacity="1"/>
 <text x="315.0" y="145.0" class="wb" text-anchor="middle">MAX31865</text>
 <text x="315.0" y="160.0" class="g" text-anchor="middle">Pt1000, ±45 V inputs</text>
@@ -79,12 +85,6 @@
 <circle cx="480" cy="150" r="7" fill="#f0a020"/>
 <text x="480" y="172" class="g" text-anchor="middle">PUMP</text>
 <text x="470" y="128" class="wb" text-anchor="middle">OSCoST HAT Lite</text>
-<rect x="300" y="432" width="84" height="54" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
-<circle cx="314" cy="455" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="314" y1="450" x2="314" y2="460" stroke="#5F6468" stroke-width="1.5"/>
-<circle cx="342" cy="455" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="342" y1="450" x2="342" y2="460" stroke="#5F6468" stroke-width="1.5"/>
-<circle cx="370" cy="455" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="370" y1="450" x2="370" y2="460" stroke="#5F6468" stroke-width="1.5"/>
-<text x="342" y="424" class="wb" text-anchor="middle">PUMP1</text>
-<text x="342" y="506" class="n" text-anchor="middle">PWM  GND  FB</text>
 <text x="340" y="530" class="n" text-anchor="middle">Top view to scale (1 mm = 8 px), same 65 × 56.5 mm outline and holes as the full HAT.</text>
 <text x="340" y="548" class="n" text-anchor="middle">Solar-profile pumps only (no signal = stop). No relay output, no 12 V, no power input.</text>
 </svg>

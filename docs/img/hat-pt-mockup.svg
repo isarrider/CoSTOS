@@ -81,8 +81,8 @@
 <circle cx="72" cy="360" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="360" x2="77" y2="360" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="388" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="388" x2="77" y2="388" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="416" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="416" x2="77" y2="416" stroke="#5F6468" stroke-width="1.5"/>
-<text class="th" x="118" y="386.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">1W-A</text>
-<text class="ts" x="118" y="401.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">DS18x20</text>
+<text class="th" x="118" y="386.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">PUMP1</text>
+<text class="ts" x="118" y="401.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">solar pump</text>
 <rect x="148" y="450" width="56" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="162" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="162" y1="461" x2="162" y2="471" stroke="#5F6468" stroke-width="1.5"/>
 <text class="ts" x="162" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">+5V</text>
@@ -103,12 +103,12 @@
 <text class="th" x="312.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">REL2 (n.f.)</text>
 <rect x="352" y="450" width="84" height="46" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="366" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="366" y1="461" x2="366" y2="471" stroke="#5F6468" stroke-width="1.5"/>
-<text class="ts" x="366" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">PWM</text>
+<text class="ts" x="366" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">3V3</text>
 <circle cx="394" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="394" y1="461" x2="394" y2="471" stroke="#5F6468" stroke-width="1.5"/>
-<text class="ts" x="394" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">GND</text>
+<text class="ts" x="394" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">DQ</text>
 <circle cx="422" cy="466" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="422" y1="461" x2="422" y2="471" stroke="#5F6468" stroke-width="1.5"/>
-<text class="ts" x="422" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">FB</text>
-<text class="th" x="394.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">PUMP1</text>
+<text class="ts" x="422" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">GND</text>
+<text class="th" x="394.0" y="440" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">1W-A</text>
 <rect x="448" y="450" width="84" height="32" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
 <circle cx="462" cy="466" r="4" fill="#C9A227"/>
 <text class="ts" x="462" y="512" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#555555">PWM</text>
@@ -137,26 +137,26 @@
 <text class="th" x="218.0" y="284.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">1-Wire</text>
 <text class="ts" x="218.0" y="299.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">pull-up, ESD, fuse</text>
 <rect x="196" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="235.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Protection</text>
-<text class="ts" x="235.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">5 V input</text>
+<text class="th" x="235.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">TC4427</text>
+<text class="ts" x="235.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">pump driver</text>
 <rect x="282" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="321.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Relay</text>
-<text class="ts" x="321.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">MOSFET</text>
+<text class="th" x="321.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Protection</text>
+<text class="ts" x="321.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">5 V input</text>
 <rect x="368" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="407.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">TC4427</text>
-<text class="ts" x="407.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">pump driver</text>
+<text class="th" x="407.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Relay</text>
+<text class="ts" x="407.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">MOSFET</text>
 <rect x="454" y="368" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="493.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">DC/DC</text>
 <text class="ts" x="493.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">5 V → 12 V</text>
 <rect x="282" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="321.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Watchdog</text>
-<text class="ts" x="321.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">heartbeat</text>
+<text class="th" x="321.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Feedback</text>
+<text class="ts" x="321.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">input 1</text>
 <rect x="368" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="407.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">AND gate</text>
-<text class="ts" x="407.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">PWM gating</text>
+<text class="th" x="407.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Watchdog</text>
+<text class="ts" x="407.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">heartbeat</text>
 <rect x="454" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
-<text class="th" x="493.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Feedback</text>
-<text class="ts" x="493.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">input 1</text>
+<text class="th" x="493.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">AND gate</text>
+<text class="ts" x="493.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">PWM gating</text>
 <circle cx="170" cy="316" r="6" fill="#4CAF50" stroke="#0F3A20"/>
 <text class="ts" x="170" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">PWR</text>
 <circle cx="196" cy="316" r="6" fill="#4CAF50" stroke="#0F3A20"/>
@@ -167,5 +167,5 @@
 <text class="ts" x="248" y="340" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">R2</text>
 <text class="th" x="480" y="200" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#ffffff">OSCoST HAT PT</text>
 <text class="ts" x="480" y="220" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">rev A · 8 × Pt1000 + 1-Wire</text>
-<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; S1–S8 on a two-level block, 1W-A below.</text>
+<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; S1–S8 and PUMP1 on the left, 1W-A at the front.</text>
 </svg>

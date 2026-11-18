@@ -75,12 +75,12 @@ def term_pt8(y0):
         t(126, cy + 4, f"S{k+1}", 12, "#ffffff", 500)
 if pt:
     term_pt8(110)
-    term_v(346, 3, "1W-A", "DS18x20")
+    term_v(346, 3, "PUMP1", "solar pump")
 else:
-    term_v(110, 2, "PT1", "collector")
-    term_v(178, 2, "PT2", "not fitted", fitted=False)
-    term_v(246, 3, "1W-A", "DS18x20")
-    term_v(342, 3, "1W-B", "DS18x20")
+    term_v(104, 2, "PT1", "collector")
+    term_v(166, 3, "1W-A", "DS18x20")
+    term_v(256, 3, "1W-B", "DS18x20")
+    term_v(346, 3, "PUMP1", "solar pump")
 # bottom terminals
 def term_h(x0, n, name, pins, fitted=True):
     w = 28 * n
@@ -99,8 +99,11 @@ def term_h(x0, n, name, pins, fitted=True):
 term_h(148, 2, "PWR", ["+5V", "GND"])
 term_h(216, 2, "REL1", ["+5V", "OUT"])
 term_h(284, 2, "REL2", ["+5V", "OUT"], fitted=False)
-term_h(352, 3, "PUMP1", ["PWM", "GND", "FB"])
-term_h(448, 3, "PUMP2", ["PWM", "GND", "FB"], fitted=False)
+if pt:
+    term_h(352, 3, "1W-A", ["3V3", "DQ", "GND"])
+else:
+    term_h(352, 2, "PT2", ["A", "B"], fitted=False)
+term_h(448 if pt else 420, 3, "PUMP2", ["PWM", "GND", "FB"], fitted=False)
 # chips, left column
 if pt:
     chip(170, 118, 120, 96, "LTC2983", "8 × Pt1000, 20 inputs")
@@ -119,13 +122,13 @@ else:
     t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
     t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
 # bottom rows
-chip(196, 368, 78, 46, "Protection", "5 V input")
-chip(282, 368, 78, 46, "Relay", "MOSFET")
-chip(368, 368, 78, 46, "TC4427", "pump driver")
+chip(196, 368, 78, 46, "TC4427", "pump driver")
+chip(282, 368, 78, 46, "Protection", "5 V input")
+chip(368, 368, 78, 46, "Relay", "MOSFET")
 chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
-chip(282, 304, 78, 46, "Watchdog", "heartbeat")
-chip(368, 304, 78, 46, "AND gate", "PWM gating")
-chip(454, 304, 78, 46, "Feedback", "input 1")
+chip(282, 304, 78, 46, "Feedback", "input 1")
+chip(368, 304, 78, 46, "Watchdog", "heartbeat")
+chip(454, 304, 78, 46, "AND gate", "PWM gating")
 # LEDs
 for x, col, lab in [(196 if not pt else 170, "#4CAF50", "PWR"), (222 if not pt else 196, "#4CAF50", "WD"),
                     (246 if not pt else 222, "#FFB300", "R1"), (270 if not pt else 248, "#FFB300", "R2")]:
@@ -142,6 +145,6 @@ else:
     t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
     t(470, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
 t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
-  + ("; S1–S8 on a two-level block, 1W-A below." if pt else "."), 11, None, 400, "start", on_board=False)
+  + ("; S1–S8 and PUMP1 on the left, 1W-A at the front." if pt else "; sensors and PUMP1 on the left (D17)."), 11, None, 400, "start", on_board=False)
 out.append('</svg>')
 print("\n".join(out))

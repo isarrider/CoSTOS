@@ -411,14 +411,19 @@ sudo rpi-eeprom-config --edit     # add: PSU_MAX_CURRENT=5000
 they would need about 112 mm. So the connectors use **fixed 3.5 mm screw
 terminals** on **two edges**, as in the [mockup](#mockup):
 
-- **Bottom edge** (power and outputs): PWR, REL1, REL2, PUMP1, PUMP2 (REL2 and PUMP2 not fitted in rev A).
-- **Left edge** (sensors): PT1, PT2, 1W-A, 1W-B.
+- **Left edge** (everything that is normally wired, D17): PT1, 1W-A,
+  1W-B, PUMP1. The PT edition: the S1–S8 block and PUMP1.
+- **Front (bottom) edge** (rarely used or not fitted): PWR, REL1, REL2,
+  PT2, PUMP2 (REL2, PT2 and PUMP2 not fitted in rev A). The PT edition:
+  PWR, REL1, REL2, 1W-A, PUMP2.
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
 
-**Under discussion: where the field terminals go.** With the Pi powered
-over USB-C (D15) the USB-C cable leaves at the front edge, right below
-PWR, REL1 and PUMP1. Three arrangements are compared (1-Wire edition):
+**Where the field terminals go (decided: B, D17).** With the Pi powered
+over USB-C (D15) the USB-C cable leaves at the front edge. Moving PUMP1 to
+the left edge puts all wiring that is normally used on one side and
+leaves the front to the USB-C plug and to PWR/REL1, which option A doesn't
+use. The three arrangements compared (1-Wire edition):
 
 ![Three terminal arrangements on a Pi 5](img/hat-edge-options.svg)
 
@@ -561,6 +566,7 @@ estimated here; it gets quoted with the BOM.
 | D14 | Raspberry Pi or ESP32-P4 (Waveshare ESP32-P4-WIFI6-DEV-KIT, same form factor)? | **Raspberry Pi**: more people already own one, and Linux gives more flexibility. The P4 board is a possible later port; its pin check is in 2.1. On the P4, SCLK, REL1 and PWM2 would hit the RTC crystal and the audio amplifier |
 | D15 | How do the Pi, the HAT and the pump get their power? | **Option A** ([ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side)): the Pi's own USB-C supply in a socket (most people already have one), the pump permanently on 230 V and stopped over PWM only. Cheapest, no mains wiring, no switching wear, and the pump feedback works at all times. Accepted: one stop path instead of two. REL1 stays on the board for an optional cut-off relay (option C), which heating-profile pumps always need |
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
+| D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 
 ---
 
@@ -583,7 +589,7 @@ reference installation plans to use it (see
 |---|---|---|
 | Pt1000 inputs | 1 (PT1, MAX31865), PT2 footprint not fitted | **8 (S1–S8) on one LTC2983**, each wired independently |
 | 1-Wire | 2 buses (GPIO4, GPIO17) | **1 bus (1W-A, GPIO4)**: same circuit (4.7 kΩ pull-up, ESD diode, polyfuse) |
-| Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*), plus 1W-A 3-way |
+| Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way, all on the left edge | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*) on the left edge, plus 1W-A 3-way at the front |
 | SPI | CE0 (CE1 for PT2) | CE0 for the LTC2983 |
 | Extra GPIOs | | LTC2983 /RESET on GPIO22 (pin 15), INTERRUPT (conversion done) on GPIO27 (pin 13) |
 | Everything else | power input, 12 V, PUMP1/2, REL1/2, watchdog, AND gates, feedback, header, EEPROM footprint | **identical** |
