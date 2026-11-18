@@ -84,8 +84,6 @@
 <text x="420" y="172" class="g" text-anchor="middle">WD</text>
 <circle cx="470" cy="150" r="7" fill="#3fbf5f"/>
 <text x="470" y="172" class="g" text-anchor="middle">PUMP</text>
-<circle cx="520" cy="150" r="7" fill="#e53935"/>
-<text x="520" y="172" class="g" text-anchor="middle">ALARM</text>
 <text x="470" y="128" class="wb" text-anchor="middle">OSCoST HAT Lite</text>
 <text x="340" y="530" class="n" text-anchor="middle">Top view to scale (1 mm = 8 px), same 65 × 56.5 mm outline and holes as the full HAT.</text>
 <text x="340" y="548" class="n" text-anchor="middle">Solar-profile pumps only (no signal = stop). No relay output, no 12 V, no power input.</text>

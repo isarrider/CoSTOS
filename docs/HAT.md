@@ -127,7 +127,7 @@ are in [ARCHITECTURE 13](ARCHITECTURE.md#13-platform-comparison-pi-or-microcontr
  │  SPI ─► MAX31865 #1, #2 (Pt1000) ◄──────────────────────────── sensors  │
  │  GPIO 4, 17 ─► pull-ups ─► 1-Wire bus A, B ◄────────────────── DS18x20  │
  │                                                                         │
- │  LEDs: power, watchdog OK, pump 1, alarm (GPIO 6), relay 1, relay 2     │
+ │  LEDs: power, watchdog OK, pump 1, relay 1, relay 2                     │
  └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -285,44 +285,21 @@ only has a bulk capacitor and a power LED on its 5 V rail.
 
 ### 4.8 Status LEDs
 
-The LEDs are OSCoST's only local display (no screen, general rule). Two
-of them are hardware-true: they show the real state even if the software
-is wrong.
+The LEDs are OSCoST's only local display (no screen, general rule). All
+of them are driven by hardware and show the real state even if the
+software is wrong; none needs an overlay or any software.
 
 | LED | Colour | Driven by | Shows |
 |---|---|---|---|
 | PWR | green | 5 V rail | the HAT has power |
 | WD | green | watchdog output WD_OK | heartbeat seen, outputs enabled (4.6) |
-| **PUMP1** | green | TC4427 output via 4.7 kΩ (hardware) | what really reaches the pump: off = stop, brighter = faster |
-| **ALARM** | red | GPIO 6 (software) | off = all fine; on = an active alarm (ARCHITECTURE 6.2); blink codes below |
-| R1 | yellow | relay output 1 (hardware) | relay or SSR switched on |
+| **PUMP1** | green | TC4427 output via 4.7 kΩ | what really reaches the pump: off = stop, brighter = faster |
+| R1 | yellow | relay output 1 | relay or SSR switched on |
 | PUMP2, R2 | | | only with the unfitted second channels |
 
-ALARM blink codes (software, same on all editions):
-
-| Pattern | Meaning |
-|---|---|
-| off | no alarm |
-| on | sensor fault (open, short, out of range, stale) |
-| slow blink (1 Hz) | pump problem: no circulation, feedback error, commanded and reported state differ |
-| fast blink (4 Hz) | safety limit active: collector emergency shutdown or store maximum hard limit |
-| 2 short flashes every 3 s | VictoriaMetrics unreachable, buffering (no control problem) |
-| 3 short flashes every 3 s | standby mode switched on in the web interface |
-| "identify" (flashing with WD) | started from the web interface, to find the right box when there are several |
-
-Several alarms at once: the most severe pattern wins. The LEDs face up;
-a closed enclosure needs a window or light pipes above them.
-
-**Software and configuration:** PWR, WD, PUMP1 and R1 are pure hardware
-and need nothing. ALARM needs only the `gpio=…,6=op,dl` line in
-`config.txt` (section 6), so it is off from early boot; no overlay.
-`oscostd` drives GPIO 6 through the GPIO character device like the relay
-and heartbeat lines, and plays the blink pattern itself. The kernel LED
-subsystem (`dtoverlay=gpio-led` with a timer or pattern trigger) is
-deliberately not used: it would keep blinking the last pattern after
-`oscostd` has crashed. With the character device a crash freezes the
-LED, and the WD LED going dark then shows that nothing is controlling.
-On shutdown `oscostd` switches ALARM off.
+Alarms are shown on the web page, as metrics and (optionally) over MQTT,
+not on an LED. The LEDs face up; a closed enclosure needs a window or
+light pipes above them.
 
 ### 4.9 Power budget
 
@@ -352,7 +329,6 @@ numbers behind GPIO 18/19 differ, which is software configuration.
 | Heartbeat | 18 | GPIO 24 | GPIO 24 |
 | Relay 1 | 22 | GPIO 25 | GPIO 25 |
 | Relay 2 (only if fitted) | 29 | GPIO 5 | GPIO 5 |
-| Alarm LED | 31 | GPIO 6 | GPIO 6 |
 | ID EEPROM | 27 / 28 | ID_SD / ID_SC | ID_SD / ID_SC |
 | 5 V (Pi → HAT) | 2, 4 | | |
 | 3.3 V | 1, 17 | | |
@@ -378,8 +354,8 @@ dtparam=spi=on
 dtoverlay=w1-gpio,gpiopin=4
 dtoverlay=w1-gpio,gpiopin=17
 
-# Relay outputs, heartbeat and alarm LED: outputs, driven low as early as possible
-gpio=24,25,5,6=op,dl
+# Relay outputs and heartbeat: outputs, driven low as early as possible
+gpio=24,25,5=op,dl
 
 [pi4]
 # Two hardware PWM channels on GPIO 18 / 19
@@ -497,7 +473,7 @@ are the Pi, the DIN-rail supply, the SSR and the sensors.
 | Resistors and capacitors, about 25 (the 0.1 % 4.3 kΩ is about €0.80 of it) | — | 2.50 |
 | TC4427 | 1 | 1.30 |
 | TPS22918 | 1 | 0.60 |
-| LEDs (PWR, WD, PUMP1, ALARM, R1) | 5 | 0.80 |
+| LEDs (PWR, WD, PUMP1, R1) | 4 | 0.65 |
 | 74LVC1G123 | 1 | 0.40 |
 | SMBJ13A | 1 | 0.20 |
 | PESD5V0 ESD diodes | 4 | 0.40 |
@@ -667,7 +643,7 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 | PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire) | 17 | 1.70 |
 | TC4427 | 1 | 1.30 |
 | TPS22918 | 1 | 0.60 |
-| LEDs (PWR, WD, PUMP1, ALARM, R1) | 5 | 0.80 |
+| LEDs (PWR, WD, PUMP1, R1) | 4 | 0.65 |
 | 74LVC1G123 | 1 | 0.40 |
 | SMBJ13A | 1 | 0.20 |
 | 74LVC1G08 | 1 | 0.20 |
@@ -793,7 +769,7 @@ damage the Pi. That gives four rules:
 | 12 V DC/DC, minimum-load resistor | ≈ €3.20 | pump signal 5 V (rule 4) |
 | Relay output REL1, relay supply switch | ≈ €1.30 | no cut-off relay (option C) and **no heating-profile pumps**; the setup wizard refuses a heating profile on the Lite HAT |
 | Second 1-Wire bus (1W-B), DS2482 footprint, PT2 footprint | ≈ €0.80 | one bus for all DS18x20 (daisy chain) |
-| PWR and R1 LEDs, EEPROM footprint | ≈ €0.30 | — (WD, PUMP1 and ALARM stay) |
+| PWR and R1 LEDs, EEPROM footprint | ≈ €0.30 | — (WD and PUMP1 stay) |
 
 Kept: MAX31865 (collector), one 1-Wire bus, PUMP1 with feedback input,
 watchdog + AND gating, all protection on field lines, the full 65 × 56.5 mm
@@ -812,7 +788,7 @@ support), and the tall header for the Pi 5 cooler.
 | 3.5 mm fixed screw terminals (PT1, 1W, PUMP1) | 3 | 1.50 |
 | 74LVC1G123 + 74LVC1G08 | 2 | 0.60 |
 | PESD5V0 ESD diodes, SMBJ5.0A | 4 | 0.50 |
-| LEDs (WD, PUMP1, ALARM) | 3 | 0.40 |
+| LEDs (WD, PUMP1) | 2 | 0.30 |
 | 100 mA polyfuse, 1N4148W | 2 | 0.30 |
 | **Total** | | **≈ €25** |
 

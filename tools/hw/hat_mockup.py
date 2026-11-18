@@ -130,7 +130,7 @@ chip(368, 304, 78, 46, "Watchdog", "heartbeat")
 chip(454, 304, 78, 46, "AND gate", "PWM gating")
 # LEDs (row under the logo)
 for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
-                                     ("#E53935", "ALM", False), ("#FFB300", "R1", False), ("#FFB300", "R2", True)]):
+                                     ("#FFB300", "R1", False), ("#FFB300", "R2", True)]):
     x = 440 + k * 28
     if nf:
         out.append(f'<circle cx="{x}" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
