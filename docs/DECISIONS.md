@@ -252,7 +252,7 @@ VictoriaMetrics buffering, updates and add-ons. The P4 stays a possible
 later port. If it is ever done, the "move the three signals" variant
 above is the starting point. The full cost and capability comparison of the Pi
 against the ESP32-S3, RP2350 and ESP32-P4, and the P4 boards considered,
-are in [ARCHITECTURE 13](#platform-comparison-pi-or-microcontroller).
+are in the [platform comparison](#platform-comparison-pi-or-microcontroller) below.
 
 ---
 
