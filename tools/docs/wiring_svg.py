@@ -5,7 +5,7 @@ daisy-chained buses, and the PWM pump. Sensor names follow the reference
 installation (docs/installation.md). Usage: python3 tools/docs/wiring_svg.py docs/img"""
 import os, subprocess, sys
 
-W, H = 1320, 1262
+W, H = 1320, 900
 HOT, COLD, HEAT = "#d84315", "#1e88e5", "#8e24aa"
 PT_C, W1A, W1B, PUMP_C, MAINS, USB, NET = "#6d4c41", "#2e7d32", "#00897b", "#f57c00", "#8B4513", "#212121", "#607d8b"
 o = []
@@ -43,7 +43,7 @@ def draw_sensors():
         t(x + (dx if anchor == "start" else -dx), y + dy, name, "s", anchor)
 
 
-a(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Helvetica, Arial, sans-serif">')
+a(f'<svg xmlns="http://www.w3.org/2000/svg" width="{2 * W}" height="{2 * H}" viewBox="0 0 {W} {H}" font-family="Helvetica, Arial, sans-serif">')
 a('<style>text{paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}'
   '.n{font-size:12px;fill:#333}.s{font-size:12.5px;font-weight:bold;fill:#222}.h{font-size:18px;font-weight:bold;fill:#222}'
   '.b{font-size:13px;font-weight:bold;fill:#222}.w{font-size:12px;fill:#fff;stroke:none}.wb{font-size:13px;font-weight:bold;fill:#fff;stroke:none}'
@@ -99,12 +99,9 @@ t(170, 510, "house circuit,", "n", "middle")
 t(170, 524, "breaker + RCD", "n", "middle")
 
 # ---------------- the HAT on the Pi: real top view from tools/hw/hat_mockup.py,
-# at 0.72 scale, placed below the cable bands; the left-edge terminals (PT1, 1W-A,
-# 1W-B, PUMP1) sit at x = 44, y = TY[0..3]
-SC = 0.72
-HX, HY = 44 - 58 * SC, 850
-TY = [HY + y * SC for y in (132, 215, 298, 381)]
-BTOP, BBOT, BRIGHT = HY + 30 * SC, HY + 482 * SC, HX + 600 * SC
+# scaled so its left-edge terminals (PT1, 1W-A, 1W-B, PUMP1) sit at y = 640/670/700/730
+SC = 0.36
+HX, HY = 44 - 58 * SC, 640 - 132 * SC
 mock = subprocess.run([sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "hw", "hat_mockup.py"), "file"],
                       capture_output=True, text=True, check=True).stdout
 inner = mock[mock.index(">") + 1:mock.rindex("</svg>")]
@@ -116,23 +113,23 @@ t(HX + 340 * SC, HY + 535 * SC, "OSCoST HAT on the Raspberry Pi", "b", "middle")
 
 # ---------------- cables
 # PT1: 2-wire up to the roof
-line([(44, TY[0]), (30, TY[0]), (30, 58), (276, 58), (283, 66)], PT_C, 3)
+line([(44, 640), (30, 640), (30, 58), (276, 58), (283, 66)], PT_C, 3)
 sensor(285, 68, "S1 Pt1000", "pt", "start", 16, -10)
 t(36, 400, "2-wire roof cable", "o")
 t(36, 414, "(existing)", "o")
 # pump: signal and mains
-line([(44, TY[3]), (8, TY[3]), (8, 815), (290, 815), (290, 296), (308, 296)], PUMP_C, 4)
+line([(44, 730), (22, 730), (22, 815), (290, 815), (290, 296), (308, 296)], PUMP_C, 4)
 line([(312, 314), (270, 314), (270, 505), (240, 505)], MAINS, 3)
 t(296, 760, "PWM · GND · FB", "o")
 t(296, 774, "brown · blue · black", "o")
 t(276, 400, "230 V,", "o", "end")
 t(276, 414, "permanent", "o", "end")
 # Pi supply
-line([(150, 540), (150, BTOP)], USB, 3)
+line([(150, 603), (150, 540)], USB, 3)
 t(158, 580, "USB-C supply", "o")
 # 1W-A: S2 -> S3 -> S4 -> S5
 s2, s3, s4, s5 = (440, 700), (440, 300), (360, 380), (330, 480)
-line([(44, TY[1]), (22, TY[1]), (22, 841), (405, 841), (405, 700), (432, 700)], W1A, 4, dash=True)
+line([(44, 670), (14, 670), (14, 828), (405, 828), (405, 700), (432, 700)], W1A, 4, dash=True)
 line([(432, 700), (420, 700), (420, 300), (432, 300)], W1A, 4, dash=True)
 line([(432, 300), (395, 300), (395, 380), (368, 380)], W1A, 4, dash=True)
 line([(352, 380), (345, 380), (345, 480), (338, 480)], W1A, 4, dash=True)
@@ -142,21 +139,21 @@ sensor(*s4, "S4 flow", "a", "start", 12, -10)
 sensor(*s5, "S5 return", "a", "end", 14, 18)
 # 1W-B: S6 -> S7 -> S8
 s6, s7, s8 = (760, 480), (800, 330), (1100, 380)
-line([(44, TY[2]), (14, TY[2]), (14, 828), (700, 828), (700, 480), (752, 480)], W1B, 4, dash=True)
+line([(44, 700), (8, 700), (8, 841), (700, 841), (700, 480), (752, 480)], W1B, 4, dash=True)
 line([(768, 480), (800, 480), (800, 338)], W1B, 4, dash=True)
 line([(800, 322), (800, 300), (1070, 300), (1070, 380), (1092, 380)], W1B, 4, dash=True)
 sensor(*s6, "S6 after heat pump", "b", "start", 14, 20)
 sensor(*s7, "S7 after store", "b", "end", 14, -12)
 sensor(*s8, "S8 back from house", "b", "start", 14, 4)
 # network
-line([(BRIGHT, BBOT - 60), (1220, BBOT - 60), (1220, 630)], NET, 2.5, dash=True)
+line([(200, 805), (200, 856), (1220, 856), (1220, 630)], NET, 2.5, dash=True)
 rect(1150, 560, 140, 70, "#e3f2fd", "#1565c0")
 t(1220, 588, "Network", "b", "middle")
 t(1220, 606, "VictoriaMetrics, web UI", "n", "middle")
-t(1000, BBOT - 66, "Ethernet", "o", "middle")
-t(420, 855, "1-Wire bus A: one 3-wire cable, daisy chain", "o")
+t(1000, 850, "Ethernet", "o", "middle")
+t(500, 822, "1-Wire bus A: one 3-wire cable, daisy chain", "o")
 t(500, 835, "", "o")
-t(715, 822, "1-Wire bus B: one 3-wire cable, daisy chain", "o")
+t(720, 836, "1-Wire bus B: one 3-wire cable, daisy chain", "o")
 draw_sensors()
 
 # ---------------- legend and requirement
