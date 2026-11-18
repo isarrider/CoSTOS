@@ -439,8 +439,9 @@ config:
 
 | Function | Behaviour |
 |---|---|
-| **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. |
-| **Speed control** | While on, a PI controller drives the PWM duty to keep ΔT around a setpoint (for example 10 K), between min and max speed. Starts at 100 % for a short purge/kick. |
+| **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. **Collector minimum temperature** (optional, default on, 10 °C as on the BX Plus): no start below it, even when ΔT is met. |
+| **Speed control** | While on, a PI controller drives the PWM duty to keep ΔT around a setpoint (for example 10 K), between min and max speed. Starts at 100 % for a short purge/kick. Optional **BX-compatible mode**: speed steps up or down by one step each time ΔT moves by the "rise value" (BX Plus default 2 K) around the setpoint, so shadow mode can compare like with like. |
+| **Anti-seize run** | Runs each pump once a day for a short time (BX Plus "blocking protection": 12:00, 10 s; time and duration configurable), so it doesn't seize. Skipped if the pump has already run that day. |
 | **Store maximum** | Stops loading at T(store) ≥ T_max. Emergency stop at the hard limit (enforced by the supervisor as well). |
 | **Collector emergency shutdown** | Enforced in the supervisor (section 4.2). |
 | **Collector cooling / recooling** | Optional: lets the store take extra heat to keep the collector out of stagnation, and cools the store back down at night. |
@@ -448,6 +449,45 @@ config:
 | **Frost protection** | Optional. Only needed without glycol. |
 | **Heat quantity** | From V40 pulses (or a configured fixed flow) × ΔT(flow, return) × fluid properties (glycol percentage in config). Persisted. |
 | **Multi-store priority** | Later, if the installation uses it (BX Plus supports 2–3 stores). |
+| **Back-up heating suppression** | Optional, later. Publishes "solar is charging" and a forecast of the store top temperature, so an external heat source can hold back its hot-water run while solar will do the job. The BX Plus switches a relay for this; OSCoST offers it through the HTTP API and, when enabled, MQTT. In the reference installation, Home Assistant would use it to delay the heat pump's hot-water heating. |
+
+#### Function checks and alarms
+
+Software plausibility checks, modelled on the BX Plus "function control"
+installer menu, with one addition. They cost no hardware. Each one raises
+an alarm on the web page, as a metric (`oscost_alarm{kind}`) and, when
+enabled, over MQTT. Thresholds and delays are configurable, and each check
+can be switched off.
+
+| Check | Detects | Typical cause | Action |
+|---|---|---|---|
+| **ΔT too high** | Pump running, ΔT stays far above the setpoint for a long time, and the store bottom doesn't warm | Air in the loop, seized pump, closed valve, scaled heat exchanger | Alarm |
+| **No circulation** (OSCoST addition) | After a pump start the collector doesn't cool within a set time (no flow sensor needed) | Dead or unpowered pump, air lock, broken PWM signal | Alarm; the pump is stopped after repeated failures so it doesn't run dry |
+| **Night circulation** | At night, with the pump off, the collector warms while the store bottom cools | Faulty non-return valve (gravity circulation) | Alarm |
+| **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) |
+| **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
+| **Sensor fault** | Open, short, out of range, sudden jumps (5.1) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
+
+A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
+is possible later, as on the BX Plus "fault relay". The web page and
+VictoriaMetrics alerting cover this for now.
+
+#### BX Plus functions not taken over
+
+From the BX Plus manual (firmware 2.07 or later), checked against the
+reference installation:
+
+| BX Plus function | Why not (for now) |
+|---|---|
+| Bypass, CS bypass, irradiance switch | Need a bypass valve or an irradiance sensor (CS10), which the installation doesn't have |
+| External heat exchanger, drainback, twin pump, overheat dissipation | Different hydraulics; overheat dissipation needs an extra output and a cooler |
+| Multi-store charging logic, zone charging, parallel relay | Single store; see multi-store priority above |
+| Holiday function (store recooling through the collector) | Evacuated tubes lose almost no heat at night; the collector is covered during holidays instead ([installation.md](installation.md#overtemperature-protection)) |
+| Pressure and flow monitoring with Grundfos Direct Sensors | No sensors, and the HAT has no analogue input; the "no circulation" check covers the flow side |
+| Mixer, heating circuits, solid-fuel boiler, return boost, return admixing, screed drying | Heating side, a non-goal for now (section 1) |
+| DHW heating, thermal disinfection, circulation pump | Done by the heat pump |
+| Function block (thermostats, timers and logic gates on spare outputs) | Useful for other installations, nothing to use it for yet; a candidate once there are spare outputs |
+| Heat meter "CO₂ / fuel saved" display | A dashboard item, not a control function |
 
 ### 6.3 Runtime
 
