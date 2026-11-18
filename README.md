@@ -29,9 +29,10 @@ installation, so that's the reference for which functions come first.
   high-efficiency pumps (PWM), store maximum, collector emergency shutdown.
   Later: collector cooling, tube collector function, frost protection,
   heat quantity metering.
-- **Sensors**: Pt1000 (via MAX31865) for hot spots like the collector, and
-  DS18x20 1-Wire sensors (DS1820/DS18S20, DS18B20, DS1822) for everything
-  else. Mix them freely.
+- **Sensors**: Pt1000 via an LTC2983 (up to 9 sensors on one chip, so
+  the Pt1000s of an existing controller can stay) or a MAX31865 (one
+  sensor, e.g. the collector), and DS18x20 1-Wire sensors (DS1820/DS18S20,
+  DS18B20, DS1822). Mix them freely.
 - **Web interface** for everything: live status, history, manual mode, and
   all configuration, including a setup wizard that shows live readings so
   you can identify sensors and test outputs. No config files to edit.
@@ -47,7 +48,8 @@ installation, so that's the reference for which functions come first.
 ## Hardware (planned)
 
 - Raspberry Pi 4 or Raspberry Pi 5
-- MAX31865 boards for Pt1000 sensors, a 4.7 kΩ pull-up for DS18x20 sensors
+- The [OSCoST HAT](docs/HAT.md), or for a bench setup: an LTC2983 or
+  MAX31865 for Pt1000 sensors, a 4.7 kΩ pull-up for DS18x20 sensors
 - Solid-state or relay outputs for pumps and valves, PWM output for
   high-efficiency pumps
 - An independent overtemperature cut-out on the store. OSCoST does not

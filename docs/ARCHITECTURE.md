@@ -154,7 +154,7 @@ fault (`OpenCircuit`, `ShortCircuit`, `OutOfRange`, `Stale`, `CrcError`,
 | Range | −50 … +250 °C in practice (sensor and cable decide) | **−55 … +125 °C** |
 | Use for | **Collector** (stagnation can exceed 200 °C), anything hot | Store, return, heating circuits, room, outdoor |
 | Wiring | One input (2 wires) per sensor | Many sensors on one bus (3 wires), each with a unique 64-bit ID |
-| Interface | MAX31865 per channel, on SPI | Kernel `w1` bus via GPIO, or a DS2482 I²C bridge |
+| Interface | LTC2983 (up to 9 sensors per chip) or MAX31865 (one per sensor), on SPI | Kernel `w1` bus via GPIO, or a DS2482 I²C bridge |
 | Identification | By input number | By ROM ID, found with a bus scan |
 
 The controller enforces the range: a function role has a maximum expected
@@ -164,24 +164,38 @@ DS18x20 can't be the collector sensor.
 
 #### Pt1000
 
-The existing Pt1000 sensors are reused.
+Existing Pt1000 sensors (from a commercial controller such as the RESOL)
+are reused as they are.
 
-- **Recommended: MAX31865** RTD-to-digital converter, one per channel, on SPI.
-  It measures ratiometrically against a reference resistor (430 Ω for
-  Pt100 boards, **4.3 kΩ for Pt1000**, so check the board), has built-in
-  open/short fault detection, and is cheap as breakout boards. 8 channels =
-  8 chip selects (GPIO chip selects or a decoder).
-- Alternative: a multi-channel ADC (ADS1115/ADS1220) with a reference
-  resistor divider. Fewer chips, but you have to build fault detection and
-  calibration yourself.
+- **Recommended: LTC2983** multi-sensor temperature measurement chip, on
+  SPI (used on the HAT's PT edition). Up to 9 independent 2-wire Pt1000s
+  per chip: each sensor uses two of its 20 inputs, and one shared 0.1 %
+  sense resistor serves all of them, measured ratiometrically. It
+  generates the excitation current, linearises Pt1000 itself, reports °C
+  and a fault code per sensor (open, short, out of range), and its
+  buffered inputs take series protection resistors without distorting the
+  reading. The "18 RTDs in a series stack" wiring from Analog Devices'
+  design note is not used: one broken cable would stop every sensor.
+- **For a single Pt1000: MAX31865** RTD-to-digital converter (the
+  collector input of the HAT's 1-Wire edition, or a breakout board on the
+  bench). It measures ratiometrically against a reference resistor (430 Ω
+  for Pt100 boards, **4.3 kΩ for Pt1000**, so check the board), has
+  built-in open/short detection and ±45 V inputs, and is cheap. One chip
+  select per channel.
+- Considered and documented as alternatives: 8 × MAX31865 behind a
+  chip-select decoder, and multi-channel ADCs (2 × ADS124S08, 2 ×
+  AD7124-8), where fault detection, linearisation and input protection
+  are left to the board and the software. Comparison:
+  [HAT.md 11.6](HAT.md#116-choice-of-measuring-chip).
 - Collector sensor cables are long and outdoors, so add surge protection on
   that input (RESOL sells an SP10 for exactly this).
 - Calibration: a per-channel offset in config, checked against the RESOL
   readings during shadow mode (section 9). With 2-wire sensors the cable
   resistance adds to the reading (roughly 0.25 K for 20 m of 0.75 mm²), and
   the offset compensates for that.
-- Faults: the MAX31865 detects open and short circuits directly. Values
-  outside the plausible range count as faults too.
+- Faults: the LTC2983 and the MAX31865 both detect open and short
+  circuits directly. Values outside the plausible range count as faults
+  too.
 
 #### DS18x20 (1-Wire)
 
@@ -395,7 +409,7 @@ oscost/
 │  ├─ oscost-core/       # control logic: pure, no I/O, no async, no clock (time is an input)
 │  ├─ oscost-safety/     # safety supervisor: pure, can only reduce outputs
 │  ├─ oscost-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
-│  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; MAX31865, DS18x20, DS2482 drivers
+│  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; LTC2983, MAX31865, DS18x20, DS2482 drivers
 │  ├─ oscost-sim/        # thermal model of collector + store, used for tests and dry runs
 │  ├─ oscost-config/     # config schema, validation, migrations between schema versions, revision store
 │  ├─ oscost-web/        # web interface: server-rendered pages (maud), htmx handlers, SSE streams
@@ -699,7 +713,9 @@ a missing PWM signal means *stop*, so the pump stands still and the
 heat-pipe collector goes into stagnation. That costs solar yield but
 doesn't damage anything short term. The fastest way back to a running
 system is the bench setup without the HAT: a Pi, two MAX31865 breakout
-boards on the existing collector (S1) and store bottom (S2) Pt1000 cables,
+boards on the existing collector (S1) and store bottom (S2) Pt1000 cables
+(cheap and available off the shelf; the LTC2983 only comes on the HAT or
+on expensive evaluation boards),
 a ready-made PC817 optocoupler module for the pump's PWM (option 2 in
 [HARDWARE.md](HARDWARE.md), no soldering) and the pump on
 permanent mains. That needs milestones 1 and 3 only, which is why they
@@ -713,7 +729,7 @@ come first.
    and collector emergency shutdown. Tests and a replay tool for vbus2influx
    data.
 2. `oscost-sim` and simulation tests in CI.
-3. HAL + Linux backend: MAX31865, GPIO outputs, PWM, watchdog. Bench setup.
+3. HAL + Linux backend: LTC2983, MAX31865, 1-Wire, GPIO outputs, PWM, watchdog. Bench setup.
 4. `oscostd` + `oscost-config`: scheduler, systemd, config store with
    revisions, JSON API, VictoriaMetrics push with buffering.
 5. Web interface: overview, setup wizard, all settings pages, users/login,
