@@ -412,8 +412,24 @@ EMI filter, HLK-PM01, TRIACs); OSCoST keeps mains off its boards entirely
 and uses only off-the-shelf, certified parts. A fully equipped DIN-rail
 version (separate breaker and fuse terminal, SSR, surge protector, a
 coupling relay to sense pump mains, 18 TE enclosure) came to about
-€150–175, as much as a complete commercial controller. Three slim options
-were compared instead:
+€150–175, as much as a complete commercial controller (prices November
+2026, single units incl. VAT, ≈ = estimate):
+
+| Part (fully equipped version, not chosen) | Example | Price |
+|---|---|---|
+| SSR, zero-crossing, DC control | Finder 77.01.9.024.8050 | ≈ €49–52 |
+| DIN enclosure, 1 row | IDE 12 TE (18 TE slightly more) | ≈ €23 (IP40) – €40 (IP65) |
+| 5 V DIN-rail supply | Mean Well HDR-60-5 | ≈ €20–29 |
+| Surge protector type 3 (optional) | CITEL MSB6-400 / DEHNrail DR M 2P 255 | ≈ €29 / €59 |
+| Coupling relay, 230 V coil, to sense pump mains | Finder 38.51.8.240.0060 | ≈ €16 |
+| DIN-rail holder for Pi + HAT | — | ≈ €10–15 |
+| Breaker B6, 1-pole | Hager MBN106 | ≈ €6–9 |
+| Wire, ferrules, glands, fuses | — | ≈ €10 |
+| Fuse terminal 5×20, T 1 A | Phoenix PT 4-HESI | ≈ €4 |
+| **Total** | | **≈ €150–175, ≈ €180–235 with surge protector** |
+
+A 16 A interface relay with a 12 V coil (Finder 38.61) instead of the SSR
+would save about €35. Three slim options were compared instead:
 
 ![Three options for the 230 V side](img/ac-options.svg)
 
@@ -895,6 +911,17 @@ ADS1115 for 4 Pt1000 inputs, RS-485) and a 2-layer 230 V power board
 LCD and buttons, in a 3D-printed DIN-rail case. About €40 in parts per
 controller.
 
+From its repository (EasyEDA files for JLCPCB): a **control board**,
+86 × 100 mm, 4 layers, and a **power board**, 100 × 100 mm, 2 layers.
+Bare PCBs come to roughly €3–5 per controller when ordering 5 sets, plus
+shipping (estimate from JLCPCB's usual pricing; the repo states no prices).
+The parts lists' "JLCPCB Price" column is unrealistically low; estimated
+from LCSC: control board ≈ $24 (ESP32-S3 module, W5500 + RJ45,
+ATmega32U4, ADS1115, MCP6004, RS-485, terminals, USB-C, buttons), power
+board ≈ $14 (HLK-PM01, 2 × BTA41 + MOC3021, 2 relays, filter, varistor,
+fuses), so ≈ €40 plus display and case. It has no PWM output for a
+high-efficiency pump.
+
 It is licensed **CC BY-NC-SA 4.0**, so nothing from it is copied into
 OSCoST (MIT). What we take from it as ideas:
 
@@ -927,3 +954,100 @@ OSCoST (MIT). What we take from it as ideas:
   runtime statistics. Deliberately not taken over: running the pump at
   100 % when the collector overheats, and precautionary pump runs with a
   failed collector sensor.
+
+---
+
+## 13. Platform comparison (Pi or microcontroller)
+
+Compared in November 2026 before any code was written. **Decision: stay
+on the Raspberry Pi** (HAT D14): more people already own one, and Linux
+gives more flexibility. The ESP32-P4 is documented as a possible later
+port (pin check in HAT 2.1). Prices are single quantity; those marked
+"from memory" were not looked up.
+
+### 13.1 Cost per controller, including the computer
+
+The Pi rows include an SD card (≈ €10).
+
+| Base | Compute part | 1-Wire edition | PT edition | 5 V supply |
+|---|---|---|---|---|
+| Pi 5 + HAT | Pi 5 2 GB ≈ €80 ($77.50) | ≈ €125 | ≈ €160 | 5 A |
+| Pi 4 + HAT | Pi 4 2 GB ≈ €70 ($67.50) | ≈ €115 | ≈ €150 | 3 A |
+| Pi Zero 2 W + HAT | ≈ €15–18 | ≈ €63 | ≈ €97 | ≈ 1.5 A |
+| ESP32-S3 on the board | module ≈ $4.70 + regulator, USB-C, microSD ≈ €8 | ≈ €40–45 | ≈ €75–80 | < 1 A |
+| RP2350 (Pico 2 W) on the board | module ≈ €7–8 (from memory) + regulator, microSD ≈ €10 | ≈ €42–47 | ≈ €77–82 | < 1 A |
+
+### 13.2 Board cost only (without the computer)
+
+| Base | What the board adds | 1-Wire edition | PT edition |
+|---|---|---|---|
+| Any Pi: HAT | stacking header and spacers (≈ €3) | ≈ €35 | ≈ €69 |
+| ESP32-S3 on the board | instead of the header: module (≈ €4.50), 3.3 V regulator (≈ €1), USB-C (≈ €0.50), microSD slot (≈ €0.50) | ≈ €39 | ≈ €73 |
+| RP2350 (Pico 2 W) on the board | instead of the header: module (≈ €7.50, from memory), regulator (≈ €1), microSD slot (≈ €0.50) | ≈ €41 | ≈ €75 |
+
+Not included: storage (SD or microSD, €5–10 either way) and, for the
+microcontroller boards, wired Ethernet (W5500 + jack, ≈ €5). On the board
+alone a microcontroller version costs only €4–6 more than the HAT; the
+real saving is the Pi itself.
+
+### 13.3 What each platform can do
+
+| What OSCoST has to do | Pi (Linux) | ESP32-S3 | RP2350 (Pico 2 W) |
+|---|---|---|---|
+| Control loop, outputs, PWM, feedback | via kernel drivers | 🟢 direct hardware, real-time | 🟢 direct hardware (PIO) |
+| Pt1000 (LTC2983 / MAX31865), 1-Wire | 🟢 kernel drivers | 🟢 own drivers, 1-Wire via RMT | 🟢 own drivers, 1-Wire via PIO |
+| Watchdog, boot time | external watchdog needed; boots in about 30 s | 🟢 built in; under 1 s | 🟢 built in; under 1 s |
+| Web interface | 🟢 no limits | 🟡 works; 512 KB RAM + 8 MB PSRAM | 🔴 tight: 520 KB RAM |
+| History charts in the web UI | 🟢 from local data | 🟡 last 24 h in RAM, longer from VictoriaMetrics | 🔴 VictoriaMetrics only |
+| 1-second push with buffering | 🟢 on disk | 🟡 RAM for hours, microSD for days | 🟡 microSD |
+| Network | 🟢 Ethernet (Pi 4/5) | 🟡 Wi-Fi; wired needs a W5500 | 🟡 Wi-Fi; wired needs a W5500 |
+| Updates | 🟢 packages | 🟢 over the network, 2 firmware slots | 🟡 possible, less mature in Rust |
+| Rust support | 🟢 standard Rust | 🟢 mature (esp-rs, std via ESP-IDF) | 🟡 good, no std (Embassy) |
+| Independent of other software | 🔴 shares the Pi with other services | 🟢 dedicated device | 🟢 dedicated device |
+
+With the general rules (wired Ethernet only, no local display; section 1)
+the field narrows: the Pi Zero 2 W is out (Wi-Fi only), the RP2350 is out
+(radio unused, needs a W5500, RAM too tight), the ESP32-S3 would leave its
+Wi-Fi unused and still need a W5500. The **ESP32-P4** fits best among the
+microcontrollers: Ethernet MAC built in, no radio, 32 MB PSRAM.
+
+### 13.4 ESP32-P4 against the Pi
+
+Assuming a ready-made P4 Ethernet board under the same HAT.
+
+| | Pi 4 / Pi 5 + HAT | ESP32-P4 + HAT |
+|---|---|---|
+| Compute | 🔴 Pi 5 2 GB ≈ €80, Pi 4 2 GB ≈ €70 | 🟢 P4 board ≈ €12–25 |
+| Storage | SD card ≈ €10 | microSD for the buffer ≈ €5 |
+| 5 V supply | 🔴 Pi 5: 5 A · Pi 4: 3 A | 🟢 < 1 A |
+| **Total per controller** | **≈ €130–145 (1-Wire) / €165–180 (PT)** | **≈ €60 (1-Wire) / €95 (PT)** |
+| Power use | 🟡 3–5 W | 🟢 under 1 W (≈ €8/year less) |
+| After a power cut | 🔴 boots in about 30 s | 🟢 running in about 1 s |
+| Storage wear | 🔴 SD card can wear out or get corrupted | 🟢 firmware in flash |
+| Watchdog | 🟡 external watchdog + systemd | 🟢 built in, plus the HAT's external watchdog |
+| Independence | 🔴 shares the Pi with other services | 🟢 dedicated device |
+| Rust platform | 🟢 standard Rust, every library | 🟡 ESP-IDF or bare metal, younger on the P4 |
+| Drivers | 🟢 kernel drivers ready | 🟡 written ourselves (1-Wire, LTC2983/MAX31865, PWM, feedback capture) |
+| Web interface, buffer | 🟢 no limits, disk | 🟢 htmx and uPlot are small; PSRAM holds days, microSD beyond |
+| Updates, debugging | 🟢 apt, SSH, standard tools | 🟡 firmware upload with 2 slots; USB debugger, network logs |
+| Development speed | 🟢 fastest | 🟡 slower, especially the first drivers |
+| Other people building one | 🟡 must buy and set up a Pi | 🟢 flash the firmware |
+
+Summary: the P4 is the better product (less than half the price, ready
+in a second, no SD card, dedicated); the Pi is the faster and more
+flexible development platform, and many people already own one. That
+flexibility decided it (D14).
+
+### 13.5 ESP32-P4 boards considered
+
+| Board | Price | Notes |
+|---|---|---|
+| Waveshare ESP32-P4-ETH | $12.99 ($16.99 with PoE) | 32 MB PSRAM, 32 MB flash, RJ45, microSD, 40-pin header compatible with some Pico HATs; would need its own carrier board |
+| Olimex ESP32-P4-DevKit | €16.00 | open hardware (OSHW certified), Ethernet with PoE option, all GPIOs exposed, 72 × 30 mm; needs a carrier board |
+| Waveshare ESP32-P4-NANO | €22.60 incl. VAT (Eckstein) | 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (Wi-Fi, unused), 28 GPIOs; header not Pi-shaped, needs a carrier board |
+| **Waveshare ESP32-P4-WIFI6-DEV-KIT** | €24.90 incl. VAT (Eckstein) | **Pi form factor** (85 × 56.5 mm) with a Pi-style 40-pin header, so the OSCoST HAT could plug on directly; 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (unused), PoE header. Pin map checked against the HAT in HAT 2.1: three signals would have to move |
+
+If the port is ever done, the WIFI6-DEV-KIT under the same HAT is the
+simplest route. To keep that door open, `oscost-core` and `oscost-safety`
+should stay free of Linux dependencies (ideally `no_std`), so they run
+unchanged on a microcontroller.

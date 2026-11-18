@@ -97,7 +97,9 @@ There are two ways to fit the HAT to the P4:
 own one, and Linux gives more flexibility for the web interface,
 VictoriaMetrics buffering, updates and add-ons. The P4 stays a possible
 later port. If it is ever done, the "move the three signals" variant
-above is the starting point.
+above is the starting point. The full cost and capability comparison of the Pi
+against the ESP32-S3, RP2350 and ESP32-P4, and the P4 boards considered,
+are in [ARCHITECTURE 13](ARCHITECTURE.md#13-platform-comparison-pi-or-microcontroller).
 
 ## 3. Block diagram
 
@@ -705,3 +707,23 @@ Variant not shown as a column: the 1-Wire edition with PT2 fitted, so S4
 stays Pt1000 (2 Pt1000 + 6 DS18B20): about €5 more assembled, one probe
 less. The LTC2984 is the LTC2983 with an EEPROM for the channel setup; it
 costs more (≈ $71 at LCSC) and OSCoST doesn't need it.
+
+**Also considered: a DiSoCon2-style divider front-end** (each Pt1000 in a
+divider with a 0.1 % resistor, op-amp buffer, ADS1115; see
+[ARCHITECTURE 12](ARCHITECTURE.md#12-related-projects)). For 8 sensors:
+2 × ADS1115 ≈ €5–7, 8 precision resistors ≈ €1–2, 2 quad op-amps
+≈ €1–3, reference ≈ €1, protection ≈ €2, so ≈ €10–15 instead of ≈ €42
+for the LTC2983 section: **about €30 less per PT board** (≈ €40–45
+instead of ≈ €69). On the 1-Wire edition it would save only about €5 on
+the single Pt1000 (D9). Not taken, because it gives up:
+
+- open/short **fault detection** (a broken sensor just reads extreme),
+- **input protection** for the roof cable,
+- **drift-free accuracy**: the ADS1115 measures against its internal
+  reference, so supply and reference drift go into the reading unless a
+  spare channel measures the excitation and the code works ratiometrically,
+- **simple software**: divider maths, calibration and Callendar–Van Dusen
+  in our code instead of °C over SPI.
+
+Solar control would cope with ±0.5–1 K, but for a controller meant to run
+10+ years the €30 is worth it.
