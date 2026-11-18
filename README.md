@@ -51,10 +51,15 @@ installation, so that's the reference for which functions come first.
 - The [OSCoST HAT](docs/HAT.md) (1-Wire edition, its Lite build, or the PT
   edition), or for a bench setup: an LTC2983 or MAX31865 for Pt1000
   sensors, a 4.7 kΩ pull-up for DS18x20 sensors
-- A high-efficiency pump with PWM input (solar profile): it stays
-  permanently on 230 V and is started, regulated and stopped over PWM.
-  An optional relay output on the HAT switches a cut-off relay, a valve or
-  a pump that needs its mains switched
+- **A high-efficiency pump with a PWM input in the solar profile** (Wilo
+  PWM2 / iPWM2 such as the Wilo Yonos PARA ST …/iPWM2, Grundfos profile
+  C). This is a safety requirement: the pump stays permanently on 230 V
+  and is started, regulated and stopped over PWM, and with the solar
+  profile a missing signal means *stop*, so any failure of the Pi or the
+  HAT stops the pump. A feedback output (iPWM) is recommended. Pumps with
+  a heating profile or without PWM need a cut-off relay on the HAT's
+  optional relay output. Details:
+  [Pump requirement](docs/ARCHITECTURE.md#pump-requirement-safety)
 - An independent overtemperature cut-out on the store. OSCoST does not
   replace that.
 

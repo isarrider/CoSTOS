@@ -69,6 +69,14 @@ Heights are approximate and get fixed in KiCad.
 
 ![Pi 5 with the OSCoST HAT, top and side view](img/pi-hat-assembly.svg)
 
+A complete installation with the 1-Wire edition: 1 Pt1000 on the
+collector, 7 DS18B20 on two daisy-chained buses and the PWM pump (sensor
+names from the [reference installation](installation.md#sensors-and-outputs-in-use)).
+The pump must have a PWM input in the solar profile
+([Pump requirement](ARCHITECTURE.md#pump-requirement-safety)).
+
+![Wiring of a complete installation, 1-Wire edition](img/wiring-1wire-edition.svg)
+
 ### 2.1 Considered: Waveshare ESP32-P4-WIFI6-DEV-KIT
 
 The Waveshare ESP32-P4-WIFI6-DEV-KIT has the Pi form factor and a

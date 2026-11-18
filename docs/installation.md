@@ -67,6 +67,8 @@ be BX Plus inputs S1–S8.
     those sensors as unknown, never as cold.
   - Cost comparison of both options:
     [HAT.md 11.6](HAT.md#116-choice-of-measuring-chip).
+  - Wiring of this alternative:
+    ![1 Pt1000 + 7 DS18B20 + PWM pump](img/wiring-1wire-edition.svg)
 - The heat generator ("Heizung") is a **heat pump** today; it was a gas
   boiler when the system was installed. S6–S8 are only measured, nothing
   acts on them.

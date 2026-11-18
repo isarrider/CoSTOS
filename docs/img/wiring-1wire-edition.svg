@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 900" font-family="Helvetica, Arial, sans-serif">
+<style>text{paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}.n{font-size:12px;fill:#333}.s{font-size:12.5px;font-weight:bold;fill:#222}.h{font-size:18px;font-weight:bold;fill:#222}.b{font-size:13px;font-weight:bold;fill:#222}.w{font-size:12px;fill:#fff;stroke:none}.wb{font-size:13px;font-weight:bold;fill:#fff;stroke:none}.o{font-size:11.5px;font-style:italic;fill:#555}</style>
+<rect width="1320" height="900" fill="white"/>
+<text x="20" y="30" class="h" text-anchor="start">OSCoST 1-Wire edition: 1 × Pt1000 + 7 × DS18B20 + PWM pump (reference installation, alternative wiring)</text>
+<polygon points="70,160 280,82 300,120 90,198" fill="#cfd8dc" stroke="#455a64" stroke-width="1.5"/>
+<line x1="92" y1="188.0" x2="98" y2="190.0" stroke="#90a4ae" stroke-width="2"/>
+<line x1="114" y1="179.8" x2="120" y2="181.8" stroke="#90a4ae" stroke-width="2"/>
+<line x1="136" y1="171.6" x2="142" y2="173.6" stroke="#90a4ae" stroke-width="2"/>
+<line x1="158" y1="163.4" x2="164" y2="165.4" stroke="#90a4ae" stroke-width="2"/>
+<line x1="180" y1="155.2" x2="186" y2="157.2" stroke="#90a4ae" stroke-width="2"/>
+<line x1="202" y1="147.0" x2="208" y2="149.0" stroke="#90a4ae" stroke-width="2"/>
+<line x1="224" y1="138.8" x2="230" y2="140.8" stroke="#90a4ae" stroke-width="2"/>
+<line x1="246" y1="130.60000000000002" x2="252" y2="132.60000000000002" stroke="#90a4ae" stroke-width="2"/>
+<line x1="268" y1="122.4" x2="274" y2="124.4" stroke="#90a4ae" stroke-width="2"/>
+<rect x="272" y="68" width="40" height="18" rx="3" fill="#78909c" transform="rotate(-20 292 77)"/>
+<text x="40" y="236" class="b" text-anchor="start">Collector on the roof (2 × 30R tubes)</text>
+<polyline points="308,74 360,74 360,560 440,560" fill="none" stroke="#d84315" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="440,650 330,650 330,104 304,104" fill="none" stroke="#1e88e5" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="366" y="150" class="o" text-anchor="start">solar flow</text>
+<text x="336" y="196" class="o" text-anchor="start">return</text>
+<circle cx="330" cy="300" r="22" fill="#fff3e0" stroke="#e65100" stroke-width="2.5"/>
+<polygon points="321,312 339,312 330,290" fill="#e65100"/>
+<text x="304" y="256" class="b" text-anchor="end">Solar pump</text>
+<text x="304" y="272" class="n" text-anchor="end">Wilo Yonos PARA ST …/iPWM2</text>
+<text x="304" y="288" class="n" text-anchor="end">solar profile, feedback output</text>
+<rect x="440" y="250" width="190" height="480" rx="40" fill="#eceff1" stroke="#37474f" stroke-width="2"/>
+<path d="M440,560 C520,570 560,585 600,595 C560,605 520,615 440,625 C520,630 560,640 440,650" fill="none" stroke="#e57373" stroke-width="3"/>
+<path d="M630,330 C560,340 520,350 480,360 C520,370 560,380 630,390 C560,395 520,405 630,420" fill="none" stroke="#ba68c8" stroke-width="3"/>
+<text x="535" y="470" class="b" text-anchor="middle">Store 800 l</text>
+<text x="535" y="486" class="n" text-anchor="middle">(KER-2 800)</text>
+<text x="535" y="445" class="o" text-anchor="middle">upper coil: heat pump</text>
+<text x="560" y="675" class="o" text-anchor="middle">lower coil: solar</text>
+<rect x="860" y="120" width="170" height="70" rx="6" fill="#f3e5f5" stroke="#6a1b9a" stroke-width="1.5"/>
+<text x="945" y="150" class="b" text-anchor="middle">Heat pump</text>
+<text x="945" y="168" class="n" text-anchor="middle">(only measured)</text>
+<rect x="860" y="560" width="170" height="70" rx="6" fill="#fff8e1" stroke="#8d6e63" stroke-width="1.5"/>
+<text x="945" y="590" class="b" text-anchor="middle">House</text>
+<text x="945" y="608" class="n" text-anchor="middle">(heating / hot water)</text>
+<polyline points="945,190 945,330 630,330" fill="none" stroke="#8e24aa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="630,420 760,420 760,595 860,595" fill="none" stroke="#8e24aa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="1030,595 1100,595 1100,155 1030,155" fill="none" stroke="#8e24aa" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="100" y="470" width="140" height="70" rx="6" fill="#fafafa" stroke="#999" stroke-width="1.5"/>
+<text x="170" y="494" class="b" text-anchor="middle">Wall sockets</text>
+<text x="170" y="510" class="n" text-anchor="middle">house circuit,</text>
+<text x="170" y="524" class="n" text-anchor="middle">breaker + RCD</text>
+<rect x="90" y="610" width="190" height="190" rx="10" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>
+<text x="185" y="636" class="wb" text-anchor="middle">Raspberry Pi</text>
+<text x="185" y="652" class="wb" text-anchor="middle">+ OSCoST HAT</text>
+<text x="185" y="670" class="w" text-anchor="middle">1-Wire edition</text>
+<text x="185" y="686" class="w" text-anchor="middle">(or its Lite build)</text>
+<circle cx="135" cy="712" r="6" fill="#4CAF50"/>
+<text x="135" y="732" class="w" text-anchor="middle">PWR</text>
+<circle cx="180" cy="712" r="6" fill="#4CAF50"/>
+<text x="180" y="732" class="w" text-anchor="middle">WD</text>
+<circle cx="225" cy="712" r="6" fill="#4CAF50"/>
+<text x="225" y="732" class="w" text-anchor="middle">PUMP</text>
+<text x="185" y="760" class="w" text-anchor="middle">MAX31865, watchdog,</text>
+<text x="185" y="776" class="w" text-anchor="middle">pump driver, protection</text>
+<rect x="44" y="630" width="46" height="20" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="67" y="644" class="n" text-anchor="middle">PT1</text>
+<rect x="44" y="660" width="46" height="20" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="67" y="674" class="n" text-anchor="middle">1W-A</text>
+<rect x="44" y="690" width="46" height="20" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="67" y="704" class="n" text-anchor="middle">1W-B</text>
+<rect x="44" y="720" width="46" height="20" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<text x="67" y="734" class="n" text-anchor="middle">PUMP1</text>
+<polyline points="44,640 30,640 30,58 276,58 283,66" fill="none" stroke="#6d4c41" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="36" y="400" class="o" text-anchor="start">2-wire roof cable</text>
+<text x="36" y="414" class="o" text-anchor="start">(existing)</text>
+<polyline points="44,730 22,730 22,815 290,815 290,296 308,296" fill="none" stroke="#f57c00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<polyline points="312,314 270,314 270,505 240,505" fill="none" stroke="#8B4513" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="296" y="760" class="o" text-anchor="start">PWM · GND · FB</text>
+<text x="296" y="774" class="o" text-anchor="start">brown · blue · black</text>
+<text x="276" y="400" class="o" text-anchor="end">230 V,</text>
+<text x="276" y="414" class="o" text-anchor="end">permanent</text>
+<polyline points="150,610 150,540" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="158" y="580" class="o" text-anchor="start">USB-C supply</text>
+<polyline points="44,670 14,670 14,828 405,828 405,700 432,700" fill="none" stroke="#2e7d32" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<polyline points="432,700 420,700 420,300 432,300" fill="none" stroke="#2e7d32" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<polyline points="432,300 395,300 395,380 368,380" fill="none" stroke="#2e7d32" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<polyline points="352,380 345,380 345,480 338,480" fill="none" stroke="#2e7d32" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<polyline points="44,700 8,700 8,841 700,841 700,480 752,480" fill="none" stroke="#00897b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<polyline points="768,480 800,480 800,338" fill="none" stroke="#00897b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<polyline points="800,322 800,300 1070,300 1070,380 1092,380" fill="none" stroke="#00897b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<polyline points="185,800 185,856 1220,856 1220,630" fill="none" stroke="#607d8b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<rect x="1150" y="560" width="140" height="70" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+<text x="1220" y="588" class="b" text-anchor="middle">Network</text>
+<text x="1220" y="606" class="n" text-anchor="middle">VictoriaMetrics, web UI</text>
+<text x="1000" y="850" class="o" text-anchor="middle">Ethernet</text>
+<text x="500" y="822" class="o" text-anchor="start">1-Wire bus A: one 3-wire cable, daisy chain</text>
+<text x="500" y="835" class="o" text-anchor="start"></text>
+<text x="720" y="836" class="o" text-anchor="start">1-Wire bus B: one 3-wire cable, daisy chain</text>
+<circle cx="285" cy="68" r="8" fill="#fff" stroke="#6d4c41" stroke-width="3"/><circle cx="285" cy="68" r="3" fill="#6d4c41"/>
+<text x="301" y="58" class="s" text-anchor="start">S1 Pt1000</text>
+<circle cx="440" cy="700" r="8" fill="#fff" stroke="#2e7d32" stroke-width="3"/><circle cx="440" cy="700" r="3" fill="#2e7d32"/>
+<text x="454" y="704" class="s" text-anchor="start">S2 store bottom</text>
+<circle cx="440" cy="300" r="8" fill="#fff" stroke="#2e7d32" stroke-width="3"/><circle cx="440" cy="300" r="3" fill="#2e7d32"/>
+<text x="454" y="304" class="s" text-anchor="start">S3 store top</text>
+<circle cx="360" cy="380" r="8" fill="#fff" stroke="#2e7d32" stroke-width="3"/><circle cx="360" cy="380" r="3" fill="#2e7d32"/>
+<text x="372" y="370" class="s" text-anchor="start">S4 flow</text>
+<circle cx="330" cy="480" r="8" fill="#fff" stroke="#2e7d32" stroke-width="3"/><circle cx="330" cy="480" r="3" fill="#2e7d32"/>
+<text x="316" y="498" class="s" text-anchor="end">S5 return</text>
+<circle cx="800" cy="330" r="8" fill="#fff" stroke="#00897b" stroke-width="3"/><circle cx="800" cy="330" r="3" fill="#00897b"/>
+<text x="786" y="318" class="s" text-anchor="end">S6 after heat pump</text>
+<circle cx="760" cy="480" r="8" fill="#fff" stroke="#00897b" stroke-width="3"/><circle cx="760" cy="480" r="3" fill="#00897b"/>
+<text x="774" y="500" class="s" text-anchor="start">S7 after store</text>
+<circle cx="1100" cy="380" r="8" fill="#fff" stroke="#00897b" stroke-width="3"/><circle cx="1100" cy="380" r="3" fill="#00897b"/>
+<text x="1114" y="384" class="s" text-anchor="start">S8 back from house</text>
+<text x="1110" y="66" class="b" text-anchor="start">Cables</text>
+<polyline points="1110,88 1144,88" fill="none" stroke="#6d4c41" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1152" y="92" class="n" text-anchor="start">Pt1000, 2-wire</text>
+<polyline points="1110,108 1144,108" fill="none" stroke="#2e7d32" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<text x="1152" y="112" class="n" text-anchor="start">1-Wire bus A, 3-wire</text>
+<polyline points="1110,128 1144,128" fill="none" stroke="#00897b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<text x="1152" y="132" class="n" text-anchor="start">1-Wire bus B, 3-wire</text>
+<polyline points="1110,148 1144,148" fill="none" stroke="#f57c00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1152" y="152" class="n" text-anchor="start">pump signal, 3-wire</text>
+<polyline points="1110,168 1144,168" fill="none" stroke="#8B4513" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1152" y="172" class="n" text-anchor="start">230 V</text>
+<polyline points="1110,188 1144,188" fill="none" stroke="#212121" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1152" y="192" class="n" text-anchor="start">USB-C power</text>
+<polyline points="1110,208 1144,208" fill="none" stroke="#607d8b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 5"/>
+<text x="1152" y="212" class="n" text-anchor="start">Ethernet</text>
+<rect x="560" y="740" width="560" height="66" rx="6" fill="#fff3e0" stroke="#e65100" stroke-width="1.5"/>
+<text x="575" y="762" class="b" text-anchor="start">Required: a high-efficiency pump with a PWM input in the SOLAR profile</text>
+<text x="575" y="780" class="n" text-anchor="start">(Wilo PWM2 / iPWM2, Grundfos profile C): no signal or a broken cable = pump stops.</text>
+<text x="575" y="796" class="n" text-anchor="start">A heating-profile pump (no signal = full speed) is not safe without a cut-off relay.</text>
+</svg>

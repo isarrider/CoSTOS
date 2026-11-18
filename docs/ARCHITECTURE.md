@@ -296,6 +296,25 @@ range above, slow enough for clean edges over 3 m of cable). The pump
 itself must be set to the matching profile; the setup wizard asks for it and
 the feedback signal can confirm the pump reacts.
 
+#### Pump requirement (safety)
+
+OSCoST's standard setup keeps the pump permanently on 230 V and stops it
+over PWM only (5.6). That is only safe with a pump that **stops by itself
+when the signal is missing**, so the requirement is:
+
+- **A high-efficiency pump with a PWM input in the solar profile**: Wilo
+  PWM2 / iPWM2 (e.g. the reference installation's Wilo Yonos PARA
+  ST 15/7-50/iPWM2), Grundfos profile C. Low duty, no signal or a broken
+  cable = stop. With this profile every failure on the OSCoST side (Pi
+  off, crash, hang, HAT missing, cable cut) ends with the pump stopped.
+- **Recommended: a feedback output** (Wilo iPWM, Grundfos PWM feedback),
+  so OSCoST sees whether the pump really runs, stops or has lost power.
+- **Not allowed in the standard setup:** a heating-profile pump (Wilo
+  PWM1, Grundfos profile A), where no signal means full speed, and an old
+  on/off pump without PWM. Both need their mains switched by a relay on
+  REL1 (option C), which the Lite build doesn't have; the setup wizard
+  refuses a heating profile without a configured cut-off relay.
+
 #### Output circuit (per pump)
 
 Build instructions, parts lists and layouts for the practical options (a
