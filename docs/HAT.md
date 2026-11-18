@@ -51,7 +51,7 @@ until a real BOM exists. 🟢 good, 🟡 medium, 🔴 weak or missing.
 | Parts for one board (excl. VAT) | ≈ €30 | ≈ €25.40 | ≈ €65 (LTC2983 ≈ €39 of it) |
 | **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €17** | 🔴 **≈ €68 more** |
 | ***Building and status*** | | | |
-| Hand soldering | 🟡 MAX31865, SSOP-20 | 🟡 same | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
+| Hardest part to solder (only when building it yourself) | 🟡 MAX31865, SSOP-20 at 0.65 mm pitch | 🟡 same as the 1-Wire edition | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
 | Upgrade later | — | 🟢 to the normal build by soldering on U2, C4, R2, R25 (remove R26) and the REL1 parts | — |
 | Status | 🟡 rev A, designed first | 🟡 same board as the 1-Wire edition | 🔴 planned as the second board |
 
