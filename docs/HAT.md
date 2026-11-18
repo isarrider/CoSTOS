@@ -442,7 +442,8 @@ are the Pi, the DIN-rail supply, the SSR and the sensors.
 | **Total** | | **≈ 35** |
 
 The watchdog with AND gate and relay supply switch is about €1.50–2 of
-this (D8). Pluggable terminals would add about €4 (D10).
+this (D8). Pluggable terminals would add about €4 (D10). The PT edition's
+list is in [11.5](#115-space-and-cost).
 
 ### 8.2 Fully assembled: rough estimate
 
@@ -582,8 +583,34 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
   resistors and ESD diodes fit comfortably where the 1-Wire edition has
   PT1, PT2, the DS2482 footprint and the second 1-Wire bus (see the
   mockup).
-- **Cost** (estimates, details in 11.6): about **€67 per assembled board**
-  (5 boards, JLCPCB), about €66 in single-quantity parts.
+- **Cost** (estimates, comparison in 11.6): about **€67 per assembled
+  board** (5 boards, JLCPCB), about **€69 in single-quantity parts**:
+
+| Part | Qty | ≈ € |
+|---|---|---|
+| LTC2983 (8 × Pt1000; DigiKey $39.06 for one) | 1 | 39.00 |
+| PCB, ⅓ of an AISLER set of 3 (≈ €19) | — | 6.50 |
+| 3.5 mm fixed screw terminals: two-level 8-position block, PWR, REL1, PUMP1, 1W-A | 5 | 5.00 |
+| Resistors and capacitors, about 45 (incl. the 2 kΩ 0.1 % sense resistor and 16 protection resistors) | — | 3.80 |
+| B0512S-1WR3 DC/DC | 1 | 3.00 |
+| 40-pin stacking header and 4 spacers | 1 | 3.00 |
+| Ideal diode: LM74700-Q1 + CSD17575Q3 | 2 | 2.50 |
+| PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire) | 17 | 1.70 |
+| TC4427 | 1 | 1.30 |
+| 5 A SMD fuse | 1 | 1.00 |
+| TPS22918 | 1 | 0.60 |
+| LEDs | 3 | 0.50 |
+| 74LVC1G123 | 1 | 0.40 |
+| SMBJ13A, SMBJ5.0A | 2 | 0.40 |
+| 74LVC1G08 | 1 | 0.20 |
+| 100 mA polyfuse | 1 | 0.20 |
+| AO3400A, 1N4148W | 2 | 0.20 |
+| **Total** | | **≈ 69** |
+
+  The LTC2983 is more than half of it; everything apart from the
+  converter chip costs about €5 more than on the 1-Wire edition
+  (section 8.1), for the bigger terminal block and the protection of the
+  16 sensor wires.
 - **Sourcing:** LCSC rarely has the LTC2983 in stock. For JLCPCB assembly
   the chips are bought at DigiKey (≈ €39) and consigned to JLCPCB, or
   AISLER assembles with EU-sourced parts.
@@ -613,7 +640,7 @@ until a real BOM exists, and LCSC stock changes daily. 🟢 good,
 | Rest of the board, assembled | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €27 |
 | New sensors and cable | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🔴 7 DS18B20 probes + 2 cables ≈ €60–80 |
 | **Total, assembled (5 boards, JLCPCB, incl. VAT and shipping)** | 🟡 **≈ €68** | 🟢 **≈ €43** | 🟢 **≈ €50** | 🔴 **≈ €78** | 🟡 **≈ €67** | 🟡 **≈ €33 + €60–80 = €93–113** |
-| **Total, single-quantity parts (DigiKey, excl. VAT)** | 🔴 **≈ €103** | 🟢 **≈ €48** | 🟢 **≈ €50** | 🟡 **≈ €61–69** | 🟡 **≈ €66** | 🟡 **≈ €35 + €60–80 = €95–115** |
+| **Total, single-quantity parts (DigiKey, excl. VAT)** | 🔴 **≈ €103** | 🟢 **≈ €48** | 🟢 **≈ €50** | 🟡 **≈ €61–69** | 🟡 **≈ €69** | 🟡 **≈ €35 + €60–80 = €95–115** |
 | Stock for assembly | 🟡 varies | 🟢 good (≈ 1,700 at LCSC) | 🔴 thin, one variant out | 🔴 thin | 🟡 thin at LCSC; buy at DigiKey and consign | 🟡 MAX varies; probes bought separately (fakes are common) |
 | ***Function*** | | | | | | |
 | Input protection | 🟢 ±45 V built in | 🟡 external parts, needs care | 🟡 external parts, needs care | 🟢 external, easy (buffered inputs) | 🟢 external, easy (buffered inputs) | 🟢 MAX ±45 V; 1-Wire ESD + polyfuse |
