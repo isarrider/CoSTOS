@@ -427,29 +427,44 @@ were compared instead:
 | Cost | ≈ €0–10 with an existing supply (≈ €20–25 with a new one) | ≈ €35–45 | ≈ €50–60 |
 
 **Decision: option A** (HAT D15), for cost and because permanent power
-suits a PWM pump:
+suits a PWM pump.
 
-- **Stand-by draw is tiny:** Wilo specifies under 1 W for the Yonos PARA
-  series, so at most about 9 kWh or €3 a year.
+**Upsides of A** (keeping the pump permanently powered):
+
+- **Cheapest:** with an existing Pi supply it costs nothing or only a plug
+  cord for the pump, against ≈ €35–60 for B or C and ≈ €150–175 for the
+  fully equipped version.
 - **No mains switching wear:** high-efficiency pumps have a high inrush
-  current and limited mains switching cycles; starting and stopping over
-  PWM is how they are meant to be run, as in boilers and heat pumps.
+  current and limited mains switching cycles (Wilo, for example, allows at
+  most 100 a day for the Stratos PARA). Starting and stopping over PWM is
+  how they are meant to be run, as in boilers and heat pumps.
 - **Monitoring always works:** the iPWM feedback output only works while
   the pump is powered. Permanently powered, OSCoST always sees stand-by,
   running, warnings, blocked, and "no power" (lost supply, tripped breaker),
-  also while the pump should be stopped. This replaces the coupling relay.
-- **Fewer parts and no mains wiring:** no relay contacts to fail, no
-  enclosure, and the house circuit's own breaker and RCD protect the pump
-  and the supply.
+  also while the pump should be stopped. With a relay cutting the mains,
+  the pump would go silent whenever it is off. This also replaces the
+  coupling relay that would otherwise sense pump mains.
+- **Fewer parts, simpler wiring:** no relay contacts to fail, no
+  enclosure, and no mains wiring; the house circuit's own breaker and RCD
+  protect the pump and the supply.
 
-**Accepted risk:** one way to stop the pump instead of two. If the HAT's
-PWM driver fails with its output stuck high, the pump runs at full speed
-and OSCoST can only raise an alarm (feedback shows "running" while it
-should stop). The worst case is a full store on a hot day; in the
-reference installation the store margin and covering the collector during
-holidays make this acceptable. Anyone who wants the second stop path adds
-the relay of option C on REL1, which stays on the HAT. Heating-profile
-pumps always need it (5.3).
+**Downsides of A:**
+
+- **Stand-by electricity:** Wilo specifies under 1 W for the Yonos PARA
+  series, so at most about 9 kWh or €3 a year, in practice €2–3 because
+  the pump runs part of the time.
+- **The pump electronics are always live** and see every mains spike, not
+  only while running. That is how boilers and heat pumps run their PWM
+  pumps, so it is the normal case for these pumps.
+- **One way to stop the pump instead of two** (the accepted risk below).
+
+**Accepted risk:** if the HAT's PWM driver fails with its output stuck
+high, the pump runs at full speed and OSCoST can only raise an alarm
+(feedback shows "running" while it should stop). The worst case is a full
+store on a hot day; in the reference installation the store margin and
+covering the collector during holidays make this acceptable. Anyone who
+wants the second stop path adds the relay of option C on REL1, which stays
+on the HAT. Heating-profile pumps always need it (5.3).
 
 DiSoCon2 ideas kept for the options: fuse the 5 V branch separately from
 the pump (B, C), a zero-crossing SSR or a rarely switched relay instead of
