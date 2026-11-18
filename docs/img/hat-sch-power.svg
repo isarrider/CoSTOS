@@ -69,9 +69,26 @@
 <path d="M490 610 V620 M478 620 H502 M482 625 H498 M486 630 H494" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <path d="M560 550 V538 M548 538 H572" style="stroke:#c62828;stroke-width:2.5;fill:none"/>
 <text x="560" y="528" class="r" text-anchor="middle" style="fill:#c62828">+12V</text>
-<text x="620" y="545" class="n" text-anchor="start">U2: 1 W, isolated, unregulated; its 0V is tied to GND.</text>
-<text x="620" y="560" class="n" text-anchor="start">R2 is a minimum load (≈ 8 mA) so the unregulated</text>
-<text x="620" y="575" class="n" text-anchor="start">output stays below the TVS standoff (13 V) at light load.</text>
+<path class="w" d="M560 550 L600 550"/>
+<g transform="translate(600 550) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="630.0" y="536.0" class="v" text-anchor="middle"><tspan class="r">R25</tspan> 0 Ω</text>
+<path class="w" d="M660 550 L700 550"/>
+<circle cx="700" cy="550" r="3.5" fill="#222"/>
+<path d="M700 550 V538 M688 538 H712" style="stroke:#222;stroke-width:2.5;fill:none"/>
+<text x="700" y="528" class="r" text-anchor="middle" style="fill:#222">+V_DRV</text>
+<path class="w" d="M700 550 L700 610"/>
+<g opacity="0.42">
+<g transform="translate(700 610) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="730.0" y="636.0" class="v" text-anchor="middle"><tspan class="r">R26</tspan> 0 Ω (Lite)</text>
+</g>
+<path d="M760 610 V598 M748 598 H772" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
+<text x="760" y="588" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
+<text x="800" y="545" class="n" text-anchor="start">U2: 1 W, isolated, unregulated; 0V tied to GND.</text>
+<text x="800" y="560" class="n" text-anchor="start">R2: minimum load (≈ 8 mA), keeps the output</text>
+<text x="800" y="575" class="n" text-anchor="start">below the TVS standoff (13 V) at light load.</text>
+<text x="800" y="590" class="n" text-anchor="start">+V_DRV feeds the pump driver U6: R25 fitted = 12 V</text>
+<text x="800" y="605" class="n" text-anchor="start">(normal build); Lite build: U2, R2, C4, R25 not</text>
+<text x="800" y="620" class="n" text-anchor="start">fitted, R26 fitted = 5 V. Never both.</text>
 <text x="720" y="30" class="h" text-anchor="start">3 · 40-pin header (Pi 4 / Pi 5)</text>
 <rect x="720" y="50" width="440" height="448" rx="4" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
 <text x="730" y="69" class="r" text-anchor="start">Net</text>

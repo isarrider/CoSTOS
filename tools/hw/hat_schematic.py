@@ -295,7 +295,7 @@ def sheet_power(path):
         "with ideal diode); those reference designators stay unused.",
     ])
     # ---- 12 V DC/DC ----
-    s.heading(20, 490, "2 · 12 V for the pump drivers")
+    s.heading(20, 490, "2 · Pump driver supply: 12 V (normal) or 5 V (Lite build)")
     s.rail(40, 550, "+5V")
     s.wire((40, 550), (150, 550))
     s.dot(90, 550); s.part("C", 90, 550, "d", "C3", "4.7 µF", lab="r"); s.gnd(90, 590)
@@ -307,10 +307,22 @@ def sheet_power(path):
     s.dot(400, 550); s.part("C", 400, 550, "d", "C4", "10 µF 25 V", lab="r"); s.gnd(400, 590)
     s.dot(490, 550); s.part("R", 490, 550, "d", "R2", "1.5 kΩ ¼ W", lab="r"); s.gnd(490, 610)
     s.rail(560, 550, "+12V")
-    s.note(620, 545, [
-        "U2: 1 W, isolated, unregulated; its 0V is tied to GND.",
-        "R2 is a minimum load (≈ 8 mA) so the unregulated",
-        "output stays below the TVS standoff (13 V) at light load.",
+    s.wire((560, 550), (600, 550))
+    s.part("R", 600, 550, "r", "R25", "0 Ω")
+    s.wire((660, 550), (700, 550)); s.dot(700, 550)
+    s.rail(700, 550, "+V_DRV")
+    s.wire((700, 550), (700, 610))
+    s.begin_nf()
+    s.part("R", 700, 610, "r", "R26", "0 Ω (Lite)", lab="b")
+    s.end_nf()
+    s.rail(760, 610, "+5V")
+    s.note(800, 545, [
+        "U2: 1 W, isolated, unregulated; 0V tied to GND.",
+        "R2: minimum load (≈ 8 mA), keeps the output",
+        "below the TVS standoff (13 V) at light load.",
+        "+V_DRV feeds the pump driver U6: R25 fitted = 12 V",
+        "(normal build); Lite build: U2, R2, C4, R25 not",
+        "fitted, R26 fitted = 5 V. Never both.",
     ])
     # ---- header table ----
     hx, hy = 720, 50
@@ -405,7 +417,7 @@ def sheet_pwm(path):
     u6 = s.ic(860, 70, 100, 300, "U6", "TC4427", [
         ("l", 50, "IN A", "2"), ("l", 260, "IN B", "4"), ("r", 50, "OUT A", "7"), ("r", 260, "OUT B", "5"),
         ("t", 50, "VDD", "6"), ("b", 50, "GND", "3")], sub="dual driver")
-    s.wire(u6["VDD"], (910, 45)); s.rail(910, 45, "+12V")
+    s.wire(u6["VDD"], (910, 45)); s.rail(910, 45, "+V_DRV")
     s.text(925, 62, "C7 1 µF, C8 100 nF", "n")
     s.wire(u6["GND"], (910, 395)); s.gnd(910, 395)
     for n, y in ((1, 120), (2, 330)):

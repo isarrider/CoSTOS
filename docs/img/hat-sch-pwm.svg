@@ -116,8 +116,8 @@
 <text x="914" y="384" class="num" text-anchor="start">3</text>
 <path class="w" d="M910 370 L910 390"/>
 <path class="w" d="M910 50 L910 45"/>
-<path d="M910 45 V33 M898 33 H922" style="stroke:#c62828;stroke-width:2.5;fill:none"/>
-<text x="910" y="23" class="r" text-anchor="middle" style="fill:#c62828">+12V</text>
+<path d="M910 45 V33 M898 33 H922" style="stroke:#222;stroke-width:2.5;fill:none"/>
+<text x="910" y="23" class="r" text-anchor="middle" style="fill:#222">+V_DRV</text>
 <text x="925" y="62" class="n" text-anchor="start">C7 1 µF, C8 100 nF</text>
 <path class="w" d="M910 390 L910 395"/>
 <path d="M910 395 V405 M898 405 H922 M902 410 H918 M906 415 H914" style="stroke:#2e7d32;stroke-width:2;fill:none"/>

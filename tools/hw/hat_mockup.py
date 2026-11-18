@@ -3,11 +3,13 @@
 
   python3 tools/hw/hat_mockup.py file    > docs/img/hat-mockup.svg      (1-Wire edition)
   python3 tools/hw/hat_mockup.py file pt > docs/img/hat-pt-mockup.svg   (PT edition)
+  python3 tools/hw/hat_mockup.py file lite > docs/img/hat-lite-mockup.svg (Lite build of the 1-Wire edition)
 
 ("widget" instead of "file" gives a variant for inline display in chat.)"""
 import sys
 widget = sys.argv[1] == "widget"
 pt = len(sys.argv) > 2 and sys.argv[2] == "pt"
+lite = len(sys.argv) > 2 and sys.argv[2] == "lite"
 out = []
 def t(x, y, s, size=12, color=None, weight=400, anchor="start", on_board=True):
     cls = "th" if weight == 500 else "ts"
@@ -79,7 +81,7 @@ if pt:
 else:
     term_v(104, 2, "PT1", "collector")
     term_v(166, 3, "1W-A", "DS18x20")
-    term_v(256, 3, "1W-B", "DS18x20")
+    term_v(256, 3, "1W-B", "not fitted" if lite else "DS18x20", fitted=not lite)
     term_v(346, 3, "PUMP1", "solar pump")
 # bottom terminals
 def term_h(x0, n, name, pins, fitted=True):
@@ -96,7 +98,7 @@ def term_h(x0, n, name, pins, fitted=True):
             out.append(f'<circle cx="{cx}" cy="466" r="4" fill="#C9A227"/>')
         t(cx, 512, pins[k], 11, None, 400, "middle", on_board=False)
     t(x0 + w/2, 440, name + ("" if fitted else " (n.f.)"), 12, "#ffffff" if fitted else "#E8F5E9", 500, "middle")
-term_h(216, 2, "REL1", ["+5V", "OUT"])
+term_h(216, 2, "REL1", ["+5V", "OUT"], fitted=not lite)
 term_h(284, 2, "REL2", ["+5V", "OUT"], fitted=False)
 if pt:
     term_h(352, 3, "1W-A", ["3V3", "DQ", "GND"])
@@ -123,14 +125,23 @@ else:
 # bottom rows
 chip(196, 368, 78, 46, "TC4427", "pump driver")
 chip(282, 368, 78, 46, "Bulk C", "5 V from the Pi")
-chip(368, 368, 78, 46, "Relay", "MOSFET")
-chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
+def nf_chip(x, y, w, h, title, sub):
+    out.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+    t(x + w/2, y + h/2 - 3, title, 12, "#E8F5E9", 500, "middle")
+    t(x + w/2, y + h/2 + 12, sub, 11, "#C8E6C9", 400, "middle")
+if lite:
+    nf_chip(368, 368, 78, 46, "Relay", "not fitted")
+    nf_chip(454, 368, 78, 46, "DC/DC", "not fitted")
+    t(470, 228, "pump driver on 5 V via R26 (0 Ω)", 10, "#FFE082", 400, "middle")
+else:
+    chip(368, 368, 78, 46, "Relay", "MOSFET")
+    chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
 chip(282, 304, 78, 46, "Feedback", "input 1")
 chip(368, 304, 78, 46, "Watchdog", "heartbeat")
 chip(454, 304, 78, 46, "AND gate", "PWM gating")
 # LEDs (row under the logo)
-for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
-                                     ("#FFB300", "R1", False), ("#FFB300", "R2", True)]):
+for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", lite), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
+                                     ("#FFB300", "R1", lite), ("#FFB300", "R2", True)]):
     x = 440 + k * 28
     if nf:
         out.append(f'<circle cx="{x}" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
@@ -143,8 +154,9 @@ if pt:
     t(480, 220, "rev A · 8 × Pt1000 + 1-Wire", 11, "#C8E6C9", 400, "middle")
 else:
     t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
-    t(470, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
+    t(470, 210, "Lite build · same board, fewer parts" if lite else "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
 t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
-  + ("; S1–S8 and PUMP1 on the left, 1W-A at the front." if pt else "; sensors and PUMP1 on the left (D17)."), 11, None, 400, "start", on_board=False)
+  + ("; S1–S8 and PUMP1 on the left, 1W-A at the front." if pt else
+     ("; dashed = not fitted in the Lite build." if lite else "; sensors and PUMP1 on the left (D17).")), 11, None, 400, "start", on_board=False)
 out.append('</svg>')
 print("\n".join(out))

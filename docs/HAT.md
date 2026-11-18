@@ -545,6 +545,7 @@ estimated here; it gets quoted with the BOM.
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
+| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC, the relay output, the second 1-Wire bus and the PWR LED; the pump driver runs on 5 V through R26 (0 Ω). Saves ≈ €5.40 like a dedicated Lite board would, without a second layout, and can be upgraded. Solar-profile pumps only |
 
 ---
 
@@ -728,71 +729,62 @@ Solar control would cope with ±0.5–1 K, but for a controller meant to run
 
 ---
 
-## 12. HAT Lite (proposal)
+## 12. Lite build (decided, D19)
 
-For people who want OSCoST as cheaply as possible. Status: **proposal**,
-not yet decided.
+The cheapest way to an OSCoST controller: **the same 1-Wire edition
+board with fewer parts fitted**, not a separate board. It saves about
+**€5.40 per board**, can be upgraded to the full build by soldering the
+missing parts on, and needs no second layout. A dedicated Lite board was
+drawn first and dropped: it saved no more money (unfitted footprints cost
+nothing, and it would have had the same outline), but it needed its own
+layout, parts list, tests and documentation, and had no upgrade path.
 
-![OSCoST HAT Lite, top view](img/hat-lite-mockup.svg)
+![OSCoST HAT, Lite build, top view](img/hat-lite-mockup.svg)
 
 ### 12.1 Rule: it may fail, but it may not break anything
 
-The Lite HAT may stop working; it must never leave the pump running or
-damage the Pi. That gives four rules:
+The Lite build may stop working; it must never leave the pump running or
+damage the Pi:
 
-1. **Every fault ends in "pump stopped".** The PWM line has a pull-down
-   and goes through the watchdog-gated AND gate (4.6), and the Lite HAT
-   only supports **solar-profile pumps** (Wilo PWM2, Grundfos profile C),
-   where no signal or a low signal means stop. A crash, a hang, an
-   unpowered or missing HAT, a broken cable: the pump stops.
-2. **Field wiring can't reach the Pi.** The collector input keeps the
-   MAX31865 with its ±45 V input protection (the roof cable is the most
-   exposed line); the 1-Wire bus and the pump lines keep series
-   resistors, ESD diodes, the TVS diode and the polyfuse. A short or a
-   swapped wire on a terminal damages nothing. (230 V on a low-voltage
-   terminal is beyond any HAT.)
-3. **No power path of its own.** Like the full HAT since D18, it is
-   powered by the Pi; there is nothing that can feed back into the Pi or
-   be wired the wrong way round.
-4. **The weakest part fails safe.** The pump signal is 5 V instead of
+1. **Every fault ends in "pump stopped".** The PWM line keeps its
+   pull-down and the watchdog-gated AND gate (4.6), and the Lite build only
+   supports **solar-profile pumps** (Wilo PWM2, Grundfos profile C), where
+   no signal or a low signal means stop. The setup wizard refuses a
+   heating profile on a Lite build.
+2. **Field wiring can't reach the Pi.** The MAX31865 with its ±45 V input
+   protection stays on the collector input, and every terminal keeps its
+   series resistors, ESD diodes, TVS diode and polyfuse. A short or a
+   swapped wire damages nothing. (230 V on a low-voltage terminal is beyond
+   any HAT.)
+3. **No power path of its own** (D18): powered by the Pi.
+4. **The weakest part fails safe.** The pump driver runs on 5 V instead of
    12 V, so the pump sees about 4.7 V against its ~4 V threshold
-   ([HARDWARE.md](HARDWARE.md#12-v-or-5-v)). If that ever isn't enough
-   (long cable, a pump with a higher threshold), the pump simply doesn't
-   start, and the feedback input reports it.
+   ([HARDWARE.md](HARDWARE.md#12-v-or-5-v)). If that isn't enough (long
+   cable, a pump with a higher threshold), the pump simply doesn't start,
+   and the feedback input reports it.
 
-### 12.2 What it leaves out
+### 12.2 Normal build against Lite build
 
-| Left out | Saves | Consequence |
-|---|---|---|
-| 12 V DC/DC, minimum-load resistor | ≈ €3.20 | pump signal 5 V (rule 4) |
-| Relay output REL1, relay supply switch | ≈ €1.30 | no cut-off relay (option C) and **no heating-profile pumps**; the setup wizard refuses a heating profile on the Lite HAT |
-| Second 1-Wire bus (1W-B), DS2482 footprint, PT2 footprint | ≈ €0.80 | one bus for all DS18x20 (daisy chain) |
-| PWR and R1 LEDs, EEPROM footprint | ≈ €0.30 | — (WD and PUMP1 stay) |
+Single-quantity parts; "saved" is what the Lite build saves on that row.
+🟢 good, 🟡 medium, 🔴 weak.
 
-Kept: MAX31865 (collector), one 1-Wire bus, PUMP1 with feedback input,
-watchdog + AND gating, all protection on field lines, the full 65 × 56.5 mm
-outline with four mounting holes (screw terminals need the mechanical
-support), and the tall header for the Pi 5 cooler.
+| | **Normal build** | **Lite build** | **Saved** |
+|---|---|---|---|
+| ***Left out in the Lite build*** | | | |
+| 12 V DC/DC U2 with C4 and minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.7 V at the pump | **€3.05** |
+| Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€1.55** |
+| Second 1-Wire bus 1W-B: terminal, ESD diode, pull-up | 🟢 2 buses | 🟡 1 bus (daisy chain all DS18x20 on 1W-A) | **€0.65** |
+| PWR LED | 🟢 | 🟡 not fitted (the WD LED shows power too) | **€0.15** |
+| R26 (0 Ω) | not fitted | fitted | **−€0.01** |
+| ***The same in both*** | | | |
+| MAX31865 (collector), watchdog + PWM gating, field-line protection, PUMP1 with feedback, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
+| Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
+| ***Totals*** | | | |
+| Parts, single quantity | ≈ €30 | ≈ €24.60 | **≈ €5.40** |
+| Assembled, batch of 5 (estimate) | ≈ €29 | ≈ €24 | **≈ €5** |
+| Upgrade | — | 🟢 solder on U2, C4, R2, R25 (remove R26), REL1 parts, 1W-B parts | — |
 
-### 12.3 Cost (single-quantity parts, estimates)
+The two 0 Ω positions R25 and R26 must **never be fitted together**: that
+would short the 12 V and 5 V rails. The silkscreen marks them "12 V" and
+"5 V (Lite)".
 
-| Part | Qty | ≈ € |
-|---|---|---|
-| MAX31865AAP+ | 1 | 8.80 |
-| PCB, ⅓ of an AISLER set of 3 | — | 6.50 |
-| 40-pin header (tall) and 4 spacers | 1 | 3.00 |
-| TC4427 (on 5 V) | 1 | 1.30 |
-| Resistors and capacitors, about 15 (incl. the 0.1 % 4.3 kΩ) | — | 1.80 |
-| 3.5 mm fixed screw terminals (PT1, 1W, PUMP1) | 3 | 1.50 |
-| 74LVC1G123 + 74LVC1G08 | 2 | 0.60 |
-| PESD5V0 ESD diodes, SMBJ5.0A | 4 | 0.50 |
-| LEDs (WD, PUMP1) | 2 | 0.30 |
-| 100 mA polyfuse, 1N4148W | 2 | 0.30 |
-| **Total** | | **≈ €25** |
-
-Since the full HAT lost its power input too (D18, ≈ €30), the Lite HAT
-saves about **€5.40 in parts**: the 12 V DC/DC, the relay output, the
-second 1-Wire bus and the PWR LED. Assembled in a batch of 5 the gap may be a few
-euros more, because of fewer part types and joints; it gets quoted with
-the BOM. Whether the Lite HAT is still worth a separate board is open. The MAX31865 is a third of the cost but stays: it
-is what keeps the roof cable away from the Pi (rule 2).

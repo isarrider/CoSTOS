@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Draw two mockups:
+"""Draw the assembly mockup:
   docs/img/pi-hat-assembly.svg  Pi 5 + OSCoST HAT (1-Wire edition): top and side view
-  docs/img/hat-lite-mockup.svg  OSCoST HAT Lite, top view to scale (1 mm = 8 px)
 Usage: python3 tools/hw/assembly_svg.py docs/img
 Dimensions of the Pi 5 follow the Raspberry Pi mechanical drawing (board 85 x 56 mm,
 holes 3.5/61.5 x 3.5/52.5 mm); heights are approximate and get fixed in KiCad."""
@@ -139,57 +138,4 @@ def assembly():
     open(f"{OUT}/pi-hat-assembly.svg", "w").write("\n".join(o))
 
 
-# ---------------------------------------------------------------- Lite HAT
-def lite():
-    o = []
-    W, H = 680, 560
-    o.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Helvetica, Arial, sans-serif">')
-    o.append(STYLE)
-    rect(o, 0, 0, W, H, "white")
-    # board 65 x 56.5 mm at 8 px/mm
-    rect(o, 80, 30, 520, 452, GREEN, GREEN_D, rx=24, sw=2)
-    for (cx, cy) in [(108, 58), (572, 58), (108, 450), (572, 450)]:
-        o.append(f'<circle cx="{cx}" cy="{cy}" r="11" fill="{GOLD}"/><circle cx="{cx}" cy="{cy}" r="6" fill="#F4F1E8"/>')
-    rect(o, 137, 38, 406, 40, "#111", rx=2)
-    for i in range(20):
-        x = 137 + 10 + i * 20.32
-        for y in (48, 68):
-            rect(o, x - 3, y - 3, 6, 6, GOLD)
-    txt(o, 340, 98, "40-pin header (tall enough for the Pi 5 cooler) · powered from the Pi", "g", "middle")
-
-    def term_l(y0, n, name, sub):
-        rect(o, 58, y0, 54, 28 * n, "#E9E2CC", "#8A7F5F", rx=3)
-        for k in range(n):
-            cy = y0 + 14 + 28 * k
-            o.append(f'<circle cx="72" cy="{cy}" r="7" fill="#B0B6BA" stroke="#5F6468"/>'
-                     f'<line x1="67" y1="{cy}" x2="77" y2="{cy}" stroke="#5F6468" stroke-width="1.5"/>')
-        txt(o, 118, y0 + 14 * n - 2, name, "wb")
-        txt(o, 118, y0 + 14 * n + 13, sub, "g")
-
-    def chip(x, y, w, h, title, sub):
-        rect(o, x, y, w, h, "#151515", "#3a3a3a", rx=3)
-        txt(o, x + w / 2, y + h / 2 - 3, title, "wb", "middle")
-        txt(o, x + w / 2, y + h / 2 + 12, sub, "g", "middle")
-
-    term_l(110, 2, "PT1", "collector")
-    term_l(190, 3, "1W", "DS18x20")
-    term_l(300, 3, "PUMP1", "solar pump")
-    chip(250, 118, 130, 60, "MAX31865", "Pt1000, ±45 V inputs")
-    chip(250, 232, 130, 60, "Protection", "ESD, series R, polyfuse")
-    chip(400, 232, 150, 60, "Watchdog + AND", "PWM gated off")
-    chip(400, 316, 150, 60, "Pump driver", "TC4427 on 5 V")
-    chip(250, 316, 130, 60, "Feedback", "pull-up + clamp")
-    # LEDs
-    for i, (lab, c) in enumerate([("WD", "#3fbf5f"), ("PUMP", "#3fbf5f")]):
-        x = 420 + i * 50
-        o.append(f'<circle cx="{x}" cy="150" r="7" fill="{c}"/>')
-        txt(o, x, 172, lab, "g", "middle")
-    txt(o, 470, 128, "OSCoST HAT Lite", "wb", "middle")
-    txt(o, 340, 530, "Top view to scale (1 mm = 8 px), same 65 × 56.5 mm outline and holes as the full HAT.", "n", "middle")
-    txt(o, 340, 548, "Solar-profile pumps only (no signal = stop). No relay output, no 12 V, no power input.", "n", "middle")
-    o.append('</svg>')
-    open(f"{OUT}/hat-lite-mockup.svg", "w").write("\n".join(o))
-
-
 assembly()
-lite()
