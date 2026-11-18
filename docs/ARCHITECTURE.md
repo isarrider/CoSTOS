@@ -12,6 +12,10 @@ This document covers what OSCoST has to do, how the hardware and software are
 split up, how safety works, and how to move from the RESOL controller to
 OSCoST without risking the system.
 
+Why each choice was made, with the alternatives that were compared, is in
+the decision history [DECISIONS.md](DECISIONS.md) (A-entries for the
+architecture, D-entries for the hardware).
+
 ---
 
 ## 1. Goals and non-goals
@@ -408,72 +412,11 @@ Pin and bus assignments live in a per-board config section, not in code.
 ### 5.6 230 V side
 
 What the controller needs from the mains: 5 V for the Pi and the HAT, and
-230 V for the pump. DiSoCon2 builds its own mains board (fuse, varistor,
-EMI filter, HLK-PM01, TRIACs); OSCoST keeps mains off its boards entirely
-and uses only off-the-shelf, certified parts. A fully equipped DIN-rail
-version (separate breaker and fuse terminal, SSR, surge protector, a
-coupling relay to sense pump mains, 18 TE enclosure) came to about
-€150–175, as much as a complete commercial controller (prices November
-2026, single units incl. VAT, ≈ = estimate):
-
-| Part (fully equipped version, not chosen) | Example | Price |
-|---|---|---|
-| SSR, zero-crossing, DC control | Finder 77.01.9.024.8050 | ≈ €49–52 |
-| DIN enclosure, 1 row | IDE 12 TE (18 TE slightly more) | ≈ €23 (IP40) – €40 (IP65) |
-| 5 V DIN-rail supply | Mean Well HDR-60-5 | ≈ €20–29 |
-| Surge protector type 3 (optional) | CITEL MSB6-400 / DEHNrail DR M 2P 255 | ≈ €29 / €59 |
-| Coupling relay, 230 V coil, to sense pump mains | Finder 38.51.8.240.0060 | ≈ €16 |
-| DIN-rail holder for Pi + HAT | — | ≈ €10–15 |
-| Breaker B6, 1-pole | Hager MBN106 | ≈ €6–9 |
-| Wire, ferrules, glands, fuses | — | ≈ €10 |
-| Fuse terminal 5×20, T 1 A | Phoenix PT 4-HESI | ≈ €4 |
-| **Total** | | **≈ €150–175, ≈ €180–235 with surge protector** |
-
-A 16 A interface relay with a 12 V coil (Finder 38.61) instead of the SSR
-would save about €35. Three slim options were compared instead:
-
-![Three options for the 230 V side](img/ac-options.svg)
-
-| | A: no mains work | B: minimal DIN | C: B + cut-off relay |
-|---|---|---|---|
-| 5 V supply | Pi USB-C supply in a socket (most people already have one) | Mean Well HDR-60-5, USB-C lead to the Pi | as B |
-| Pump | Permanently on 230 V, plug cord in a socket | Permanently on 230 V, existing circuit | L through a 16 A relay, 12 V coil, driven by REL1 |
-| Enclosure | Pi case | small DIN box, 4–6 TE | as B |
-| Electrician | not needed if the pump gets a plug cord | briefly | briefly |
-| Ways to stop the pump | 1: PWM low (watchdog-gated) | 1 | 2: PWM low + relay |
-| Cost | ≈ €0–10 with an existing supply (≈ €20–25 with a new one) | ≈ €35–45 | ≈ €50–60 |
-
-**Decision: option A** (HAT D15), for cost and because permanent power
-suits a PWM pump.
-
-**Upsides of A** (keeping the pump permanently powered):
-
-- **Cheapest:** with an existing Pi supply it costs nothing or only a plug
-  cord for the pump, against ≈ €35–60 for B or C and ≈ €150–175 for the
-  fully equipped version.
-- **No mains switching wear:** high-efficiency pumps have a high inrush
-  current and limited mains switching cycles (Wilo, for example, allows at
-  most 100 a day for the Stratos PARA). Starting and stopping over PWM is
-  how they are meant to be run, as in boilers and heat pumps.
-- **Monitoring always works:** the iPWM feedback output only works while
-  the pump is powered. Permanently powered, OSCoST always sees stand-by,
-  running, warnings, blocked, and "no power" (lost supply, tripped breaker),
-  also while the pump should be stopped. With a relay cutting the mains,
-  the pump would go silent whenever it is off. This also replaces the
-  coupling relay that would otherwise sense pump mains.
-- **Fewer parts, simpler wiring:** no relay contacts to fail, no
-  enclosure, and no mains wiring; the house circuit's own breaker and RCD
-  protect the pump and the supply.
-
-**Downsides of A:**
-
-- **Stand-by electricity:** Wilo specifies under 1 W for the Yonos PARA
-  series, so at most about 9 kWh or €3 a year, in practice €2–3 because
-  the pump runs part of the time.
-- **The pump electronics are always live** and see every mains spike, not
-  only while running. That is how boilers and heat pumps run their PWM
-  pumps, so it is the normal case for these pumps.
-- **One way to stop the pump instead of two** (the accepted risk below).
+230 V for the pump. **Decided: option A** ([D15](DECISIONS.md#d15--how-do-the-pi-the-hat-and-the-pump-get-their-power)):
+the Pi runs from its own USB-C supply in a socket, and the pump is
+permanently on 230 V and stopped over PWM only. No mains wiring, no
+enclosure. The fully equipped DIN-rail version, the three slim options
+and the upsides and downsides of A are in the decision history.
 
 **Accepted risk:** if the HAT's PWM driver fails with its output stuck
 high, the pump runs at full speed and OSCoST can only raise an alarm
@@ -523,7 +466,7 @@ previous state) → (outputs, new state, events)`, they can be:
 
 These two crates decide what the pumps do, so they follow stricter rules
 than the rest of the code. They pay off even if OSCoST never leaves the
-Pi; a later microcontroller port (13.5) comes for free. 🟢 low, 🟡 some,
+Pi; a later microcontroller port ([D14](DECISIONS.md#d14--raspberry-pi-or-esp32-p4)) comes for free. 🟢 low, 🟡 some,
 🔴 high.
 
 | # | Rule | Without it | With it | Effort |
@@ -597,35 +540,9 @@ A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
 is possible later, as on the BX Plus "fault relay". The web page and
 VictoriaMetrics alerting cover this for now.
 
-#### BX Plus functions not taken over
-
-From the BX Plus manual (firmware 2.07 or later), checked against the
-reference installation:
-
-| BX Plus function | Why not (for now) |
-|---|---|
-| Bypass, CS bypass, irradiance switch | Need a bypass valve or an irradiance sensor (CS10), which the installation doesn't have |
-| External heat exchanger, drainback, twin pump, overheat dissipation | Different hydraulics; overheat dissipation needs an extra output and a cooler |
-| Multi-store charging logic, zone charging, parallel relay | Single store; see multi-store priority above |
-| Holiday function (store recooling through the collector) | Evacuated tubes lose almost no heat at night; the collector is covered during holidays instead ([installation.md](installation.md#overtemperature-protection)) |
-| Pressure and flow monitoring with Grundfos Direct Sensors | No sensors, and the HAT has no analogue input; the "no circulation" check covers the flow side |
-| Mixer, heating circuits, solid-fuel boiler, return boost, return admixing, screed drying | Heating side, a non-goal for now (section 1) |
-| DHW heating, thermal disinfection, circulation pump | Done by the heat pump |
-| Function block (thermostats, timers and logic gates on spare outputs) | Useful for other installations, nothing to use it for yet; a candidate once there are spare outputs |
-| Heat meter "CO₂ / fuel saved" display | A dashboard item, not a control function |
-
-#### DiSoCon2 firmware behaviours not taken over
-
-From its ESPHome configuration (`Software/hardware/interval.yaml` and friends):
-
-| DiSoCon2 behaviour | Why not |
-|---|---|
-| **Collector above T_max → pump to 100 %** to cool it | The opposite of the BX Plus and OSCoST collector emergency shutdown. Pumping glycol through a collector at stagnation temperature (208 °C here) puts steam into the loop and stresses the pump, the expansion vessel and the fluid. OSCoST stops the pump above the emergency limit and restarts only once the collector has cooled (4.2); collector cooling (above) acts earlier, while the temperature is still safe |
-| **Collector sensor fault between 12:00 and 16:00 → precautionary pump run** (up to 5 min) | Running blind can just as well move heat the wrong way or start the pump into steam. With a failed collector sensor OSCoST goes to its safe state (pump off) and raises an alarm; evacuated tube collectors are designed to stagnate |
-| Fixed speed steps (30 / 50 / 75 / 100 %) with hysteresis | Covered by the PI controller and the BX-compatible mode |
-| Heat output from a fixed 5 l/min with water properties | OSCoST uses a configured or measured flow and the real fluid properties (glycol) |
-| Two-tank switching with a 3-way valve | Multi-store, later (see multi-store priority) |
-| LCD menu, buttons, temperature trend arrows, Wi-Fi | No local display (general rule), wired Ethernet only; trend arrows are a web-page detail |
+Functions of the BX Plus and behaviours of DiSoCon2 that were deliberately
+not taken over, with the reasons: [A7](DECISIONS.md#a7--bx-plus-functions-not-taken-over)
+and [A8](DECISIONS.md#a8--disocon2-behaviours-not-taken-over).
 
 ### 6.3 Runtime
 
@@ -988,7 +905,7 @@ come first.
 - Settled: the platform stays the Raspberry Pi (HAT D14). An ESP32-P4
   port on the Waveshare ESP32-P4-WIFI6-DEV-KIT, which has the Pi form
   factor, was checked and is documented as a possible later option
-  (HAT 2.1).
+  ([D14](DECISIONS.md#d14--raspberry-pi-or-esp32-p4)).
 
 ## 12. Related projects
 
@@ -1019,7 +936,7 @@ OSCoST (MIT). What we take from it as ideas:
   for a controller in a boiler room. Any microcontroller version of
   OSCoST should have wired Ethernet, not only Wi-Fi. The most likely
   candidate is the ESP32-P4, which has a built-in Ethernet MAC. For now
-  OSCoST stays on the Pi (HAT D14, pin check in HAT 2.1).
+  OSCoST stays on the Pi (HAT D14, D14).
 - **Standalone first:** it keeps controlling with no network at all and
   has a local display and buttons. OSCoST's control loop is local too; a
   minimal local indication (status LEDs, maybe a small display) is worth
@@ -1045,115 +962,3 @@ OSCoST (MIT). What we take from it as ideas:
   100 % when the collector overheats, and precautionary pump runs with a
   failed collector sensor.
 
----
-
-## 13. Platform comparison (Pi or microcontroller)
-
-Compared in November 2026 before any code was written. **Decision: stay
-on the Raspberry Pi** (HAT D14): more people already own one, and Linux
-gives more flexibility. The ESP32-P4 is documented as a possible later
-port (pin check in HAT 2.1). Prices are single quantity; those marked
-"from memory" were not looked up.
-
-### 13.1 Cost per controller, including the computer
-
-The Pi rows include an SD card (≈ €10).
-
-| Base | Compute part | 1-Wire edition | PT edition | 5 V supply |
-|---|---|---|---|---|
-| Pi 5 + HAT | Pi 5 2 GB ≈ €80 ($77.50) | ≈ €125 | ≈ €160 | 5 A |
-| Pi 4 + HAT | Pi 4 2 GB ≈ €70 ($67.50) | ≈ €115 | ≈ €150 | 3 A |
-| Pi Zero 2 W + HAT | ≈ €15–18 | ≈ €63 | ≈ €97 | ≈ 1.5 A |
-| ESP32-S3 on the board | module ≈ $4.70 + regulator, USB-C, microSD ≈ €8 | ≈ €40–45 | ≈ €75–80 | < 1 A |
-| RP2350 (Pico 2 W) on the board | module ≈ €7–8 (from memory) + regulator, microSD ≈ €10 | ≈ €42–47 | ≈ €77–82 | < 1 A |
-
-### 13.2 Board cost only (without the computer)
-
-| Base | What the board adds | 1-Wire edition | PT edition |
-|---|---|---|---|
-| Any Pi: HAT | stacking header and spacers (≈ €3) | ≈ €35 (≈ €30 since D18) | ≈ €69 (≈ €65 since D18) |
-| ESP32-S3 on the board | instead of the header: module (≈ €4.50), 3.3 V regulator (≈ €1), USB-C (≈ €0.50), microSD slot (≈ €0.50) | ≈ €39 | ≈ €73 |
-| RP2350 (Pico 2 W) on the board | instead of the header: module (≈ €7.50, from memory), regulator (≈ €1), microSD slot (≈ €0.50) | ≈ €41 | ≈ €75 |
-
-Not included: storage (SD or microSD, €5–10 either way) and, for the
-microcontroller boards, wired Ethernet (W5500 + jack, ≈ €5). On the board
-alone a microcontroller version costs only €4–6 more than the HAT; the
-real saving is the Pi itself.
-
-### 13.3 What each platform can do
-
-| What OSCoST has to do | Pi (Linux) | ESP32-S3 | RP2350 (Pico 2 W) |
-|---|---|---|---|
-| Control loop, outputs, PWM, feedback | via kernel drivers | 🟢 direct hardware, real-time | 🟢 direct hardware (PIO) |
-| Pt1000 (LTC2983 / MAX31865), 1-Wire | 🟢 kernel drivers | 🟢 own drivers, 1-Wire via RMT | 🟢 own drivers, 1-Wire via PIO |
-| Watchdog, boot time | external watchdog needed; boots in about 30 s | 🟢 built in; under 1 s | 🟢 built in; under 1 s |
-| Web interface | 🟢 no limits | 🟡 works; 512 KB RAM + 8 MB PSRAM | 🔴 tight: 520 KB RAM |
-| History charts in the web UI | 🟢 from local data | 🟡 last 24 h in RAM, longer from VictoriaMetrics | 🔴 VictoriaMetrics only |
-| 1-second push with buffering | 🟢 on disk | 🟡 RAM for hours, microSD for days | 🟡 microSD |
-| Network | 🟢 Ethernet (Pi 4/5) | 🟡 Wi-Fi; wired needs a W5500 | 🟡 Wi-Fi; wired needs a W5500 |
-| Updates | 🟢 packages | 🟢 over the network, 2 firmware slots | 🟡 possible, less mature in Rust |
-| Rust support | 🟢 standard Rust | 🟢 mature (esp-rs, std via ESP-IDF) | 🟡 good, no std (Embassy) |
-| Independent of other software | 🔴 shares the Pi with other services | 🟢 dedicated device | 🟢 dedicated device |
-
-With the general rules (wired Ethernet only, no local display; section 1)
-the field narrows: the Pi Zero 2 W is out (Wi-Fi only), the RP2350 is out
-(radio unused, needs a W5500, RAM too tight), the ESP32-S3 would leave its
-Wi-Fi unused and still need a W5500. The **ESP32-P4** fits best among the
-microcontrollers: Ethernet MAC built in, no radio, 32 MB PSRAM.
-
-### 13.4 ESP32-P4 against the Pi
-
-Assuming a ready-made P4 Ethernet board under the same HAT.
-
-| | Pi 4 / Pi 5 + HAT | ESP32-P4 + HAT |
-|---|---|---|
-| Compute | 🔴 Pi 5 2 GB ≈ €80, Pi 4 2 GB ≈ €70 | 🟢 P4 board ≈ €12–25 |
-| Storage | SD card ≈ €10 | microSD for the buffer ≈ €5 |
-| 5 V supply | 🔴 Pi 5: 5 A · Pi 4: 3 A | 🟢 < 1 A |
-| **Total per controller** | **≈ €130–145 (1-Wire) / €165–180 (PT)** | **≈ €60 (1-Wire) / €95 (PT)** |
-| Power use | 🟡 3–5 W | 🟢 under 1 W (≈ €8/year less) |
-| After a power cut | 🔴 boots in about 30 s | 🟢 running in about 1 s |
-| Storage wear | 🔴 SD card can wear out or get corrupted | 🟢 firmware in flash |
-| Watchdog | 🟡 external watchdog + systemd | 🟢 built in, plus the HAT's external watchdog |
-| Independence | 🔴 shares the Pi with other services | 🟢 dedicated device |
-| Rust platform | 🟢 standard Rust, every library | 🟡 ESP-IDF or bare metal, younger on the P4 |
-| Drivers | 🟢 kernel drivers ready | 🟡 written ourselves (1-Wire, LTC2983/MAX31865, PWM, feedback capture) |
-| Web interface, buffer | 🟢 no limits, disk | 🟢 htmx and uPlot are small; PSRAM holds days, microSD beyond |
-| Updates, debugging | 🟢 apt, SSH, standard tools | 🟡 firmware upload with 2 slots; USB debugger, network logs |
-| Development speed | 🟢 fastest | 🟡 slower, especially the first drivers |
-| Other people building one | 🟡 must buy and set up a Pi | 🟢 flash the firmware |
-
-Summary: the P4 is the better product (less than half the price, ready
-in a second, no SD card, dedicated); the Pi is the faster and more
-flexible development platform, and many people already own one. That
-flexibility decided it (D14).
-
-### 13.5 ESP32-P4 boards considered
-
-| Board | Price | Notes |
-|---|---|---|
-| Waveshare ESP32-P4-ETH | $12.99 ($16.99 with PoE) | 32 MB PSRAM, 32 MB flash, RJ45, microSD, 40-pin header compatible with some Pico HATs; would need its own carrier board |
-| Olimex ESP32-P4-DevKit | €16.00 | open hardware (OSHW certified), Ethernet with PoE option, all GPIOs exposed, 72 × 30 mm; needs a carrier board |
-| Waveshare ESP32-P4-NANO | €22.60 incl. VAT (Eckstein) | 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (Wi-Fi, unused), 28 GPIOs; header not Pi-shaped, needs a carrier board |
-| **Waveshare ESP32-P4-WIFI6-DEV-KIT** | €24.90 incl. VAT (Eckstein) | **Pi form factor** (85 × 56.5 mm) with a Pi-style 40-pin header, so the OSCoST HAT could plug on directly; 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (unused), PoE header. Pin map checked against the HAT in HAT 2.1: three signals would have to move |
-
-If the port is ever done, the WIFI6-DEV-KIT under the same HAT is the
-simplest route. That door is kept open by the rules for `oscost-core`
-and `oscost-safety` in 6.1 (`no_std`, decided), so they run unchanged on a
-microcontroller:
-
-- **What it means:** these two crates only compute. They get temperatures,
-  settings and the time as plain values and return output commands. They
-  use only Rust's `core` and `alloc` libraries, not `std`, so no files,
-  threads, network, system clock or printing. Everything that touches
-  Linux stays in `oscost-hw-linux` and `oscostd`. This is section 6.1's
-  "pure, no I/O" rule, enforced by the compiler instead of by discipline.
-- **Advantages:** a later ESP32-P4 port rewrites only the hardware and
-  daemon parts, not the control logic and its tests; the compiler refuses
-  a file access or clock read slipped into the control code; the logic
-  stays small and easy to test and replay on the PC.
-- **Drawbacks:** a few conveniences need replacements (`HashMap` →
-  `BTreeMap` or a fixed-size map, `f32::exp` and friends from the `libm`
-  crate, no `println!` debugging inside the core, so debug output goes
-  through returned events), and contributors must keep to the rule.
-  Tests and the simulator still run on the PC with `std`.
