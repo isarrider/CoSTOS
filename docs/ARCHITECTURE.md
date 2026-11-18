@@ -439,8 +439,8 @@ config:
 
 | Function | Behaviour |
 |---|---|
-| **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. **Collector minimum temperature** (optional, default on, 10 °C as on the BX Plus): no start below it, even when ΔT is met. |
-| **Speed control** | While on, a PI controller drives the PWM duty to keep ΔT around a setpoint (for example 10 K), between min and max speed. Starts at 100 % for a short purge/kick. Optional **BX-compatible mode**: speed steps up or down by one step each time ΔT moves by the "rise value" (BX Plus default 2 K) around the setpoint, so shadow mode can compare like with like. |
+| **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. **Collector minimum temperature** (optional, default on, 10 °C as on the BX Plus): no start below it, even when ΔT is met. The control loop uses a lightly smoothed ΔT (moving average over a few samples, as DiSoCon2 does) so single noisy readings don't toggle the pump; raw values still go to VictoriaMetrics. |
+| **Speed control** | While on, a PI controller drives the PWM duty to keep ΔT around a setpoint (for example 10 K), between min and max speed. **Start profile** per output: *kick* (default: 100 % for a short purge, then control) or *ramp* (soft start from minimum speed in steps of, say, 10 %/s, as DiSoCon2 does), for pumps or hydraulics that dislike a hard start. Optional **BX-compatible mode**: speed steps up or down by one step each time ΔT moves by the "rise value" (BX Plus default 2 K) around the setpoint, so shadow mode can compare like with like. |
 | **Anti-seize run** | Runs each pump once a day for a short time (BX Plus "blocking protection": 12:00, 10 s; time and duration configurable), so it doesn't seize. Skipped if the pump has already run that day. |
 | **Store maximum** | Stops loading at T(store) ≥ T_max. Emergency stop at the hard limit (enforced by the supervisor as well). |
 | **Collector emergency shutdown** | Enforced in the supervisor (section 4.2). |
@@ -448,6 +448,8 @@ config:
 | **Tube collector function** | Optional: short periodic pump runs so a sensor in an evacuated tube collector sees the real temperature. |
 | **Frost protection** | Optional. Only needed without glycol. |
 | **Heat quantity** | From V40 pulses (or a configured fixed flow) × ΔT(flow, return) × fluid properties (glycol percentage in config). Persisted. |
+| **Statistics** | Per pump: operating hours, starts, last run time and **electrical energy**: measured from the pump's PWM feedback where it reports power (Grundfos: 1 W per %), otherwise estimated from rated power × duty. From that, a **solar yield ratio** (heat delivered ÷ pump electricity) per day and month. Collector time above a threshold (for example 80 °C) per day and month, a stagnation indicator. Persisted with the heat quantity counters. |
+| **Standby mode** | A global *automatic / standby* switch in the web interface (DiSoCon2 "Centralina in Automatico"): standby stops all control functions and keeps the outputs off, for filling, flushing and maintenance. The safety supervisor and logging keep running; it shows prominently on every page and is logged as an event. |
 | **Multi-store priority** | Later, if the installation uses it (BX Plus supports 2–3 stores). |
 | **Back-up heating suppression** | Optional, later. Publishes "solar is charging" and a forecast of the store top temperature, so an external heat source can hold back its hot-water run while solar will do the job. The BX Plus switches a relay for this; OSCoST offers it through the HTTP API and, when enabled, MQTT. In the reference installation, Home Assistant would use it to delay the heat pump's hot-water heating. |
 
@@ -462,11 +464,11 @@ can be switched off.
 | Check | Detects | Typical cause | Action |
 |---|---|---|---|
 | **ΔT too high** | Pump running, ΔT stays far above the setpoint for a long time, and the store bottom doesn't warm | Air in the loop, seized pump, closed valve, scaled heat exchanger | Alarm |
-| **No circulation** (OSCoST addition) | After a pump start the collector doesn't cool within a set time (no flow sensor needed) | Dead or unpowered pump, air lock, broken PWM signal | Alarm; the pump is stopped after repeated failures so it doesn't run dry |
+| **No circulation** (OSCoST addition) | After a pump start the collector doesn't cool within a set time (no flow sensor needed) | Dead or unpowered pump, air lock, broken PWM signal | Alarm; the pump is stopped after repeated failures so it doesn't run dry. If a solar flow sensor is configured, a second criterion as in DiSoCon2: after a grace time (the time the loop volume takes to pass, there 9 min for a 270 m loop) the flow line must be warmer than the store bottom, checked over several consecutive cycles before it counts |
 | **Night circulation** | At night, with the pump off, the collector warms while the store bottom cools | Faulty non-return valve (gravity circulation) | Alarm |
 | **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) |
 | **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
-| **Sensor fault** | Open, short, out of range, sudden jumps (5.1) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
+| **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
 
 A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
 is possible later, as on the BX Plus "fault relay". The web page and
@@ -488,6 +490,19 @@ reference installation:
 | DHW heating, thermal disinfection, circulation pump | Done by the heat pump |
 | Function block (thermostats, timers and logic gates on spare outputs) | Useful for other installations, nothing to use it for yet; a candidate once there are spare outputs |
 | Heat meter "CO₂ / fuel saved" display | A dashboard item, not a control function |
+
+#### DiSoCon2 firmware behaviours not taken over
+
+From its ESPHome configuration (`Software/hardware/interval.yaml` and friends):
+
+| DiSoCon2 behaviour | Why not |
+|---|---|
+| **Collector above T_max → pump to 100 %** to cool it | The opposite of the BX Plus and OSCoST collector emergency shutdown. Pumping glycol through a collector at stagnation temperature (208 °C here) puts steam into the loop and stresses the pump, the expansion vessel and the fluid. OSCoST stops the pump above the emergency limit and restarts only once the collector has cooled (4.2); collector cooling (above) acts earlier, while the temperature is still safe |
+| **Collector sensor fault between 12:00 and 16:00 → precautionary pump run** (up to 5 min) | Running blind can just as well move heat the wrong way or start the pump into steam. With a failed collector sensor OSCoST goes to its safe state (pump off) and raises an alarm; evacuated tube collectors are designed to stagnate |
+| Fixed speed steps (30 / 50 / 75 / 100 %) with hysteresis | Covered by the PI controller and the BX-compatible mode |
+| Heat output from a fixed 5 l/min with water properties | OSCoST uses a configured or measured flow and the real fluid properties (glycol) |
+| Two-tank switching with a 3-way valve | Multi-store, later (see multi-store priority) |
+| LCD menu, buttons, temperature trend arrows, Wi-Fi | No local display (general rule), wired Ethernet only; trend arrows are a web-page detail |
 
 ### 6.3 Runtime
 
@@ -835,3 +850,10 @@ OSCoST (MIT). What we take from it as ideas:
   purpose later.
 - **Protection on every external line:** TVS diodes on sensor inputs,
   ESD arrays, polyfuses on sensor supplies, as on the OSCoST HAT.
+- **Firmware behaviours** (from its ESPHome configuration), reviewed in
+  6.2: taken over are ΔT smoothing, a soft-start ramp as a start profile,
+  the grace-time flow check, a stale-reading watchdog for the sensor
+  converter, a global automatic/standby switch, and pump energy and
+  runtime statistics. Deliberately not taken over: running the pump at
+  100 % when the collector overheats, and precautionary pump runs with a
+  failed collector sensor.
