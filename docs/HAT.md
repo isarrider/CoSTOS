@@ -480,11 +480,9 @@ are the Pi, the DIN-rail supply, the SSR and the sensors.
 | 74LVC1G08 | 1 | 0.20 |
 | 100 mA polyfuse | 1 | 0.20 |
 | AO3400A, 1N4148W | 2 | 0.20 |
-| **Total** | | **≈ 28** |
+| **Total** | | **≈ 30** |
 
-Without the power input (D18). The rows add up to about €27; earlier
-versions of this list showed ≈ €35, which included the power input
-(≈ €4) and was rounded up generously. The watchdog with AND gate and relay supply switch is about €1.50–2 of
+Without the power input (D18); with it the list came to ≈ €34. The watchdog with AND gate and relay supply switch is about €1.50–2 of
 this (D8). Pluggable terminals would add about €4 (D10). The PT edition's
 list is in [11.5](#115-space-and-cost).
 
@@ -792,9 +790,9 @@ support), and the tall header for the Pi 5 cooler.
 | 100 mA polyfuse, 1N4148W | 2 | 0.30 |
 | **Total** | | **≈ €25** |
 
-Since the full HAT lost its power input too (D18, ≈ €28), the Lite HAT
-saves only about **€3 in parts**: the 12 V DC/DC, the relay output and
-the second 1-Wire bus. Assembled in a batch of 5 the gap may be a few
+Since the full HAT lost its power input too (D18, ≈ €30), the Lite HAT
+saves about **€5.40 in parts**: the 12 V DC/DC, the relay output, the
+second 1-Wire bus and the PWR LED. Assembled in a batch of 5 the gap may be a few
 euros more, because of fewer part types and joints; it gets quoted with
 the BOM. Whether the Lite HAT is still worth a separate board is open. The MAX31865 is a third of the cost but stays: it
 is what keeps the roof cable away from the Pi (rule 2).

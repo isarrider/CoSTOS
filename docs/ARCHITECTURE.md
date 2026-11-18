@@ -1071,7 +1071,7 @@ The Pi rows include an SD card (≈ €10).
 
 | Base | What the board adds | 1-Wire edition | PT edition |
 |---|---|---|---|
-| Any Pi: HAT | stacking header and spacers (≈ €3) | ≈ €35 (≈ €28 since D18) | ≈ €69 (≈ €65 since D18) |
+| Any Pi: HAT | stacking header and spacers (≈ €3) | ≈ €35 (≈ €30 since D18) | ≈ €69 (≈ €65 since D18) |
 | ESP32-S3 on the board | instead of the header: module (≈ €4.50), 3.3 V regulator (≈ €1), USB-C (≈ €0.50), microSD slot (≈ €0.50) | ≈ €39 | ≈ €73 |
 | RP2350 (Pico 2 W) on the board | instead of the header: module (≈ €7.50, from memory), regulator (≈ €1), microSD slot (≈ €0.50) | ≈ €41 | ≈ €75 |
 
