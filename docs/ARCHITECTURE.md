@@ -624,7 +624,8 @@ Not planned: emulating VBus to be read by other RESOL tools.
 VictoriaMetrics is the only time-series target. No InfluxDB support.
 
 - **Every control cycle (1 Hz)** produces one sample set: all temperatures,
-  output states and speeds, ΔT, heat output, heat quantity counters, active
+  output states and speeds, pump feedback, ΔT, heat output, heat quantity
+  counters, active
   functions, sensor fault and safety intervention flags. Each sample carries
   the timestamp of the control cycle, not the time it was sent.
 - **Protocol**: VictoriaMetrics' Prometheus import endpoint
@@ -645,6 +646,22 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
   - Values the RESOL never had (ΔT, heat output, active function, fault and
     safety flags, buffer state) get new names under the same prefix, for
     example `oscost_delta_t`, `oscost_sensor_fault_01`.
+  - **Pump feedback** (iPWM / Grundfos PWM feedback, 5.3) is logged per
+    pump output, numbered like the relays, whenever a feedback input is
+    configured:
+    - `oscost_pump_feedback_01`: the raw feedback duty in %, averaged over
+      the second (the input is sampled continuously at 75 Hz). Raw, so
+      that values Wilo describes only as "flow or power information" are
+      kept and can be interpreted later.
+    - `oscost_pump_status_01`: the decoded state as a number: 0 stand-by,
+      1 running, 2 warning, 3 temporary error, 4 permanent failure, 5 no
+      power, 6 feedback interface damaged.
+    - `oscost_pump_power_01`: electrical power in W, only for pumps whose
+      feedback encodes power (Grundfos: 1 W per %); feeds the statistics
+      (6.2).
+    - A mismatch between commanded and reported state (stop commanded but
+      running, run commanded but stand-by or no power) also raises an
+      alarm (`oscost_alarm{kind}`, 6.2).
   - A sensor with a fault is **not written** for that second (a gap in the
     chart), instead of writing a fake value.
   - The prefix is fixed at `oscost`, also after OSCoST has replaced the
