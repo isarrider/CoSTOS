@@ -503,11 +503,18 @@ non-basic part types fewer) plus a **variable part per board** (≈ €15
 normal, ≈ €9.50 Lite, ≈ €49 PT edition with the consigned LTC2983).
 Without the power input (D18), which also removed two non-basic part types.
 
-| Build | **Price for one** (smallest order: 2 boards) | per board in that order | 5 boards total | per board at 5 |
-|---|---|---|---|---|
-| 1-Wire edition, normal build | **≈ €90** | ≈ €45 | ≈ €135 | ≈ €27 |
-| 1-Wire edition, Lite build (12) | **≈ €73** | ≈ €37 | ≈ €100 | ≈ €20 |
-| PT edition (11) | **≈ €158** | ≈ €79 | ≈ €305 | ≈ €61 |
+**What one controller costs**, by how you get the board (estimates, all
+incl. 19 % VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
+
+| How you get it | What you pay for | **1-Wire edition** | **1-Wire, Lite build** | **Lite saves** | **PT edition** |
+|---|---|---|---|---|---|
+| **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €90** | 🔴 **≈ €73** | ≈ €17 | 🔴 **≈ €158** |
+| **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €27** | 🟢 **≈ €20** | ≈ €7 | 🟢 **≈ €61** |
+| **Build it yourself** | parts for one board plus a set of 3 bare PCBs (AISLER, ≈ €19); needs SMD soldering (fine-pitch MAX31865 / LTC2983); parts shipping not included | 🟡 **≈ €51** | 🟡 **≈ €45** | ≈ €6 | 🟡 **≈ €92** |
+
+The parts lists (8.1, 11.5, 12.2) show **≈ €30 / €25.40 / €65**: that is
+the parts for one board excluding VAT, with one third of the PCB set, so
+it fits a group build, not someone building a single board.
 
 Before D18 the normal build came to ≈ €105 for 2 and ≈ €165 for 5. For
 one controller, the fixed costs dominate: that is why the Lite build,
