@@ -510,7 +510,7 @@ incl. 19 % VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
 |---|---|---|---|---|---|
 | **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €90** | 🔴 **≈ €73** | ≈ €17 | 🔴 **≈ €158** |
 | **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €27** | 🟢 **≈ €20** | ≈ €7 | 🟢 **≈ €61** |
-| **Build it yourself** | parts for one board plus a set of 3 bare PCBs (AISLER, ≈ €19); needs SMD soldering (fine-pitch MAX31865 / LTC2983); parts shipping not included | 🟡 **≈ €51** | 🟡 **≈ €45** | ≈ €6 | 🟡 **≈ €92** |
+| **Build it yourself** | parts for one board plus a set of 3 bare PCBs (AISLER, ≈ €19); needs SMD soldering (fine-pitch MAX31865 / LTC2983); parts shipping not included | 🟡 **≈ €51** | 🟡 **≈ €45** | ≈ €5.50 | 🟡 **≈ €92** |
 
 The parts lists (8.1, 11.5, 12.2) show **≈ €30 / €25.40 / €65**: that is
 the parts for one board excluding VAT, with one third of the PCB set, so
