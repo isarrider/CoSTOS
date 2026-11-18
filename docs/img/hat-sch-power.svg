@@ -28,7 +28,7 @@
 <text x="20" y="330" class="n" text-anchor="start">protection, so it needs no fuse, TVS or ideal diode (D18).</text>
 <text x="20" y="345" class="n" text-anchor="start">Earlier drafts had J1, F1, D1, Q1, U1 and C1 here (power input</text>
 <text x="20" y="360" class="n" text-anchor="start">with ideal diode); those reference designators stay unused.</text>
-<text x="20" y="490" class="h" text-anchor="start">2 · 12 V for the pump drivers</text>
+<text x="20" y="490" class="h" text-anchor="start">2 · Pump driver supply: 12 V (normal) or 5 V (Lite build)</text>
 <path d="M40 550 V538 M28 538 H52" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
 <text x="40" y="528" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
 <path class="w" d="M40 550 L150 550"/>
