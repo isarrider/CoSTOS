@@ -754,6 +754,10 @@ come first.
   (HAT D12, D13). The reference installation plans the PT edition and
   keeps its eight Pt1000 sensors; the 1-Wire edition with DS18B20 stays
   documented as the alternative.
+- Settled: the platform stays the Raspberry Pi (HAT D14). An ESP32-P4
+  port on the Waveshare ESP32-P4-WIFI6-DEV-KIT, which has the Pi form
+  factor, was checked and is documented as a possible later option
+  (HAT 2.1).
 
 ## 12. Related projects
 
@@ -771,7 +775,9 @@ OSCoST (MIT). What we take from it as ideas:
 
 - **Wired Ethernet with a W5500 and an RJ45 jack on the board** works
   for a controller in a boiler room. Any microcontroller version of
-  OSCoST should have wired Ethernet, not only Wi-Fi.
+  OSCoST should have wired Ethernet, not only Wi-Fi. The most likely
+  candidate is the ESP32-P4, which has a built-in Ethernet MAC. For now
+  OSCoST stays on the Pi (HAT D14, pin check in HAT 2.1).
 - **Standalone first:** it keeps controlling with no network at all and
   has a local display and buttons. OSCoST's control loop is local too; a
   minimal local indication (status LEDs, maybe a small display) is worth

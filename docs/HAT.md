@@ -63,6 +63,42 @@ layout is done in KiCad.
 
 ![HAT mockup, top view](img/hat-mockup.svg)
 
+### 2.1 Considered: Waveshare ESP32-P4-WIFI6-DEV-KIT
+
+The Waveshare ESP32-P4-WIFI6-DEV-KIT has the Pi form factor and a
+40-pin header, so a microcontroller version could in principle use the
+same HAT. The pin maps were checked against each other (header
+silkscreen and the board schematic, November 2026):
+
+- 5 V, 3.3 V and GND are on the same pins as on the Pi.
+- The board's 3.3 V buck (MP1658, 3 A) has plenty of headroom; the HAT
+  needs under 50 mA.
+- The USB inputs appear to be ORed through a P-MOSFET and a Schottky
+  diode. Same rule as on the Pi: one supply at a time.
+- I²C (pins 3/5, GPIO7/8) is shared with the on-board audio codec. It
+  only matters if the DS2482 is ever fitted.
+
+Three HAT signals land on pins the P4 board uses itself:
+
+| HAT signal | Pi header pin | P4 GPIO there | Used on the P4 board for | Free P4 pin instead |
+|---|---|---|---|---|
+| SCLK | 23 | GPIO0 | 32.768 kHz crystal (via R29, 0 Ω) | 37 (GPIO47) |
+| REL1 | 22 | GPIO1 | 32.768 kHz crystal (via R33, 0 Ω) | 31 (GPIO26) |
+| PWM2 (unfitted) | 35 | GPIO53 | audio amplifier enable (via R73, 0 Ω) | 33 (GPIO48) |
+
+There are two ways to fit the HAT to the P4:
+
+- **Move the three signals.** The HAT then no longer works on a Pi,
+  because the Pi's SPI clock is fixed to pin 23.
+- **Remove R29/R33 on every P4 board.** This costs the board's RTC
+  crystal, and PWM2 still has to move.
+
+**Decision D14: OSCoST stays on the Raspberry Pi.** More people already
+own one, and Linux gives more flexibility for the web interface,
+VictoriaMetrics buffering, updates and add-ons. The P4 stays a possible
+later port. If it is ever done, the "move the three signals" variant
+above is the starting point.
+
 ## 3. Block diagram
 
 ```
@@ -502,6 +538,7 @@ estimated here; it gets quoted with the BOM.
 | D11 | VBus receiver on the HAT? | **No**: VBus is only needed while the BX Plus is still connected (shadow mode, switchable phase). The existing loose adapter plugs onto pins 1, 6 and 10 on top of the stacking header until then; after the switch-over it goes away and the UART is free |
 | D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board (section 11): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measuring chip: see D13 |
 | D13 | Measuring chip for the PT edition? | **One LTC2983**: 8 independent 2-wire Pt1000 inputs (18 of its 20 inputs), excitation, fault detection and linearisation built in, result in °C, buffered inputs for simple protection. Costs a little more than 2 × ADS124S08 but needs far less analog design and software, and it frees GPIO4 for a 1-Wire bus. Comparison in 11.6 |
+| D14 | Raspberry Pi or ESP32-P4 (Waveshare ESP32-P4-WIFI6-DEV-KIT, same form factor)? | **Raspberry Pi**: more people already own one, and Linux gives more flexibility. The P4 board is a possible later port; its pin check is in 2.1. On the P4, SCLK, REL1 and PWM2 would hit the RTC crystal and the audio amplifier |
 
 ---
 
