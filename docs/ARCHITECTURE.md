@@ -38,8 +38,11 @@ OSCoST without risking the system.
 
 - Space-heating circuits, mixers, heat pump or boiler demand. The BX Plus
   can do these. OSCoST starts with the solar side only.
-- A display and buttons on the device. The UI is a web page, plus (optional)
-  Home Assistant over MQTT.
+- A display and buttons on the device (general rule). The UI is a web
+  page, plus (optional) Home Assistant over MQTT; the device itself only
+  has status LEDs.
+- Wi-Fi (general rule). OSCoST connects over **wired Ethernet**; whatever
+  platform it runs on must have an Ethernet port.
 - Certification. OSCoST is a hobby project. Mains wiring is done by a
   qualified electrician, and the hardware safety devices described in
   section 4 are not optional.
