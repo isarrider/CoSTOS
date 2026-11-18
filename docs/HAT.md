@@ -12,7 +12,8 @@ and the pump only gets connected once its output and the watchdog have
 been checked on the bench.
 
 The HAT comes in **two editions** that share everything except the
-sensor inputs:
+sensor inputs, plus a cheaper **Lite build** of the first
+([section 12](#12-lite-build-decided-d19)):
 
 - **1-Wire edition** (sections 1–10): 1 Pt1000 input (collector) plus two
   1-Wire buses for DS18x20 sensors. For new installations and anyone
@@ -253,10 +254,11 @@ the 13 V TVS standoff at light load.
   bench tests (clearly marked, open by default).
 - **Why it is worth the ~€3:** the Pi's own hardware watchdog and systemd
   catch a hung kernel or a crashed OSCoST, but not a fault in the
-  switching hardware. DIN-rail SSRs typically fail short-circuited, which
-  would leave the pump powered permanently. The watchdog-gated PWM is then
-  a second, independent way to stop the pump (0 % = stop with a PWM2
-  pump), and the feedback input shows that it happened (D8).
+  switching hardware. Where a cut-off relay or SSR is used (option C), an
+  SSR that fails short-circuited would leave the pump powered; the
+  watchdog-gated PWM is then a second, independent way to stop it (0 % =
+  stop with a PWM2 pump), and the feedback input shows that it happened
+  (D8).
 - **With a permanently powered pump (D15, option A) the gated PWM is the
   only stop path**, which makes this circuit the main hardware safety
   layer rather than a backup.
@@ -428,7 +430,7 @@ All labelled on the silkscreen:
 | PT1 | +, − | Pt1000 sensor 1 (collector) |
 | PT2 | +, − | Pt1000 sensor 2 (not fitted in rev A) |
 | 1W-A, 1W-B | 3V3, DQ, GND | DS18x20 sensors |
-| REL1 | +5V, OUT | SSR / relay 1 (pump mains) |
+| REL1 | +5V, OUT | relay / SSR 1, optional: cut-off relay (option C), heating-profile pump, valve |
 | REL2 | +5V, OUT | SSR / relay 2 (not fitted in rev A) |
 
 ## 8. Manufacturing
@@ -461,7 +463,7 @@ All labelled on the silkscreen:
 Single-quantity distributor prices without VAT, at the time of writing.
 Only the MAX31865 price is checked (DigiKey, €8.76 for one); the rest are
 estimates until the BOM exists. Unfitted positions are not counted, nor
-are the Pi, the DIN-rail supply, the SSR and the sensors.
+are the Pi, its USB-C supply, an optional relay and the sensors.
 
 | Part | Qty | ≈ € |
 |---|---|---|
@@ -595,7 +597,7 @@ into 8.2.
 | D5 | Power the Pi from the HAT? | ~~Yes~~, replaced by D18: **no**, the Pi uses its own USB-C supply |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
 | D7 | Hand assembly or factory assembly? | **Factory-assembled, delivered fully soldered**; AISLER or JLCPCB decided on quotes once the BOM exists (8.2) |
-| D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts for a second, independent way to stop the pump, e.g. when the SSR fails short-circuited |
+| D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts. Since D15 (pump permanently powered) it is the main hardware stop path; with an optional cut-off relay it is the second, independent one, e.g. when an SSR fails short-circuited |
 | D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
 | D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |
 | D11 | VBus receiver on the HAT? | **No**: VBus is only needed while the BX Plus is still connected (shadow mode, switchable phase). The existing loose adapter plugs onto pins 1, 6 and 10 on top of the stacking header until then; after the switch-over it goes away and the UART is free |

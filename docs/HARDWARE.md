@@ -7,11 +7,16 @@ designed. Right now it covers:
 - [PWM pump output](#pwm-pump-output): driving a high-efficiency pump's
   speed input from the Raspberry Pi.
 
-> **Safety.** Everything on this page is low voltage (5 V and 12 V). The
-> pump's 230 V supply stays where it is: on a relay that switches off when
-> OSCoST stops responding (see
-> [Safety](ARCHITECTURE.md#4-safety)). Leave mains wiring to a qualified
-> electrician.
+> **Safety.** Everything on this page is low voltage (5 V and 12 V). While
+> the RESOL controller is still in place, the pump keeps its 230 V from the
+> RESOL relay. Once OSCoST controls the pump, the pump stays permanently on
+> 230 V and is stopped **only over PWM** (low signal = stop with a
+> solar-profile pump; see [230 V side](ARCHITECTURE.md#56-230-v-side)). So
+> the PWM stage must never output a high signal on its own: use only
+> non-inverting stages with a pull-down. The stripboard circuits here have
+> no hardware watchdog; that comes with the [HAT](HAT.md#46-hardware-watchdog).
+> Use them for bench tests and supervised tests, not to run the pump
+> unattended. Leave mains wiring to a qualified electrician.
 
 The stripboard circuits here are the tested basis for a single plug-on
 board that combines everything: see the [HAT specification](HAT.md).
@@ -541,9 +546,9 @@ isolation is gone.
    - About 12 V when open, 0 V on 3.3 V: **inverting**. OSCoST can invert
      its output in the settings, but with an inverting module the pump
      gets **100 %** whenever the Pi is off or booting. With the PWM2
-     profile that means full speed instead of stop, so the pump's 230 V
-     relay is then the only thing that stops it. Prefer a non-inverting
-     module.
+     profile that means full speed instead of stop, and with the pump
+     permanently powered nothing else stops it. **Don't use an inverting
+     module.**
 4. **Wire everything** as in the drawing, with the Pi shut down.
 5. **Test** exactly as for option 1: enable PWM on GPIO 18
    ([Testing the output](#testing-the-output)), measure OUT against V−

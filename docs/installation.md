@@ -141,7 +141,7 @@ stopped, 5–75 % when running) before OSCoST relies on them.
 - **The feedback output gives OSCoST real pump monitoring**: confirmation
   that a stop really stopped the pump (2 %), that it runs when commanded
   (5–75 %), warnings (80 %), and errors (85–95 %), plus "no power" (100 %),
-  which also detects a failed mains relay. The driver board has the input
+  which detects a lost supply (tripped breaker, unplugged pump). The driver board has the input
   for it (J2 FB, see [Hardware needed](HARDWARE.md#checking-the-feedback-signal)).
 - **To do on the real pump**: confirm the table with the multimeter check
   in the hardware guide (standby about 0.4 V, running in between, no

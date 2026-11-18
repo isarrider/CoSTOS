@@ -47,11 +47,14 @@ installation, so that's the reference for which functions come first.
 
 ## Hardware (planned)
 
-- Raspberry Pi 4 or Raspberry Pi 5
-- The [OSCoST HAT](docs/HAT.md), or for a bench setup: an LTC2983 or
-  MAX31865 for Pt1000 sensors, a 4.7 kΩ pull-up for DS18x20 sensors
-- Solid-state or relay outputs for pumps and valves, PWM output for
-  high-efficiency pumps
+- Raspberry Pi 4 or Raspberry Pi 5 with its own USB-C power supply
+- The [OSCoST HAT](docs/HAT.md) (1-Wire edition, its Lite build, or the PT
+  edition), or for a bench setup: an LTC2983 or MAX31865 for Pt1000
+  sensors, a 4.7 kΩ pull-up for DS18x20 sensors
+- A high-efficiency pump with PWM input (solar profile): it stays
+  permanently on 230 V and is started, regulated and stopped over PWM.
+  An optional relay output on the HAT switches a cut-off relay, a valve or
+  a pump that needs its mains switched
 - An independent overtemperature cut-out on the store. OSCoST does not
   replace that.
 
@@ -65,9 +68,9 @@ Mains wiring belongs in the hands of a qualified electrician.
 - [Hardware needed](docs/HARDWARE.md): parts lists and build instructions,
   starting with the PWM pump output.
 - [HAT specification](docs/HAT.md): the planned plug-on board that
-  combines all of it, in two editions: 1 Pt1000 + two 1-Wire buses, or
-  8 Pt1000 + one 1-Wire bus for installations that keep their existing
-  sensors.
+  combines all of it, in two editions: 1 Pt1000 + two 1-Wire buses (also
+  as a cheaper Lite build), or 8 Pt1000 + one 1-Wire bus for installations
+  that keep their existing sensors.
 - [Reference installation](docs/installation.md): the system OSCoST is
   built to control first.
 

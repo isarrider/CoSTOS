@@ -73,8 +73,8 @@ Plus behaviour for this installation.
              ┌────────────────────── Raspberry Pi 4 / 5 ────────────────────────────┐
              │                                                                      │
  Pt1000 ───► │  sensors task ──► ┌──────────────┐    ┌──────────────┐               │
- sensors     │  (SPI / I²C)      │ control core │──► │  safety      │──► outputs ───┼──► SSR / relay ──► pumps, valves (230 V)
-             │                   │ (pure Rust)  │    │  supervisor  │    task       ├──► PWM (level-shifted) ──► HE pump
+ sensors     │  (SPI / I²C)      │ control core │──► │  safety      │──► outputs ───┼──► PWM (watchdog-gated) ──► HE pump (230 V permanent)
+             │                   │ (pure Rust)  │    │  supervisor  │    task       ├──► optional relay ──► cut-off relay, valve
  V40 pulses ►│  pulse counter ─► └──────────────┘    └──────────────┘               │
              │                          │                    │                     │
              │                          ▼                    ▼                     │
@@ -246,9 +246,11 @@ are reused as they are.
 
 ### 5.2 Switching outputs
 
-- 230 V pumps and valves: DIN-rail **solid-state relays** (zero-crossing) or
-  mechanical relay modules with suitable ratings and a fuse per output, in a
-  proper enclosure. Speed control by switching mains in bursts (the way the
+- **High-efficiency PWM pumps stay permanently on 230 V** and are switched
+  over PWM only (5.6). Relays are optional: a cut-off relay (5.6 option C),
+  a heating-profile pump, a valve or an old on/off pump need one: DIN-rail
+  **solid-state relays** (zero-crossing) or mechanical relay modules with
+  suitable ratings and a fuse per output, in a proper enclosure. Speed control by switching mains in bursts (the way the
   BX Plus semiconductor relays do it) only applies to old standard pumps.
   Modern high-efficiency pumps are controlled over PWM instead.
 - **PWM for high-efficiency pumps**: see 5.3.
@@ -927,7 +929,7 @@ The interface can switch pumps, so changes need login:
 |---|---|---|
 | **0. Bench** | OSCoST on the bench with simulated or resistor sensors | All tests green, watchdog and output-default-OFF verified |
 | **1. Shadow mode** | RESOL controls the system. OSCoST takes the **RESOL's sensor values over VBus** (the same data vbus2influx reads) and computes decisions **without outputs connected**. Its own sensors (HAT, DS18B20 in the free sleeves) are added once the hardware exists. | Weeks of data across sunny/cloudy/hot days. Temperature readings match RESOL within tolerance. Decisions match, or every difference is understood. |
-| **2. Switchable** | Changeover switch per output: RESOL or OSCoST. OSCoST drives the outputs on chosen days, with RESOL one switch flip away. | Runs through hot periods (store max, collector shutdown actually triggered) without intervention |
+| **2. Switchable** | Changeover switch on the pump's PWM line: RESOL or OSCoST. On OSCoST days the RESOL pump relay is set to manual ON, so the pump is permanently powered as in the final setup (5.6 option A) and OSCoST starts and stops it over PWM; RESOL is one switch flip (and the relay back to Auto) away. | Runs through hot periods (store max, collector shutdown actually triggered) without intervention |
 | **3. Replacement** | OSCoST only. RESOL kept as a spare. | — |
 
 Shadow mode starts with the RESOL values over VBus (decided): it tests the
@@ -1021,11 +1023,12 @@ OSCoST (MIT). What we take from it as ideas:
   candidate is the ESP32-P4, which has a built-in Ethernet MAC. For now
   OSCoST stays on the Pi (HAT D14, pin check in HAT 2.1).
 - **Standalone first:** it keeps controlling with no network at all and
-  has a local display and buttons. OSCoST's control loop is local too; a
-  minimal local indication (status LEDs, maybe a small display) is worth
-  considering so the system state is visible without a phone.
+  has a local display and buttons. OSCoST's control loop is local too; its
+  local indication is the HAT's hardware-driven status LEDs (HAT 4.8). A
+  display is ruled out by the general rules (section 1).
 - **Low voltage and mains on separate boards,** joined by a ribbon cable.
-  OSCoST keeps mains off its board entirely (DIN-rail supply and SSR); if
+  OSCoST keeps mains off its board entirely (the Pi's own USB-C supply,
+  the pump on its existing circuit, 5.6); if
   an all-in-one option is ever wanted, a separate power board is the
   pattern to follow (EMI filter, varistor, fuses, zero-cross detection).
 - **A cheap Pt1000 front-end:** a 0.1 % divider, an op-amp buffer and an
