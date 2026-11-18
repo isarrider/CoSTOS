@@ -21,11 +21,6 @@ sensor inputs:
   inputs on one LTC2983 plus one 1-Wire bus, for installations that keep
   their existing Pt1000 sensors, as most commercial controllers use them,
   and still want to add DS18x20 sensors.
-- **Lite build** ([section 12](#12-lite-build-decided-d19)): the 1-Wire
-  edition with fewer parts fitted, for the cheapest controller.
-
-Why each part of the design is the way it is: [DECISIONS.md](DECISIONS.md)
-(D1–D20).
 
 ---
 
@@ -73,12 +68,43 @@ Heights are approximate and get fixed in KiCad.
 
 ![Pi 5 with the OSCoST HAT, top and side view](img/pi-hat-assembly.svg)
 
-### 2.1 ESP32-P4 instead of the Pi?
+### 2.1 Considered: Waveshare ESP32-P4-WIFI6-DEV-KIT
 
-Checked and rejected for now ([D14](DECISIONS.md#d14--raspberry-pi-or-esp32-p4)):
-the Waveshare ESP32-P4-WIFI6-DEV-KIT has the Pi form factor, but three
-HAT signals hit pins the board uses itself. Pin check and platform
-comparison are in the decision history.
+The Waveshare ESP32-P4-WIFI6-DEV-KIT has the Pi form factor and a
+40-pin header, so a microcontroller version could in principle use the
+same HAT. The pin maps were checked against each other (header
+silkscreen and the board schematic, November 2026):
+
+- 5 V, 3.3 V and GND are on the same pins as on the Pi.
+- The board's 3.3 V buck (MP1658, 3 A) has plenty of headroom; the HAT
+  needs under 50 mA.
+- The USB inputs appear to be ORed through a P-MOSFET and a Schottky
+  diode. Same rule as on the Pi: one supply at a time.
+- I²C (pins 3/5, GPIO7/8) is shared with the on-board audio codec. It
+  only matters if the DS2482 is ever fitted.
+
+Three HAT signals land on pins the P4 board uses itself:
+
+| HAT signal | Pi header pin | P4 GPIO there | Used on the P4 board for | Free P4 pin instead |
+|---|---|---|---|---|
+| SCLK | 23 | GPIO0 | 32.768 kHz crystal (via R29, 0 Ω) | 37 (GPIO47) |
+| REL1 | 22 | GPIO1 | 32.768 kHz crystal (via R33, 0 Ω) | 31 (GPIO26) |
+| PWM2 (unfitted) | 35 | GPIO53 | audio amplifier enable (via R73, 0 Ω) | 33 (GPIO48) |
+
+There are two ways to fit the HAT to the P4:
+
+- **Move the three signals.** The HAT then no longer works on a Pi,
+  because the Pi's SPI clock is fixed to pin 23.
+- **Remove R29/R33 on every P4 board.** This costs the board's RTC
+  crystal, and PWM2 still has to move.
+
+**Decision D14: OSCoST stays on the Raspberry Pi.** More people already
+own one, and Linux gives more flexibility for the web interface,
+VictoriaMetrics buffering, updates and add-ons. The P4 stays a possible
+later port. If it is ever done, the "move the three signals" variant
+above is the starting point. The full cost and capability comparison of the Pi
+against the ESP32-S3, RP2350 and ESP32-P4, and the P4 boards considered,
+are in [ARCHITECTURE 13](ARCHITECTURE.md#13-platform-comparison-pi-or-microcontroller).
 
 ## 3. Block diagram
 
@@ -253,7 +279,9 @@ only has a bulk capacitor and a power LED on its 5 V rail.
   supply feeds the Pi through a short USB-C lead (5.1 V, 3 A for a Pi 4,
   5 A for a Pi 5; a Pi 5 on a plain USB-C lead without power delivery
   needs `PSU_MAX_CURRENT=5000` in its bootloader configuration).
-- Why there is no power input: [D18](DECISIONS.md#d18--does-the-hat-need-its-own-power-input).
+- **Earlier design** (rev A drafts before D18): a PWR terminal with fuse,
+  TVS and an LM74700 ideal diode powered the Pi through the header. It was
+  dropped because option A never uses it; it saved about €4 and nine parts.
 
 ### 4.8 Status LEDs
 
@@ -374,7 +402,13 @@ terminals** on **two edges**, as in the [mockup](#mockup):
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
 
-Why this arrangement: [D17](DECISIONS.md#d17--where-do-the-field-terminals-go).
+**Where the field terminals go (decided: B, D17).** With the Pi powered
+over USB-C (D15) the USB-C cable leaves at the front edge. Moving PUMP1 to
+the left edge puts all wiring that is normally used on one side and
+leaves the front to the USB-C plug and to REL1, which option A doesn't
+use. (The drawing still shows the PWR terminal, dropped later by D18.) The three arrangements compared (1-Wire edition):
+
+![Three terminal arrangements on a Pi 5](img/hat-edge-options.svg)
 
 Fixed means one block per connector, soldered to the board, with the
 cable screwed straight into it. Pluggable terminals (a soldered socket and
@@ -552,9 +586,28 @@ into 8.2.
 
 ## 10. Decisions
 
-Every hardware decision (D1–D20) with the question, the alternatives
-that were compared and the reasons is in [DECISIONS.md](DECISIONS.md).
-The sections of this document link to the relevant entry.
+| # | Question | Decision |
+|---|---|---|
+| D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
+| D2 | One or two PWM outputs and relay outputs? | **Two positions each, one fitted**: PUMP1 and REL1 for the solar pump; PUMP2 and REL2 stay unfitted until a second pump is added |
+| D3 | How many Pt1000 inputs? | **Two on the board, one fitted**: PT1 for the collector; PT2 (MAX31865 #2, its parts and terminal) stays unfitted until needed |
+| D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
+| D5 | Power the Pi from the HAT? | ~~Yes~~, replaced by D18: **no**, the Pi uses its own USB-C supply |
+| D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
+| D7 | Hand assembly or factory assembly? | **Factory-assembled, delivered fully soldered**; AISLER or JLCPCB decided on quotes once the BOM exists (8.2) |
+| D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts for a second, independent way to stop the pump, e.g. when the SSR fails short-circuited |
+| D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
+| D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |
+| D11 | VBus receiver on the HAT? | **No**: VBus is only needed while the BX Plus is still connected (shadow mode, switchable phase). The existing loose adapter plugs onto pins 1, 6 and 10 on top of the stacking header until then; after the switch-over it goes away and the UART is free |
+| D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board (section 11): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measuring chip: see D13 |
+| D13 | Measuring chip for the PT edition? | **One LTC2983**: 8 independent 2-wire Pt1000 inputs (18 of its 20 inputs), excitation, fault detection and linearisation built in, result in °C, buffered inputs for simple protection. Costs a little more than 2 × ADS124S08 but needs far less analog design and software, and it frees GPIO4 for a 1-Wire bus. Comparison in 11.6 |
+| D14 | Raspberry Pi or ESP32-P4 (Waveshare ESP32-P4-WIFI6-DEV-KIT, same form factor)? | **Raspberry Pi**: more people already own one, and Linux gives more flexibility. The P4 board is a possible later port; its pin check is in 2.1. On the P4, SCLK, REL1 and PWM2 would hit the RTC crystal and the audio amplifier |
+| D15 | How do the Pi, the HAT and the pump get their power? | **Option A** ([ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side)): the Pi's own USB-C supply in a socket (most people already have one), the pump permanently on 230 V and stopped over PWM only. Cheapest, no mains wiring, no switching wear, and the pump feedback works at all times. Accepted: one stop path instead of two. REL1 stays on the board for an optional cut-off relay (option C), which heating-profile pumps always need |
+| D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
+| D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
+| D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
+| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω). Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
+| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering |
 
 ---
 
@@ -670,9 +723,74 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 
 ### 11.6 Choice of measuring chip
 
-**Decided: LTC2983.** The full comparison of 8 × MAX31865, 2 × ADS124S08,
-2 × AD7124-8, LTC2986, LTC2983, a DiSoCon2-style divider front-end and the
-1-Wire edition is in [D13](DECISIONS.md#d13--measuring-chip-for-the-pt-edition).
+Chips that measure several Pt1000s, compared for 8 two-wire sensors; the
+last column is the 1-Wire edition with new DS18B20 probes, for comparison
+with keeping the existing Pt1000 sensors. **Decided: LTC2983 (D13).** The
+other options stay documented as alternatives.
+
+Prices are single quantity at the time of writing; totals are estimates
+until a real BOM exists, and LCSC stock changes daily. The totals were
+made with the power input, since dropped (D18): subtract about €4 from
+every column for parts, about €5 per board at 5 boards and about €15 for
+the smallest order of 2 (8.2). 🟢 good,
+🟡 medium, 🔴 weak.
+
+| | **8 × MAX31865** | **2 × ADS124S08** | **2 × AD7124-8** | **1 × LTC2986** | **1 × LTC2983** (chosen) | **1-Wire edition:** 1 × MAX31865 + 7 × DS18B20 |
+|---|---|---|---|---|---|---|
+| ***Channels*** | | | | | | |
+| Independent 2-wire Pt1000s per chip | 1 | 5 (force + sense pin each) | 7 (16 analog pins) | 🔴 4 (10 inputs, 2 per sensor + sense resistor) | 🟢 9 (20 inputs) | collector: 1; DS18B20: one chip per probe |
+| Spare channels with 8 sensors | 🔴 0 | 🟡 2 | 🟢 6 | 🔴 none: 8 only as a series stack | 🟡 1 more sensor | 🟢 PT2 footprint; the buses take more probes |
+| 1-Wire bus on the same board | 🔴 no: GPIO4/17 drive the chip-select decoder | 🟢 possible | 🟢 possible | 🟢 possible | 🟢 **yes, 1W-A** | 🟢 2 buses |
+| ***Cost*** | | | | | | |
+| Chips, LCSC | 🟡 8 × $4.27 = $34 | 🟢 2 × $6.46 = $13 | 🟢 2 × $10.47 = $21 | 🔴 $53 | 🟡 $39 | 🟢 $4.27 |
+| Chips, DigiKey / Farnell EU | 🔴 8 × €8.76 = €70 | 🟢 2 × €9.94 = €20 | 🟢 ≈ €20–25 | 🟡 €34–42 | 🟡 ≈ €37–42 | 🟢 €8.76 |
+| Extra parts on the board | 8 reference resistors 0.1 %, 16 ESD, decoder ≈ €8 | 2 reference resistors, 16 R + clamps + ESD ≈ €3 | like ADS ≈ €3 | 1 sense resistor, protection R ≈ €2 | 1 sense resistor, 16 protection R + ESD, 1-Wire parts ≈ €3 | pull-ups, ESD, polyfuse ≈ €1 |
+| Sensor section, assembled | 🟡 ≈ €40 | 🟢 ≈ €15 | 🟢 ≈ €22 | 🔴 ≈ €50 | 🟡 ≈ €39 | 🟢 ≈ €6 |
+| Rest of the board, assembled | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €27 |
+| New sensors and cable | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🔴 7 DS18B20 probes + 2 cables ≈ €60–80 |
+| **Total, assembled (5 boards, JLCPCB, incl. VAT and shipping)** | 🟡 **≈ €68** | 🟢 **≈ €43** | 🟢 **≈ €50** | 🔴 **≈ €78** | 🟡 **≈ €67** | 🟡 **≈ €33 + €60–80 = €93–113** |
+| **Price for one: smallest assembled order (2 boards, JLCPCB)** | 🟡 **≈ €175** | 🟢 **≈ €125** | 🟢 **≈ €139** | 🔴 **≈ €195** | 🟡 **≈ €173** | 🟡 **≈ €105 + €60–80 = €165–185** |
+| **Total, single-quantity parts (DigiKey, excl. VAT)** | 🔴 **≈ €103** | 🟢 **≈ €48** | 🟢 **≈ €50** | 🟡 **≈ €61–69** | 🟡 **≈ €69** | 🟡 **≈ €35 + €60–80 = €95–115** |
+| Stock for assembly | 🟡 varies | 🟢 good (≈ 1,700 at LCSC) | 🔴 thin, one variant out | 🔴 thin | 🟡 thin at LCSC; buy at DigiKey and consign | 🟡 MAX varies; probes bought separately (fakes are common) |
+| ***Function*** | | | | | | |
+| Input protection | 🟢 ±45 V built in | 🟡 external parts, needs care | 🟡 external parts, needs care | 🟢 external, easy (buffered inputs) | 🟢 external, easy (buffered inputs) | 🟢 MAX ±45 V; 1-Wire ESD + polyfuse |
+| Open / short detection | 🟢 fault register | 🟡 burnout current + software | 🟢 burnout + diagnostics built in | 🟢 built in, per sensor type | 🟢 built in, per sensor type | 🟡 CRC, missing probe; a short takes down its whole bus |
+| Output | ratio, converted to °C in software | raw ADC codes, software does all | raw ADC codes, software does all | 🟢 °C directly, linearised | 🟢 °C directly, linearised | 🟢 DS18B20 gives °C directly |
+| Range, accuracy | 🟢 Pt1000 beyond 200 °C, class B ±0.6 K at 60 °C | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟡 ±0.5 K, max 125 °C (S4 can exceed it: fit PT2) |
+| Resolution | 15-bit, ≈ 0.03 K | 24-bit | 24-bit | 24-bit, 0.1 °C accuracy | 24-bit, 0.1 °C accuracy | DS18B20 12-bit, 0.0625 K |
+| Package, space | 🔴 8 × SSOP-20, tight | 🟢 2 × TQFP-32 5×5 | 🟢 2 × QFN-32 5×5 (no hand soldering) | 🟢 1 × LQFP-48 7×7 | 🟢 1 × LQFP-48 7×7 | 🟢 roomy |
+| ***Effort and risk*** | | | | | | |
+| Circuit design | 🟢 low: PT1 circuit × 8 | 🔴 high: analog force/sense layout | 🔴 high: like ADS | 🟢 low–medium: datasheet circuits | 🟢 low–medium: datasheet circuits | 🟢 done: schematic drawn |
+| Software | 🟢 simple, driver shared with the 1-Wire edition | 🔴 most: input and current switching, settling, linearising | 🟡 medium: the sequencer helps | 🟢 simple: write channel setup, read °C | 🟢 simple: write channel setup, read °C | 🟢 simple: kernel 1-Wire + MAX driver |
+| Work at the installation | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🟢 move the existing wires | 🔴 fit 7 probes, run 2 cables, set calibration offsets |
+| Charts vs. history | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟢 seamless | 🟡 small step, fixed with offsets |
+| ***Verdict*** | | | | | | |
+| Best for | fallback with a proven circuit, no 1-Wire | cheapest; cost-down option | spare analog inputs (other sensors) | only up to 4 independent sensors | 🟢 **PT edition: chosen** | 🟢 new installations, or when sensors get replaced anyway |
+
+Variant not shown as a column: the 1-Wire edition with PT2 fitted, so S4
+stays Pt1000 (2 Pt1000 + 6 DS18B20): about €5 more assembled, one probe
+less. The LTC2984 is the LTC2983 with an EEPROM for the channel setup; it
+costs more (≈ $71 at LCSC) and OSCoST doesn't need it.
+
+**Also considered: a DiSoCon2-style divider front-end** (each Pt1000 in a
+divider with a 0.1 % resistor, op-amp buffer, ADS1115; see
+[ARCHITECTURE 12](ARCHITECTURE.md#12-related-projects)). For 8 sensors:
+2 × ADS1115 ≈ €5–7, 8 precision resistors ≈ €1–2, 2 quad op-amps
+≈ €1–3, reference ≈ €1, protection ≈ €2, so ≈ €10–15 instead of ≈ €42
+for the LTC2983 section: **about €30 less per PT board** (≈ €40–45
+instead of ≈ €69). On the 1-Wire edition it would save only about €5 on
+the single Pt1000 (D9). Not taken, because it gives up:
+
+- open/short **fault detection** (a broken sensor just reads extreme),
+- **input protection** for the roof cable,
+- **drift-free accuracy**: the ADS1115 measures against its internal
+  reference, so supply and reference drift go into the reading unless a
+  spare channel measures the excitation and the code works ratiometrically,
+- **simple software**: divider maths, calibration and Callendar–Van Dusen
+  in our code instead of °C over SPI.
+
+Solar control would cope with ±0.5–1 K, but for a controller meant to run
+10+ years the €30 is worth it.
 
 ---
 
@@ -688,7 +806,34 @@ layout, parts list, tests and documentation, and had no upgrade path.
 
 ![OSCoST HAT, Lite build, top view](img/hat-lite-mockup.svg)
 
-Why a build option and not a dedicated board: [D19](DECISIONS.md#d19--a-separate-low-cost-board).
+**Why no dedicated Lite board:** the comparison that decided D19, both
+Lite variants against the normal build (single-quantity parts; 🟢 good,
+🟡 medium, 🔴 weak):
+
+| | **Normal HAT** (1-Wire edition) | **HAT Lite** (own board) | **Lite as build option** | **Saved: Lite (own board)** | **Saved: Lite build option** |
+|---|---|---|---|---|---|
+| ***What's left out*** | | | | | |
+| 12 V converter + its load resistor | 🟢 12 V pump signal, large margin | 🟡 5 V, small margin (≈ 4.7 V against 4 V) | 🟡 5 V via a 0 Ω link; converter can be fitted later | **€3.05** | **€3.05** |
+| Relay output REL1 (switch chip, MOSFET, diode, terminal, R1 LED) | 🟢 cut-off relay (option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | 🟡 not fitted, spot stays | **€1.55** | **€1.55** |
+| Second 1-Wire bus (terminal, ESD, pull-up) | 🟢 2 buses | 🟡 1 bus | 🟡 1 fitted, 1W-B can be fitted later | **€0.65** | **€0.65** |
+| PWR LED | 🟢 | 🟡 none (WD shows power too) | 🟡 not fitted | **€0.15** | **€0.15** |
+| 0 Ω link for 5 V | — | — | one extra part | — | **−€0.01** |
+| ***Kept on all three*** | | | | | |
+| MAX31865 for the collector, watchdog + PWM gating, all field-line protection, PUMP1 with feedback, WD and PUMP1 LEDs, tall header, full outline | 🟢 | 🟢 | 🟢 | — | — |
+| PT2, PUMP2, REL2, DS2482 spots for later | 🟢 | 🔴 none | 🟢 | — | — |
+| ***Totals*** | | | | | |
+| Parts, single quantity | ≈ €30 | ≈ €24.60 | ≈ €24.60 | **≈ €5.40** | **≈ €5.39** |
+| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €71 | ≈ €71 | **≈ €19** | **≈ €19** |
+| Assembled, per board in a batch of 5 | ≈ €27 | ≈ €19.50 | ≈ €19.50 | **≈ €7.50** | **≈ €7.50** |
+| Extra design work | — | 🔴 second board, layout, parts list, tests, docs | 🟢 one extra part and a second parts list | — | — |
+| Upgrade later to the full HAT | — | 🔴 buy a new board | 🟢 solder the missing parts on | — | — |
+
+Both savings columns come out the same: the saving comes only from parts
+that are not fitted, empty footprints cost nothing, and a dedicated board
+would have the same outline. The dedicated board would only add a second
+design to maintain and remove the upgrade path. After this comparison the
+second 1-Wire bus and the PWR LED were put back into the Lite build (12.2),
+so it now saves about €4.60.
 
 ### 12.1 Rule: it may fail, but it may not break anything
 

@@ -70,8 +70,6 @@ Mains wiring belongs in the hands of a qualified electrician.
   sensors.
 - [Reference installation](docs/installation.md): the system OSCoST is
   built to control first.
-- [Design decisions](docs/DECISIONS.md): the history of every decision,
-  with the alternatives that were compared and why.
 
 ## Related
 
