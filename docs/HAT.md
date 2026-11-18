@@ -545,7 +545,7 @@ estimated here; it gets quoted with the BOM.
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
-| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC, the relay output, the second 1-Wire bus and the PWR LED; the pump driver runs on 5 V through R26 (0 Ω). Saves ≈ €5.40 like a dedicated Lite board would, without a second layout, and can be upgraded. Solar-profile pumps only |
+| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω). Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 
 ---
 
@@ -733,7 +733,7 @@ Solar control would cope with ±0.5–1 K, but for a controller meant to run
 
 The cheapest way to an OSCoST controller: **the same 1-Wire edition
 board with fewer parts fitted**, not a separate board. It saves about
-**€5.40 per board**, can be upgraded to the full build by soldering the
+**€4.60 per board**, can be upgraded to the full build by soldering the
 missing parts on, and needs no second layout. A dedicated Lite board was
 drawn first and dropped: it saved no more money (unfitted footprints cost
 nothing, and it would have had the same outline), but it needed its own
@@ -765,7 +765,9 @@ Lite variants against the normal build (single-quantity parts; 🟢 good,
 Both savings columns come out the same: the saving comes only from parts
 that are not fitted, empty footprints cost nothing, and a dedicated board
 would have the same outline. The dedicated board would only add a second
-design to maintain and remove the upgrade path.
+design to maintain and remove the upgrade path. After this comparison the
+second 1-Wire bus and the PWR LED were put back into the Lite build (12.2),
+so it now saves about €4.60.
 
 ### 12.1 Rule: it may fail, but it may not break anything
 
@@ -799,16 +801,14 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | ***Left out in the Lite build*** | | | |
 | 12 V DC/DC U2 with C4 and minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.7 V at the pump | **€3.05** |
 | Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€1.55** |
-| Second 1-Wire bus 1W-B: terminal, ESD diode, pull-up | 🟢 2 buses | 🟡 1 bus (daisy chain all DS18x20 on 1W-A) | **€0.65** |
-| PWR LED | 🟢 | 🟡 not fitted (the WD LED shows power too) | **€0.15** |
 | R26 (0 Ω) | not fitted | fitted | **−€0.01** |
 | ***The same in both*** | | | |
-| MAX31865 (collector), watchdog + PWM gating, field-line protection, PUMP1 with feedback, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
+| MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
 | Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
 | ***Totals*** | | | |
-| Parts, single quantity | ≈ €30 | ≈ €24.60 | **≈ €5.40** |
-| Assembled, batch of 5 (estimate) | ≈ €29 | ≈ €24 | **≈ €5** |
-| Upgrade | — | 🟢 solder on U2, C4, R2, R25 (remove R26), REL1 parts, 1W-B parts | — |
+| Parts, single quantity | ≈ €30 | ≈ €25.40 | **≈ €4.60** |
+| Assembled, batch of 5 (estimate) | ≈ €29 | ≈ €24.50 | **≈ €4.50** |
+| Upgrade | — | 🟢 solder on U2, C4, R2, R25 (remove R26) and the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that
 would short the 12 V and 5 V rails. The silkscreen marks them "12 V" and

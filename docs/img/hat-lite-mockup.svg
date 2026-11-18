@@ -62,12 +62,12 @@
 <circle cx="72" cy="236" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="236" x2="77" y2="236" stroke="#5F6468" stroke-width="1.5"/>
 <text class="th" x="118" y="206.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">1W-A</text>
 <text class="ts" x="118" y="221.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">DS18x20</text>
-<rect x="58" y="256" width="54" height="84" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
-<circle cx="96" cy="270" r="4" fill="#C9A227"/>
-<circle cx="96" cy="298" r="4" fill="#C9A227"/>
-<circle cx="96" cy="326" r="4" fill="#C9A227"/>
-<text class="th" x="118" y="296.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#E8F5E9">1W-B</text>
-<text class="ts" x="118" y="311.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">not fitted</text>
+<rect x="58" y="256" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
+<circle cx="72" cy="270" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="270" x2="77" y2="270" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="298" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="298" x2="77" y2="298" stroke="#5F6468" stroke-width="1.5"/>
+<circle cx="72" cy="326" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="326" x2="77" y2="326" stroke="#5F6468" stroke-width="1.5"/>
+<text class="th" x="118" y="296.0" text-anchor="start" style="font-size:12px;font-weight:500;fill:#ffffff">1W-B</text>
+<text class="ts" x="118" y="311.0" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">DS18x20</text>
 <rect x="58" y="346" width="54" height="84" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="72" cy="360" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="360" x2="77" y2="360" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="388" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="388" x2="77" y2="388" stroke="#5F6468" stroke-width="1.5"/>
@@ -131,7 +131,7 @@
 <rect x="454" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="493.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">AND gate</text>
 <text class="ts" x="493.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">PWM gating</text>
-<circle cx="440" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>
+<circle cx="440" cy="262" r="6" fill="#4CAF50" stroke="#0F3A20"/>
 <text class="ts" x="440" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">PWR</text>
 <circle cx="468" cy="262" r="6" fill="#4CAF50" stroke="#0F3A20"/>
 <text class="ts" x="468" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">WD</text>

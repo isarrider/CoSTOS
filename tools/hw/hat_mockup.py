@@ -81,7 +81,7 @@ if pt:
 else:
     term_v(104, 2, "PT1", "collector")
     term_v(166, 3, "1W-A", "DS18x20")
-    term_v(256, 3, "1W-B", "not fitted" if lite else "DS18x20", fitted=not lite)
+    term_v(256, 3, "1W-B", "DS18x20")
     term_v(346, 3, "PUMP1", "solar pump")
 # bottom terminals
 def term_h(x0, n, name, pins, fitted=True):
@@ -140,7 +140,7 @@ chip(282, 304, 78, 46, "Feedback", "input 1")
 chip(368, 304, 78, 46, "Watchdog", "heartbeat")
 chip(454, 304, 78, 46, "AND gate", "PWM gating")
 # LEDs (row under the logo)
-for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", lite), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
+for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
                                      ("#FFB300", "R1", lite), ("#FFB300", "R2", True)]):
     x = 440 + k * 28
     if nf:
