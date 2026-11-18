@@ -64,8 +64,8 @@
 <line x1="834.0" y1="370.0" x2="834.0" y2="268.0" stroke="#333" marker-end="url(#a)" marker-start="url(#a)"/>
 <text x="828.0" y="323.0" class="t" text-anchor="end">≈ 17 mm</text>
 <text x="828.0" y="339.0" class="n" text-anchor="end">spacers</text>
-<text x="870" y="430.0" class="n" text-anchor="start">• Pi 5 with its active cooler under the HAT: spacers ≈ 16–17 mm and a stacking</text>
-<text x="870" y="446.0" class="n" text-anchor="start">  header; the exact height is fixed in KiCad against the cooler's datasheet.</text>
-<text x="870" y="462.0" class="n" text-anchor="start">• Pi 4 without cooler: standard 11–12 mm spacers.</text>
+<text x="870" y="430.0" class="n" text-anchor="start">• One tall height for every board (D16): ≈ 16–17 mm spacers and a stacking</text>
+<text x="870" y="446.0" class="n" text-anchor="start">  header clear the Pi 5 active cooler or a passive heatsink (≤ ≈ 14 mm), and a Pi 4.</text>
+<text x="870" y="462.0" class="n" text-anchor="start">• The exact height is fixed in KiCad.</text>
 <text x="870" y="478.0" class="n" text-anchor="start">• The stacking header also lets the VBus adapter plug on top during shadow mode.</text>
 </svg>

@@ -131,9 +131,9 @@ def assembly():
     txt(o, xd - 6, (y1 + y2) / 2 + 4, "≈ 17 mm", "t", "end")
     txt(o, xd - 6, (y1 + y2) / 2 + 20, "spacers", "n", "end")
     ny = Q(0, -10)[1]
-    txt(o, sx, ny, "• Pi 5 with its active cooler under the HAT: spacers ≈ 16–17 mm and a stacking", "n")
-    txt(o, sx, ny + 16, "  header; the exact height is fixed in KiCad against the cooler's datasheet.", "n")
-    txt(o, sx, ny + 32, "• Pi 4 without cooler: standard 11–12 mm spacers.", "n")
+    txt(o, sx, ny, "• One tall height for every board (D16): ≈ 16–17 mm spacers and a stacking", "n")
+    txt(o, sx, ny + 16, "  header clear the Pi 5 active cooler or a passive heatsink (≤ ≈ 14 mm), and a Pi 4.", "n")
+    txt(o, sx, ny + 32, "• The exact height is fixed in KiCad.", "n")
     txt(o, sx, ny + 48, "• The stacking header also lets the VBus adapter plug on top during shadow mode.", "n")
     o.append('</svg>')
     open(f"{OUT}/pi-hat-assembly.svg", "w").write("\n".join(o))
