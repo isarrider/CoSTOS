@@ -99,7 +99,7 @@ Safety comes in layers. Each layer assumes the one above it can fail.
 
 | Measure | Why |
 |---|---|
-| **Outputs default to OFF**: relay/SSR boards that switch off when the GPIO floats, plus pull-downs | A booting, crashed or unpowered SBC must not switch pumps on. |
+| **Outputs default to OFF**: relay/SSR boards that switch off when the GPIO floats, plus pull-downs; PWM outputs pulled low (= stop for solar-profile pumps) | A booting, crashed or unpowered SBC must not switch pumps on. With a permanently powered solar pump (5.6 option A) the PWM line is the only stop path, so it is gated by the external watchdog too. |
 | **Output enable via an external watchdog**: a charge-pump or retriggerable monostable that only enables the output stage while the SBC toggles a heartbeat GPIO | Covers a hung kernel or a GPIO stuck high, which the internal watchdog can miss. |
 | **SoC hardware watchdog** (`/dev/watchdog`) | Reboots a hung system. |
 | **Independent overtemperature cut-out** on the store (capillary thermostat in series with the solar pump) | Last line of defence that does not depend on OSCoST at all. Many systems already have one. Check. |
@@ -353,14 +353,18 @@ Pi's 5 V, or a ready-made optocoupler module) are in
 
 #### Mains switching and safety
 
-- The pump's mains supply still goes through a relay or SSR that is part of
-  the safe-by-default output stage (section 4.1): if the heartbeat stops,
-  the pump loses power, whatever the PWM output is doing. This matters
-  because the **hardware PWM keeps running at its last duty cycle when the
-  software crashes**, and with a heating profile a dead signal even means
-  full speed.
-- Speed and normal stops are done over PWM. The mains relay is the enable
-  and the safety cut-off, switched rarely: high-efficiency pumps have a high
+- **Solar-profile pumps (default, decided, 5.6 option A): permanently on
+  230 V, no mains relay.** Every stop goes over PWM. The **hardware PWM
+  keeps running at its last duty cycle when the software crashes**, so the
+  HAT's external watchdog gates the PWM line: no heartbeat, PWM forced low,
+  pump in stand-by (HAT 4.6). The pump's feedback output shows that it
+  really stopped. A mains relay or SSR (5.6 option C, HAT REL1) is an
+  optional second stop path.
+- **Heating-profile pumps: the relay is mandatory.** With a heating profile
+  a dead signal means full speed, so only cutting the mains stops the pump;
+  the relay is then part of the safe-by-default output stage (section 4.1).
+- Speed and normal stops are done over PWM. Where a mains relay is fitted,
+  it is the enable and the safety cut-off, switched rarely: high-efficiency pumps have a high
   inrush current and limited mains switching cycles (Wilo for example
   specifies a relay rated ≥ 8 A and at most 100 mains switchings per day for
   its Stratos PARA). OSCoST rate-limits mains switching per output.
@@ -399,6 +403,57 @@ runs on both:
 | Watchdog | `/dev/watchdog` |
 
 Pin and bus assignments live in a per-board config section, not in code.
+
+### 5.6 230 V side
+
+What the controller needs from the mains: 5 V for the Pi and the HAT, and
+230 V for the pump. DiSoCon2 builds its own mains board (fuse, varistor,
+EMI filter, HLK-PM01, TRIACs); OSCoST keeps mains off its boards entirely
+and uses only off-the-shelf, certified parts. A fully equipped DIN-rail
+version (separate breaker and fuse terminal, SSR, surge protector, a
+coupling relay to sense pump mains, 18 TE enclosure) came to about
+€150–175, as much as a complete commercial controller. Three slim options
+were compared instead:
+
+![Three options for the 230 V side](img/ac-options.svg)
+
+| | A: no mains work | B: minimal DIN | C: B + cut-off relay |
+|---|---|---|---|
+| 5 V supply | Pi USB-C supply in a socket (most people already have one) | Mean Well HDR-60-5 into the HAT's PWR terminal | as B |
+| Pump | Permanently on 230 V, plug cord in a socket | Permanently on 230 V, existing circuit | L through a 16 A relay, 12 V coil, driven by REL1 |
+| Enclosure | Pi case | small DIN box, 4–6 TE | as B |
+| Electrician | not needed if the pump gets a plug cord | briefly | briefly |
+| Ways to stop the pump | 1: PWM low (watchdog-gated) | 1 | 2: PWM low + relay |
+| Cost | ≈ €0–10 with an existing supply (≈ €20–25 with a new one) | ≈ €35–45 | ≈ €50–60 |
+
+**Decision: option A** (HAT D15), for cost and because permanent power
+suits a PWM pump:
+
+- **Stand-by draw is tiny:** Wilo specifies under 1 W for the Yonos PARA
+  series, so at most about 9 kWh or €3 a year.
+- **No mains switching wear:** high-efficiency pumps have a high inrush
+  current and limited mains switching cycles; starting and stopping over
+  PWM is how they are meant to be run, as in boilers and heat pumps.
+- **Monitoring always works:** the iPWM feedback output only works while
+  the pump is powered. Permanently powered, OSCoST always sees stand-by,
+  running, warnings, blocked, and "no power" (lost supply, tripped breaker),
+  also while the pump should be stopped. This replaces the coupling relay.
+- **Fewer parts and no mains wiring:** no relay contacts to fail, no
+  enclosure, and the house circuit's own breaker and RCD protect the pump
+  and the supply.
+
+**Accepted risk:** one way to stop the pump instead of two. If the HAT's
+PWM driver fails with its output stuck high, the pump runs at full speed
+and OSCoST can only raise an alarm (feedback shows "running" while it
+should stop). The worst case is a full store on a hot day; in the
+reference installation the store margin and covering the collector during
+holidays make this acceptable. Anyone who wants the second stop path adds
+the relay of option C on REL1, which stays on the HAT. Heating-profile
+pumps always need it (5.3).
+
+DiSoCon2 ideas kept for the options: fuse the 5 V branch separately from
+the pump (B, C), a zero-crossing SSR or a rarely switched relay instead of
+bare TRIACs, and mains strictly separate from low voltage.
 
 ---
 

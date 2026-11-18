@@ -251,15 +251,21 @@ the 13 V TVS standoff at light load.
   would leave the pump powered permanently. The watchdog-gated PWM is then
   a second, independent way to stop the pump (0 % = stop with a PWM2
   pump), and the feedback input shows that it happened (D8).
+- **With a permanently powered pump (D15, option A) the gated PWM is the
+  only stop path**, which makes this circuit the main hardware safety
+  layer rather than a backup.
 - This is the "external heartbeat" layer from
   [Safety](ARCHITECTURE.md#41-hardware-layer-independent-of-software); the
   SoC watchdog and the systemd watchdog remain in addition.
 
 ### 4.7 Power input (powers the Pi)
 
-The DIN-rail 5 V supply connects to a terminal on the HAT. The HAT feeds
-its own circuits and, through header pins 2 and 4, the Pi. The Pi's USB-C
-input stays unused in operation.
+**Default (D15): the Pi's own USB-C supply.** The HAT draws its few
+hundred mA through header pins 2/4, as any HAT does; most people already
+have a suitable supply. For a DIN-rail build (ARCHITECTURE 5.6 option B/C)
+a 5 V DIN-rail supply connects to the HAT's PWR terminal instead; the HAT
+then feeds its own circuits and, through header pins 2 and 4, the Pi, and
+the Pi's USB-C input stays unused.
 
 **Powering through the Pi's USB-C works too.** All HAT circuits sit on the
 header side of the protection, so they run from whichever supply powers
@@ -539,6 +545,7 @@ estimated here; it gets quoted with the BOM.
 | D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board (section 11): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measuring chip: see D13 |
 | D13 | Measuring chip for the PT edition? | **One LTC2983**: 8 independent 2-wire Pt1000 inputs (18 of its 20 inputs), excitation, fault detection and linearisation built in, result in °C, buffered inputs for simple protection. Costs a little more than 2 × ADS124S08 but needs far less analog design and software, and it frees GPIO4 for a 1-Wire bus. Comparison in 11.6 |
 | D14 | Raspberry Pi or ESP32-P4 (Waveshare ESP32-P4-WIFI6-DEV-KIT, same form factor)? | **Raspberry Pi**: more people already own one, and Linux gives more flexibility. The P4 board is a possible later port; its pin check is in 2.1. On the P4, SCLK, REL1 and PWM2 would hit the RTC crystal and the audio amplifier |
+| D15 | How do the Pi, the HAT and the pump get their power? | **Option A** ([ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side)): the Pi's own USB-C supply in a socket (most people already have one), the pump permanently on 230 V and stopped over PWM only. Cheapest, no mains wiring, no switching wear, and the pump feedback works at all times. Accepted: one stop path instead of two. REL1 stays on the board for an optional cut-off relay (option C), which heating-profile pumps always need |
 
 ---
 

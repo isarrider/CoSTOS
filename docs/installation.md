@@ -12,8 +12,9 @@ Status: **incomplete**. Open points are listed at the end.
 - RESOL DeltaSol BX Plus, read over VBus by
   [vbus2influx](https://github.com/isarrider/vbus2influx).
 - A **Raspberry Pi 5** already sits next to it and runs vbus2influx.
-  OSCoST runs on this Pi (with the HAT), so it needs the 5 A supply
-  (HDR-60-5) and `PSU_MAX_CURRENT=5000` (see [HAT.md](HAT.md)).
+  OSCoST runs on this Pi (with the HAT), powered by the Pi's existing
+  USB-C supply, which the HAT draws from through the header (HAT D15,
+  [ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side) option A).
 - **VBus connection today:** a self-built level shifter (voltage divider
   and two transistors, see the vbus2influx README) on the Pi's GPIO UART:
   VBus → RX on GPIO15 (header pin 10), read as `/dev/ttyAMA0` at 9600
@@ -73,8 +74,9 @@ be BX Plus inputs S1–S8.
 | Relay 1 | `relay_01` | Solar pump, mains |
 | PWM A | `PWM_0_10V_A` | Solar pump, speed (PWM2) |
 
-No other relays or outputs are in use, which matches the HAT rev A
-(REL1 + PUMP1).
+No other relays or outputs are in use. With OSCoST the solar pump is
+**permanently powered and stopped over PWM only** (option A, HAT D15), so
+only PUMP1 is used; REL1 stays free for an optional cut-off relay.
 
 ## Solar pump
 
@@ -250,9 +252,10 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
   enough hot water, and during holidays part of the collector is covered.
 - Protection therefore rests on OSCoST's own layers: store maximum and
   emergency store shutdown below 95 °C, collector emergency shutdown, and
-  the hardware watchdog that stops the pump through both the SSR and the
-  PWM (HAT D8). A mechanical cut-out can still be added to the 230 V side
-  later.
+  the hardware watchdog that forces the PWM low (HAT D8). With the pump
+  permanently powered (HAT D15) that is the only hardware stop path; a
+  cut-off relay on REL1 (ARCHITECTURE 5.6 option C) or a mechanical
+  cut-out can still be added later.
 - Covering the collector is the right holiday measure for heat pipes:
   evacuated tubes lose almost no heat at night, so the "store recooling
   through the collector" function of flat-plate systems would barely work
