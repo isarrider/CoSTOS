@@ -616,6 +616,7 @@ From its ESPHome configuration (`Software/hardware/interval.yaml` and friends):
 | **Web interface + HTTP API** (axum) | Status, configuration, manual mode, history, events. See section 7. |
 | **VictoriaMetrics** | All values pushed every second, with a local buffer for outages. See section 6.5. |
 | **MQTT** with Home Assistant discovery (**optional, off by default**) | Sensors, outputs and alarms appear in HA automatically once enabled. Writes (manual mode) are a separate option, also off by default. The reference installation doesn't use it. |
+| **E-mail notifications** (**optional, off by default**) | A mail when something fails, and when it is fixed again. See section 6.7. |
 | **Logs** | `tracing` to journald. Every state change and every safety intervention is logged as a structured event. |
 
 Not planned: emulating VBus to be read by other RESOL tools.
@@ -705,6 +706,39 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
   plus a `.deb` package or tarball with a systemd unit.
 - A Docker image can come later for the simulator and for dry runs.
 
+
+### 6.7 E-mail notifications
+
+Optional, off by default, set up under Settings → Integrations.
+
+- **Server:** any SMTP server (own mail server, provider account), with
+  STARTTLS or implicit TLS, user name and password or app password; one or
+  more recipients. A "send test mail" button checks the settings. Sent
+  with the `lettre` crate.
+- **What triggers a mail** (each can be switched off):
+  - every alarm from the function checks (6.2): sensor fault, no
+    circulation, ΔT too high, night circulation, pump feedback error or
+    mismatch, store maximum reached;
+  - safety interventions: collector emergency shutdown, store hard limit,
+    watchdog trip seen after a restart;
+  - VictoriaMetrics unreachable for longer than a set time, buffer full;
+  - OSCoST started after an unclean stop or a power cut;
+  - **cleared:** a second mail when the alarm is gone.
+- **No mail floods:** one mail per alarm kind until it clears, a minimum
+  gap between mails (for example 15 min), and alarms that arrive close
+  together are combined into one mail. A flapping sensor gives one mail,
+  not hundreds.
+- **Content:** what happened, since when, the current values (temperatures,
+  pump state and feedback), and a link to the web interface.
+- **Never in the way of control:** mails go through a queue and a separate
+  task, like the VictoriaMetrics push. A slow or unreachable mail server
+  changes nothing in the control loop; unsent mails are retried for a
+  while, then dropped with a log entry.
+- **Limit:** a controller that is dead, unpowered or offline can't send a
+  mail about it. For that case the documentation recommends a "no data"
+  alert in VictoriaMetrics or Grafana (series `oscost_*` stops updating),
+  which runs on another machine.
+
 ---
 
 ## 7. Web interface
@@ -724,7 +758,7 @@ should ever need to edit a file or open a shell to run OSCoST.
 | **Events** | Log of state changes, sensor faults, safety interventions and config changes (who, when, what). |
 | **Settings → Hardware** | Board, Pt1000 inputs and 1-Wire buses with a **bus scan** (lists every DS18x20 found with ROM ID, chip type and live reading; new or missing sensors are highlighted), per sensor: name, VBus channel number, calibration offset, live reading; outputs (relay/SSR/PWM, PWM profile and frequency, **test button**), flowmeter. |
 | **Settings → System** | Hydraulic layout (which sensor is collector/store bottom/store top, which output is the solar pump), the store's shape (dimensions, coils, connections, sensor heights) for the overview drawing, and the control functions with their parameters (ΔT on/off, setpoint, store max, optional functions). Each parameter has a short explanation, unit, allowed range and default. |
-| **Settings → Integrations** | VictoriaMetrics (URL, auth, buffer size), MQTT + Home Assistant discovery, with a "test connection" button. |
+| **Settings → Integrations** | VictoriaMetrics (URL, auth, buffer size), MQTT + Home Assistant discovery, e-mail notifications (SMTP server, recipients, which events), each with a "test" button. |
 | **Settings → Users & access** | Users, passwords, API tokens. |
 | **Settings → Backup** | Download/upload the whole config, list of config revisions with diff and one-click rollback. |
 | **About / Diagnostics** | Version, uptime, watchdog state, board temperature, update check. |
@@ -819,7 +853,7 @@ The interface can switch pumps, so changes need login:
 - **Without login**: the status pages (overview, history, events) are
   visible to everyone who can reach the device, **read-only**. Nothing can be
   changed, not even manual mode. Settings pages are not shown (they contain
-  credentials such as the VictoriaMetrics and MQTT passwords).
+  credentials such as the VictoriaMetrics, MQTT and mail passwords).
 - **With login**: everything else (manual mode, all settings, users,
   backup). One role (admin) is enough; several admin users are possible, so
   the event log shows who changed what.
@@ -899,7 +933,9 @@ come first.
 6. Shadow mode on the real system.
 7. Heat quantity, optional functions (cooling, tube collector, frost).
 8. Switch over.
-9. Optional: MQTT + Home Assistant discovery (off by default).
+9. Optional: e-mail notifications (6.7, off by default). Useful already
+   during shadow mode, so it can move earlier.
+10. Optional: MQTT + Home Assistant discovery (off by default).
 
 ---
 
