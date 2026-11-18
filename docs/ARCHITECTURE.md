@@ -626,8 +626,8 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
 - **Every control cycle (1 Hz)** produces one sample set: all temperatures,
   output states and speeds, pump feedback, ΔT, heat output, heat quantity
   counters, active functions, sensor fault and safety intervention flags.
-  Each sample carries
-  the timestamp of the control cycle, not the time it was sent.
+  Each sample carries the timestamp of the control cycle, not the time it
+  was sent.
 - **Protocol**: VictoriaMetrics' Prometheus import endpoint
   (`/api/v1/import/prometheus`), text format with explicit millisecond
   timestamps, optional basic auth or bearer token. One request per second in
