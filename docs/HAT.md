@@ -488,21 +488,32 @@ list is in [11.5](#115-space-and-cost).
 
 ### 8.2 Fully assembled: rough estimate
 
-Factory assembly adds fixed costs per order, so the price per board
-depends mostly on how many boards are ordered. A rough JLCPCB estimate
-for the fitted rev A (about 250 SMD joints and 60 through-hole joints
-per board, about 15 part types that are not "basic"), incl. shipping and
-19 % import VAT:
+Factory assembly has fixed costs per order, so the price depends mostly
+on how many boards are ordered. **Most people want one controller**, but
+JLCPCB's smallest economic assembly order is 2 boards, so "price for one"
+below means the total of that smallest order; the second board is a spare
+(or for a friend).
 
-| Boards | ≈ € total | ≈ € per board |
-|---|---|---|
-| 2 (their minimum for economic assembly) | 105 | 52 |
-| 5 | 165 | 33 |
+Rough JLCPCB estimates, incl. shipping and 19 % import VAT, built from
+their published fees (setup fee, per-joint fees for SMD and through-hole,
+a feeder fee of about €2.80 per non-basic part type, a hand-soldering fee
+per order) plus the parts at LCSC prices. Model: a **fixed part per
+order** (≈ €60 for the normal build, ≈ €54 for the Lite build with two
+non-basic part types fewer) plus a **variable part per board** (≈ €15
+normal, ≈ €9.50 Lite, ≈ €49 PT edition with the consigned LTC2983).
+Without the power input (D18), which also removed two non-basic part types.
 
-Built from JLCPCB's published fees: setup fee, per-joint fees for SMD and
-through-hole, a feeder fee per non-basic part type, a hand-soldering fee
-per order, plus the parts at LCSC prices. AISLER's assembly price is not
-estimated here; it gets quoted with the BOM.
+| Build | **Price for one** (smallest order: 2 boards) | per board in that order | 5 boards total | per board at 5 |
+|---|---|---|---|---|
+| 1-Wire edition, normal build | **≈ €90** | ≈ €45 | ≈ €135 | ≈ €27 |
+| 1-Wire edition, Lite build (12) | **≈ €73** | ≈ €37 | ≈ €100 | ≈ €20 |
+| PT edition (11) | **≈ €158** | ≈ €79 | ≈ €305 | ≈ €61 |
+
+Before D18 the normal build came to ≈ €105 for 2 and ≈ €165 for 5. For
+one controller, the fixed costs dominate: that is why the Lite build,
+with two non-basic part types fewer, saves more per order (≈ €17) than
+its parts suggest (≈ €4.60). AISLER's assembly price is not estimated
+here; it gets quoted with the BOM.
 
 ## 9. Bring-up plan (rev A)
 
@@ -627,9 +638,10 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
   resistors and ESD diodes fit comfortably where the 1-Wire edition has
   PT1, PT2, the DS2482 footprint and the second 1-Wire bus (see the
   mockup).
-- **Cost** (estimates, comparison in 11.6): about **€63 per assembled
-  board** (5 boards, JLCPCB), about **€65 in single-quantity parts**
-  (without the power input, D18):
+- **Cost** (estimates, comparison in 11.6, assembly model in 8.2):
+  **≈ €158 for one** (smallest assembled order, 2 boards), about €61 per
+  board in a batch of 5, about **€65 in single-quantity parts** (without
+  the power input, D18):
 
 | Part | Qty | ≈ € |
 |---|---|---|
@@ -668,7 +680,8 @@ other options stay documented as alternatives.
 Prices are single quantity at the time of writing; totals are estimates
 until a real BOM exists, and LCSC stock changes daily. The totals were
 made with the power input, since dropped (D18): subtract about €4 from
-every column. 🟢 good,
+every column for parts, about €5 per board at 5 boards and about €15 for
+the smallest order of 2 (8.2). 🟢 good,
 🟡 medium, 🔴 weak.
 
 | | **8 × MAX31865** | **2 × ADS124S08** | **2 × AD7124-8** | **1 × LTC2986** | **1 × LTC2983** (chosen) | **1-Wire edition:** 1 × MAX31865 + 7 × DS18B20 |
@@ -685,6 +698,7 @@ every column. 🟢 good,
 | Rest of the board, assembled | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €28 | ≈ €27 |
 | New sensors and cable | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🟢 none | 🔴 7 DS18B20 probes + 2 cables ≈ €60–80 |
 | **Total, assembled (5 boards, JLCPCB, incl. VAT and shipping)** | 🟡 **≈ €68** | 🟢 **≈ €43** | 🟢 **≈ €50** | 🔴 **≈ €78** | 🟡 **≈ €67** | 🟡 **≈ €33 + €60–80 = €93–113** |
+| **Price for one: smallest assembled order (2 boards, JLCPCB)** | 🟡 **≈ €175** | 🟢 **≈ €125** | 🟢 **≈ €139** | 🔴 **≈ €195** | 🟡 **≈ €173** | 🟡 **≈ €105 + €60–80 = €165–185** |
 | **Total, single-quantity parts (DigiKey, excl. VAT)** | 🔴 **≈ €103** | 🟢 **≈ €48** | 🟢 **≈ €50** | 🟡 **≈ €61–69** | 🟡 **≈ €69** | 🟡 **≈ €35 + €60–80 = €95–115** |
 | Stock for assembly | 🟡 varies | 🟢 good (≈ 1,700 at LCSC) | 🔴 thin, one variant out | 🔴 thin | 🟡 thin at LCSC; buy at DigiKey and consign | 🟡 MAX varies; probes bought separately (fakes are common) |
 | ***Function*** | | | | | | |
@@ -758,7 +772,8 @@ Lite variants against the normal build (single-quantity parts; 🟢 good,
 | PT2, PUMP2, REL2, DS2482 spots for later | 🟢 | 🔴 none | 🟢 | — | — |
 | ***Totals*** | | | | | |
 | Parts, single quantity | ≈ €30 | ≈ €24.60 | ≈ €24.60 | **≈ €5.40** | **≈ €5.39** |
-| Assembled, batch of 5 (estimate) | ≈ €29 | ≈ €24 | ≈ €24 | **≈ €5** | **≈ €5** |
+| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €71 | ≈ €71 | **≈ €19** | **≈ €19** |
+| Assembled, per board in a batch of 5 | ≈ €27 | ≈ €19.50 | ≈ €19.50 | **≈ €7.50** | **≈ €7.50** |
 | Extra design work | — | 🔴 second board, layout, parts list, tests, docs | 🟢 one extra part and a second parts list | — | — |
 | Upgrade later to the full HAT | — | 🔴 buy a new board | 🟢 solder the missing parts on | — | — |
 
@@ -807,7 +822,8 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
 | ***Totals*** | | | |
 | Parts, single quantity | ≈ €30 | ≈ €25.40 | **≈ €4.60** |
-| Assembled, batch of 5 (estimate) | ≈ €29 | ≈ €24.50 | **≈ €4.50** |
+| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €73 | **≈ €17** |
+| Assembled, per board in a batch of 5 | ≈ €27 | ≈ €20 | **≈ €7** |
 | Upgrade | — | 🟢 solder on U2, C4, R2, R25 (remove R26) and the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that
