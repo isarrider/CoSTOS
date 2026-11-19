@@ -454,6 +454,7 @@ runs on both:
 | I²C (DS2482) | `/dev/i2c-N` |
 | 1-Wire (kernel master) | `/sys/bus/w1/` (`w1-gpio` + `w1_therm`) |
 | PWM | sysfs PWM (`/sys/class/pwm`) |
+| Supply under-voltage | hwmon sensor `rpi_volt` from the firmware driver `raspberrypi-hwmon`: `/sys/class/hwmon/hwmonN/in0_lcrit_alarm` (find N by its `name` file), read once per second; the flag is sticky, so short dips are seen too (Pi 3/4; checked on the Pi 5 during bring-up, fallback `vcgencmd get_throttled`) |
 | PWM feedback | GPIO edge events with kernel timestamps |
 | Watchdog | `/dev/watchdog` |
 
@@ -646,6 +647,7 @@ can be switched off.
 | **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) |
 | **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
 | **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
+| **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. Matters most for the HAT's Lite build, whose pump driver runs on this 5 V and stops working below 4.5 V ([HAT 12.1](HAT.md#121-rule-it-may-fail-but-it-may-not-break-anything)); the pump then stays stopped, which the pump feedback also reports |
 
 A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
 is possible later, as on the BX Plus "fault relay". The web page and
@@ -754,6 +756,11 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
     - A mismatch between commanded and reported state (stop commanded but
       running, run commanded but stand-by or no power) also raises an
       alarm (`costos_alarm{kind}`, 6.2).
+  - **Supply voltage** (6.2, "supply under-voltage"):
+    - `costos_supply_undervoltage`: 1 while the Pi reports under-voltage,
+      else 0.
+    - `costos_supply_undervoltage_events_total`: how often it was seen
+      since start, so short dips between two readings are not lost.
   - A sensor with a fault is **not written** for that second (a gap in the
     chart), instead of writing a fake value.
   - The prefix is fixed at `costos`, also after CoSTOS has replaced the
@@ -808,7 +815,7 @@ Optional, off by default, set up under Settings → Integrations.
 - **What triggers a mail** (each can be switched off):
   - every alarm from the function checks (6.2): sensor fault, no
     circulation, ΔT too high, night circulation, pump feedback error or
-    mismatch, store maximum reached;
+    mismatch, supply under-voltage, store maximum reached;
   - safety interventions: collector emergency shutdown, store hard limit,
     watchdog trip seen after a restart;
   - VictoriaMetrics unreachable for longer than a set time, buffer full;
