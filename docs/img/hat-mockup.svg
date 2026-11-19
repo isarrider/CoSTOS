@@ -51,8 +51,8 @@
 <text class="ts" x="340" y="98" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#E8F5E9">40-pin header to the Pi (stacking header for the Pi 5 cooler)</text>
 <rect x="320" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
 <text class="ts" x="384" y="124" text-anchor="start" style="font-size:11px;font-weight:400;fill:#C8E6C9">ID EEPROM, not fitted</text>
-<text class="ts" x="116" y="121" text-anchor="start" style="font-size:9px;font-weight:400;fill:#ffffff">+</text>
-<text class="ts" x="116" y="149" text-anchor="start" style="font-size:9px;font-weight:400;fill:#ffffff">−</text>
+<text class="ts" x="116" y="121" text-anchor="start" style="font-size:9px;font-weight:400;fill:#ffffff">A</text>
+<text class="ts" x="116" y="149" text-anchor="start" style="font-size:9px;font-weight:400;fill:#ffffff">B</text>
 <rect x="58" y="104" width="54" height="56" rx="3" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1"/>
 <circle cx="72" cy="118" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="118" x2="77" y2="118" stroke="#5F6468" stroke-width="1.5"/>
 <circle cx="72" cy="146" r="7" fill="#B0B6BA" stroke="#5F6468"/><line x1="67" y1="146" x2="77" y2="146" stroke="#5F6468" stroke-width="1.5"/>

@@ -520,8 +520,8 @@ All labelled on the silkscreen:
 |---|---|---|
 | PUMP1 | PWM, GND, FB | pump 1 signal cable (brown, blue, black) |
 | PUMP2 | PWM, GND, FB | pump 2 signal cable (not fitted in rev A) |
-| PT1 | +, − | Pt1000 sensor 1 (collector) |
-| PT2 | +, − | Pt1000 sensor 2 (not fitted in rev A) |
+| PT1 | A, B | Pt1000 sensor 1 (collector); no polarity, wires in any order |
+| PT2 | A, B | Pt1000 sensor 2 (not fitted in rev A) |
 | 1W-A, 1W-B | 3V3, DQ, GND | DS18x20 sensors |
 | REL1 | +5V, OUT | relay / SSR 1, optional: cut-off relay (option C), heating-profile pump, valve |
 | REL2 | +5V, OUT | SSR / relay 2 (not fitted in rev A) |
@@ -535,7 +535,7 @@ it 1.2–1.4 mm), nothing printed over pads or under terminal bodies.
 
 | Where | What is printed | Read when | Readability |
 |---|---|---|---|
-| Top, at each terminal | Pin name next to every pin (+/−, 3V3/DQ/GND, PWM/GND/FB, +5V/OUT), terminal name and what it is for (PT1 collector, 1W-A, PUMP1 pump) | while wiring, HAT on the Pi | 🟢 the most useful text |
+| Top, at each terminal | Pin name next to every pin (A/B, 3V3/DQ/GND, PWM/GND/FB, +5V/OUT), terminal name and what it is for (PT1 collector, 1W-A, PUMP1 pump) | while wiring, HAT on the Pi | 🟢 the most useful text |
 | Top, small notes | LED names, "12 V" at R25 and "5 V (Lite)" at R26, outlines of unfitted parts, edition and revision | assembly, checking the LEDs | 🟢 |
 | Bottom, cheat sheet | Table of all terminals with pins and use, pump wire colours (brown · blue · black), the three safety rules (solar-profile pump only, no 230 V on the board, never R25 and R26 together), LED meanings, tick boxes for normal or Lite build, repository URL | before mounting, or with the HAT off | 🟡 hidden once on the Pi |
 | Bottom, QR code (10 × 10 mm) | link to the repository | any time, with a phone | 🟢 |

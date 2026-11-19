@@ -49,7 +49,7 @@ for i in range(20):
 t(340, 90, "GPIO header · pin 1 ▸", 9, anchor="middle")
 
 # left-edge terminals of the top view -> right edge here; pin names next to each hole
-TERMS = [("PT1", 104, ["+", "−"]), ("1W-A", 166, ["3V3", "DQ", "GND"]),
+TERMS = [("PT1", 104, ["A", "B"]), ("1W-A", 166, ["3V3", "DQ", "GND"]),
          ("1W-B", 256, ["3V3", "DQ", "GND"]), ("PUMP1", 346, ["PWM", "GND", "FB"])]
 for name, y0, pins in TERMS:
     for k, p in enumerate(pins):
@@ -75,7 +75,7 @@ X0, XP, XD = 112, 160, 248
 t(X0, 116, "CoSTOS HAT · 1-Wire edition · rev A", 14, 700)
 t(X0, 131, "Controller for Solar Thermal – Open Source · MIT licence", 9.5)
 out.append(f'<line x1="{X0}" y1="139" x2="{X0 + 330}" y2="139" stroke="{SILK}" stroke-width="1"/>')
-ROWS = [("PT1", "+  −", "Pt1000, collector, 2-wire"),
+ROWS = [("PT1", "A  B", "Pt1000, collector, any order"),
         ("1W-A", "3V3 DQ GND", "DS18x20, daisy chain, powered"),
         ("1W-B", "3V3 DQ GND", "DS18x20, second bus"),
         ("PUMP1", "PWM GND FB", "pump cable: brown · blue · black"),

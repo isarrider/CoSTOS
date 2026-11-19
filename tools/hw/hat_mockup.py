@@ -81,7 +81,7 @@ if pt:
     term_pt8(110)
     term_v(346, 3, "PUMP1", "pump", ["PWM", "GND", "FB"])
 else:
-    term_v(104, 2, "PT1", "collector", ["+", "−"])
+    term_v(104, 2, "PT1", "collector", ["A", "B"])
     term_v(166, 3, "1W-A", "DS18x20", ["3V3", "DQ", "GND"])
     term_v(256, 3, "1W-B", "DS18x20", ["3V3", "DQ", "GND"])
     term_v(346, 3, "PUMP1", "pump", ["PWM", "GND", "FB"])
