@@ -212,7 +212,7 @@ A third transistor at the terminal does that job actively:
               ├──┤ Q6 MMBT3906 PNP ──► R9 ──┬──────────────► J2 PWM
        node PWM_OFF │                             ├── D4 SMBJ (600 W TVS), as today
               │                             ├──┤ Q7 MMBT3904 NPN "pull-down switch"
-              │                             │     base from node PWM_OFF via R37 10 kΩ
+              │                             │     base from Q4's collector via R37 47 kΩ
              R35 2.7 kΩ                      └── R38 10 kΩ to GND (keeps the line defined)
               │
  PWM1 ─R33 10 kΩ─► Q4 MMBT3904   "PWM switch"
@@ -221,9 +221,27 @@ A third transistor at the terminal does that job actively:
              GND
 ```
 
-Both switches on: node PWM_OFF goes low, Q6 switches the output to the supply,
-Q7 has no base current and is off. Either switch off: R36 pulls node PWM_OFF
-high, Q6 turns off and Q7 turns on and pulls the terminal actively to 0 V.
+Both switches on: current flows through R35, Q6 gets base current and
+switches the output to the supply; Q4's collector sits near 0 V, so Q7 has
+no base current and is off. Either switch off: R36 pulls node PWM_OFF up to
+the supply, Q6 turns off, Q4's collector rises with it and Q7 turns on and
+pulls the terminal actively to 0 V.
+
+**Correction (found by simulation, November 2026).** The first version of
+H3 took Q7's base from node PWM_OFF through 10 kΩ. That does not work:
+with Q4 on, PWM_OFF only drops to about 0.7 V below the supply (Q6's
+base-emitter junction holds it there), so Q7 stays on; and with Q4 off,
+Q7's base current through R36 (2.2 kΩ) is enough to switch Q6 on as
+well. In an ngspice simulation the terminal stayed at 0.13 V with 26–30
+mA flowing through Q6, R9 and Q7, in both states. Taking Q7's base from
+Q4's collector through 47 kΩ fixes both:
+
+| ngspice, pump input modelled as 2.2 kΩ + LED | First version (R37 10 kΩ from PWM_OFF) | **Fixed (R37 47 kΩ from Q4's collector)** |
+|---|---|---|
+| Terminal, PWM high, 12 V / R9 470 Ω | 🔴 0.13 V | 🟢 9.82 V |
+| Terminal, PWM low | 🟡 0.13 V | 🟢 0.02 V |
+| Supply current, PWM high / low | 🔴 30 / 26 mA | 🟢 8.7 / 0.2 mA |
+| Terminal, PWM high, 5 V / R9 100 Ω | 🔴 0.34 V | 🟢 4.80 V |
 
 | | H2 | **H3** |
 |---|---|---|

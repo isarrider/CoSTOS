@@ -157,7 +157,7 @@ the 13 V TVS standoff at light load.
               ├──┤ Q6 MMBT3906 PNP "to the supply" ──► R9 ──┬───────► J2 PWM
      PWM_OFF  │                                            ├── D4 TVS
               │                                            ├──┤ Q7 MMBT3904 "pull-down"
-             R35 2.7 kΩ                                    │     base from PWM_OFF via R37 10 kΩ
+             R35 2.7 kΩ                                    │     base from Q4's collector via R37 47 kΩ
               │                                            ├── R38 10 kΩ to GND
  PWM1 ─R33 10 kΩ─► Q4 MMBT3904  "PWM switch"               └── R31/R32 readback → GPIO 6
  WD_OK ──────────► Q5 AO3400A   "watchdog switch"
@@ -167,9 +167,15 @@ the 13 V TVS standoff at light load.
 
   **Two switches in a row, one switch to the supply, one to ground.** Q4
   (the PWM) and Q5 (the watchdog) in series are the watchdog AND: only
-  when both are on is node PWM_OFF pulled low, Q6 switches the output to
-  +V_DRV and Q7 is off. If either is off, R36 pulls PWM_OFF high, Q6 turns
-  off and Q7 pulls the terminal actively to 0 V = stop. R7 (100 kΩ) holds
+  when both are on does current flow through R35: Q6 gets base current
+  and switches the output to +V_DRV, and Q4's collector sits near 0 V, so
+  Q7 is off. If either is off, R36 pulls PWM_OFF up to +V_DRV (Q6 off) and
+  Q4's collector rises with it, so Q7 gets base current through R37 and
+  pulls the terminal actively to 0 V = stop. Q7's base is taken from Q4's
+  collector, not from PWM_OFF: PWM_OFF never goes lower than about 0.7 V
+  below +V_DRV (Q6's base-emitter junction holds it there), so Q7 would
+  never switch off. R37 is 47 kΩ so that Q7's base current, which flows
+  through R36, stays too small to turn Q6 on (simulated, HAT-development.md 2). R7 (100 kΩ) holds
   PWM1 low while the Pi boots. Q7 sits behind R9, so the brief moment when
   Q6 and Q7 overlap while switching is limited by R9 like a shorted cable.
   Why this chain, what it replaced and how it is tested:
@@ -798,6 +804,8 @@ Regenerate with `python3 tools/hw/pwm_chain_svg.py > docs/img/hat-lite-pwm-chain
    output to the Pi's 5 V (through R26): ≈ 4.85 V.
 5. **Q7, the switch to ground**, pulls the terminal actively to 0 V
    whenever Q6 is off, so the falling edge is as sharp as the rising one.
+   Its base current comes from Q4's collector through R37 (47 kΩ), which
+   is near 0 V only while Q4 and Q5 are both on.
 6. **R9** (100 Ω, at least ½ W) drops only about 0.3 V at the pump's
    ~3 mA, so the pump sees about 4.55 V. With a shorted cable (or the
    moment Q6 and Q7 overlap while switching) it limits the current to
