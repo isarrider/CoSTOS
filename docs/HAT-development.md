@@ -7,7 +7,7 @@ design as it will be built, terminals, wiring, costs) is in the release
 documents, [HAT-1wire.md](HAT-1wire.md) and [HAT-PT.md](HAT-PT.md) (the
 editions compared: [HAT.md](HAT.md)); this page does not repeat them.
 
-- [1. Decisions](#1-decisions): D1–D22, the short answer to every design
+- [1. Decisions](#1-decisions): D1–D23, the short answer to every design
   question, referred to as "Dn" in both documents.
 - [2. Pump driver chain: alternatives](#2-pump-driver-chain-alternatives-d22)
   and the rev A prototype test of the transistor chain.
@@ -16,6 +16,7 @@ editions compared: [HAT.md](HAT.md)); this page does not repeat them.
 - [5. Assembly services compared](#5-assembly-services-compared-d7-d20)
 - [6. Bring-up plan (rev A)](#6-bring-up-plan-rev-a)
 - [7. Considered: Waveshare ESP32-P4-WIFI6-DEV-KIT](#7-considered-waveshare-esp32-p4-wifi6-dev-kit)
+- [8. Relay supply switch and watchdog without fee parts](#8-relay-supply-switch-and-watchdog-without-fee-parts-d23)
 
 Section numbers in the decisions (4.1, 11.1, …) refer to
 [HAT-1wire.md](HAT-1wire.md) unless they name this page or the PT edition
@@ -47,6 +48,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: about four fees per order (since D22) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal and the signal paths (lines, arrows and small text from each terminal through its circuit to its GPIO) on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 | D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the 1-Wire Lite, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
+| D23 | Can the relay supply switch and the watchdog be built from basic parts? | **Relay supply switch: yes**, an AO3401A P-MOSFET switched by an MMBT3904 from WD_OK (both JLCPCB basic parts) replaces the TPS22918: one loading fee less, ≈ €3 less for one controller on the 1-Wire and PT editions; it fails safe the same way. **Watchdog: keep the 74LVC1G123** for now: a 555 is an extended part too, and a transistor-only timer is unreliable with a heartbeat edge only every 2 s. Section 8 of this page |
 
 ## 2. Pump driver chain: alternatives (D22)
 
@@ -501,3 +503,68 @@ later port. If it is ever done, the "move the three signals" variant
 above is the starting point. The full cost and capability comparison of the Pi
 against the ESP32-S3, RP2350 and ESP32-P4, and the P4 boards considered,
 are in [ARCHITECTURE 13](ARCHITECTURE.md#13-platform-comparison-pi-or-microcontroller).
+
+## 8. Relay supply switch and watchdog without fee parts (D23)
+
+After the transistor chain (D22), four part types still paid JLCPCB's
+loading fee of about €2.80 per order: the MAX31865, the 74LVC1G123
+watchdog, the B0512S DC/DC and the TPS22918 relay supply switch. Two of
+them do simple jobs that transistors could do: the switch and the
+watchdog. Prices from LCSC/JLCPCB, November 2026.
+
+### 8.1 Relay supply switch
+
+The job: give the relay outputs their 5 V only while `WD_OK` is high,
+and switch it off when `WD_OK` is low, floating, or the Pi is off.
+
+```
+ +5V ───────┬──────────────── S ┐
+            │                   Q12 AO3401A (P-MOSFET)
+           R45 100 kΩ         D ├──── +5V_REL ─► REL1, REL2
+            │                 G ┘
+            ├───────────────────┘
+            │
+            C  Q13 MMBT3904 (NPN)
+ WD_OK ─R46 10 kΩ─B
+            E      R47 100 kΩ from B to GND
+            │
+           GND
+```
+
+- `WD_OK` high → Q13 conducts → the gate of Q12 is pulled to 0 V
+  (V_GS = −5 V) → Q12 conducts with about 60 mΩ → the relays have power.
+- `WD_OK` low or floating → Q13 is off → R45 holds the gate at 5 V →
+  Q12 is off. R47 keeps Q13 off while the Pi boots.
+- With a 100 mA relay coil the drop across Q12 is about 6 mV.
+
+| | **TPS22918 (until now)** | **AO3401A + MMBT3904 (D23)** |
+|---|---|---|
+| JLCPCB category | 🔴 extended: loading fee ≈ €2.80 per order | 🟢 both basic: no fee |
+| Part cost | 🟢 $0.14 | 🟢 ≈ $0.03 incl. three resistors |
+| Off without `WD_OK` (fail-safe) | 🟢 | 🟢 |
+| Soft start, output discharge | 🟢 built in | 🟡 none; harmless for a relay coil or an SSR input |
+| Easy to explain | 🟡 "a load-switch chip" | 🟢 "the transistor pulls the gate down" |
+| Parts on the board | 🟢 1 | 🟡 5 (two transistors, three resistors) |
+| One part shorted | 🟡 relay supply always on; the GPIO-driven relay MOSFETs still decide | 🟡 same |
+| **Saved, price for one** | — | 🟢 **≈ €3** (1-Wire and PT editions; the 1-Wire Lite has no relay output) |
+| **Saved per board, group of 5** | — | 🟢 **≈ €0.70** |
+
+**Decision:** adopted. Designators Q12, Q13, R45–R47; C11 and C12 stay
+as input and output capacitors. U7 is gone.
+
+### 8.2 Watchdog
+
+The heartbeat has to come from the software, once per control cycle:
+the watchdog is there to catch a program that hangs. A fast heartbeat
+from the hardware PWM would not do, because the PWM keeps running when
+the software hangs. So the watchdog only gets a rising edge about
+every 2 s, and has to drop `WD_OK` after about 3 s without one.
+
+| Option | JLCPCB category | Part cost | Rating | Comment |
+|---|---|---|---|---|
+| **A. 74LVC1G123 (retriggerable monostable)** | 🔴 extended, fee | 🟡 $1.48 | 🟢 | Made for this job; one RC sets the timeout; runs from 3.3 V |
+| B. NE555 as missing-pulse detector | 🔴 extended, fee | 🟢 ≈ $0.10 | 🟡 | Saves ≈ €1.20 in parts but no fee; needs a PNP, a coupling capacitor and the 5 V rail (4.5–16 V); bipolar, draws more current |
+| C. Transistors and an RC (charge pump) | 🟢 basic, no fee | 🟢 ≈ $0.05 | 🔴 | With one edge every 2 s, the capacitor must be large to hold a transistor on, and its ripple is about as large as the timeout itself: hard to set, hard to explain |
+
+**Decision (for now):** keep the 74LVC1G123.
+

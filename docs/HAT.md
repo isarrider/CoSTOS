@@ -15,7 +15,7 @@ passed its tests, this line will say "released".
 | **HAT.md** (this page) | Everyone choosing a HAT | The editions side by side |
 | [HAT-1wire.md](HAT-1wire.md) | Building, ordering or wiring the 1-Wire edition or 1-Wire Lite | The board as it will be built: functions, terminals, wiring, silkscreen, LEDs, Pi configuration, costs, 1-Wire Lite |
 | [HAT-PT.md](HAT-PT.md) | The same for the PT edition | What differs from the 1-Wire edition: the 8 Pt1000 inputs on one LTC2983, terminals, configuration, costs |
-| [HAT-development.md](HAT-development.md) | Checking, testing or changing the design | Decisions D1–D22 with their reasons, the alternatives that were dropped, the rev A prototype, bring-up and tests |
+| [HAT-development.md](HAT-development.md) | Checking, testing or changing the design | Decisions D1–D23 with their reasons, the alternatives that were dropped, the rev A prototype, bring-up and tests |
 
 ## The editions
 
