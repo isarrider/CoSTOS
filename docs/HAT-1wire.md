@@ -215,7 +215,7 @@ the 13 V TVS standoff at light load.
   watchdog readback (4.6) gives the exact timeout. That catches a
   shorted transistor in the chain (or, on the prototype's fallback chain,
   a stuck driver or AND gate) directly, and a silently lost watchdog
-  layer before it matters. The pump runs for at most those few seconds.
+  layer before it matters. The pump runs for at most those 15 s.
 - **R9 package: at least 0.5 W** (e.g. 1210 or 2010). With a shorted pump
   cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (1-Wire Lite) for as long as
   the short lasts, more than an 0805 resistor takes.
