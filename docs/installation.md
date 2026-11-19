@@ -136,9 +136,10 @@ stopped, 5–75 % when running) before CoSTOS relies on them.
 - CoSTOS preset **"Wilo PWM2"**: stop = 0 %, start at ≥ 20 %, regulate
   between 15 % (minimum) and 100 % (maximum). The 7–15 % band, where
   start/stop depends on the previous state, is never used.
-- Output stage: the driver board or optocoupler module from
-  [Hardware needed](HARDWARE.md#pwm-pump-output). 12 V is inside the input
-  range (max. 15 V).
+- Output stage: the CoSTOS HAT (≈ 7 V at the pump, D25), or the driver
+  board or optocoupler module from
+  [Hardware needed](HARDWARE.md#pwm-pump-output) (12 V). Both are inside
+  the input range (4–15 V).
 - Frequency: 500 Hz (the RESOL controller uses 512 Hz).
 - **The feedback output gives CoSTOS real pump monitoring**: confirmation
   that a stop really stopped the pump (2 %), that it runs when commanded

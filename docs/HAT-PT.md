@@ -27,7 +27,7 @@ the LTC2983 and the other decisions:
 | Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way, all on the left edge | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*) on the left edge, plus 1W-A 3-way at the front |
 | SPI | CE0 | CE0 for the LTC2983 |
 | Extra GPIOs | | LTC2983 /RESET on GPIO22 (pin 15), INTERRUPT (conversion done) on GPIO27 (pin 13) |
-| Everything else | 12 V, PUMP1/2 (transistor chain), REL1/2, watchdog, feedback, readback, header, EEPROM footprint | **identical** |
+| Everything else | voltage doubler (≈ 7 V, D25), PUMP1/2 (transistor chain), REL1/2, watchdog, feedback, readback, header, EEPROM footprint | **identical** |
 
 ## 2. Pt1000 inputs (LTC2983)
 
@@ -86,8 +86,8 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
   PT1, the DS2482 footprint and the second 1-Wire bus (see the
   mockup).
 - **Cost** (estimates, comparison in [HAT-development.md 4](HAT-development.md#4-pt-edition-choice-of-measuring-chip-d13), assembly model in [HAT-1wire.md 8.2](HAT-1wire.md#82-what-one-controller-costs)):
-  **≈ €157 for one** (smallest assembled order, 2 boards), about €63.50 per
-  board in a batch of 5, about **€50.15 in single-quantity parts** (LCSC
+  **≈ €151.50 for one** (smallest assembled order, 2 boards), about €62 per
+  board in a batch of 5, about **€49.20 in single-quantity parts** (LCSC
   prices as in HAT-1wire 8.1, the LTC2983 from DigiKey):
 
 | Part | Qty | ≈ € |
@@ -95,7 +95,7 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 | LTC2983 (8 × Pt1000; DigiKey $39.06 for one; LCSC rarely stocks it) | 1 | 39.00 |
 | PCB, ⅓ of an AISLER set of 3 (≈ €19), for building it yourself | — | 6.50 |
 | 40-pin tall female header and 4 M2.5 spacers | 1 | 1.25 |
-| B0512S-1WR3 DC/DC | 1 | 1.10 |
+| Voltage doubler (D25): MMBT3904 × 3, MMBT3906, 1N4148W × 2, 4 R, 4 C | 12 | 0.10 |
 | Resistors and capacitors, about 45 (incl. the 2 kΩ 0.1 % sense resistor and 16 protection resistors) | — | 0.80 |
 | 3.5 mm fixed screw terminals: two-level 8-position block, REL1, PUMP1, 1W-A | 4 | 0.80 |
 | PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire, FB1) | 18 | 0.47 |
@@ -106,7 +106,7 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 | 100 mA polyfuse | 1 | 0.03 |
 | AO3400A, 1N4148W | 2 | 0.03 |
 | Relay supply switch: AO3401A, AO3400A (D23) | 2 | 0.03 |
-| **Total** | | **≈ 50.15** |
+| **Total** | | **≈ 49.20** |
 
   The LTC2983 is three quarters of it; everything apart from the
   converter chip costs about €1 more than on the 1-Wire edition

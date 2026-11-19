@@ -46,7 +46,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
 | D19 | A separate low-cost board? | ~~Replaced by D25: there is only one 1-Wire build now.~~ Until then: **No: 1-Wire Lite, a lighter build of the 1-Wire edition** (section 11): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
-| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: about two fees per order (since D24) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
+| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: one fee per order (since D25) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal and the signal paths (lines, arrows and small text from each terminal through its circuit to its GPIO) on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 | D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the 1-Wire Lite, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
 | D23 | Can the relay supply switch and the watchdog be built from basic parts? | **Relay supply switch: yes**, an AO3401A P-MOSFET switched by an MMBT3904 from WD_OK (both JLCPCB basic parts) replaces the TPS22918: one loading fee less, ≈ €3 less for one controller on the 1-Wire and PT editions; it fails safe the same way. Watchdog: see D24. Section 8 of this page |
@@ -56,10 +56,10 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 ## 2. Pump driver chain: alternatives (D22)
 
 The chain as built is described in [HAT-1wire.md 4.1](HAT-1wire.md#41-pwm-pump-outputs)
-and, step by step, in [HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-1-wire-lite).
+and, step by step, in [HAT-1wire.md 11.2](HAT-1wire.md#112-the-pump-signal-step-by-step).
 
 The chain from GPIO 18 to the terminal (step by step in
-[HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-1-wire-lite)) has four jobs: raise
+[HAT-1wire.md 11.2](HAT-1wire.md#112-the-pump-signal-step-by-step)) has four jobs: raise
 3.3 V to at least 3.6 V (≈ 4.7 V wanted) at the pump, deliver its input
 current (up to 7.5 mA), go to 0 V when the watchdog trips, and survive a
 shorted or disturbed cable. The original design used an AND gate and a
@@ -446,10 +446,10 @@ current lists just before ordering.
 **Design rule (D20):** in KiCad, every ordinary part (resistors,
 capacitors, AO3400A, 1N4148W, LEDs, TVS and ESD diodes, terminals) is
 chosen from JLCPCB's basic or preferred extended parts. Only the special
-chips without such an equivalent pay the fee: MAX31865 and B0512S (the
-LTC2983 of the PT edition is consigned; the pump driver, the relay
-supply switch and the watchdog are built from basic parts, D22–D24).
-That is about two fees per
+chips without such an equivalent pay the fee: the MAX31865 (the LTC2983
+of the PT edition is consigned; the pump driver, the relay supply switch,
+the watchdog and the pump driver supply are built from basic parts,
+D22–D25). That is one fee per
 order instead of fifteen or more, roughly €25–30 less per order, which matters most for a single
 controller (8.2). The same rule helps at other services: fewer special
 part types means less setup everywhere.
@@ -462,14 +462,19 @@ into 8.2.
 1. Visual check, then resistance checks between all rails before power.
 2. HAT on the Pi, Pi on its USB-C supply with a USB power meter: current
    rises by well under 200 mA, power LED on.
-3. 12 V and 3.3 V present on the HAT. Measure the 5 V on the HAT
-   (at C2) idle and with the Pi under load (`stress-ng` on all cores plus
-   a USB drive copying): it must stay at or above 4.75 V. **1-Wire Lite:**
-   also measure the PWM high level at J2 (pump connected, 100 % duty),
-   and the rise and fall times at J2 at 1000 Hz (must be ≤ 2 µs, both
-   builds),
-   idle and under load; it must stay above 4.5 V. Check that the Pi
-   reports no under-voltage (`vcgencmd get_throttled` returns `0x0`).
+3. 3.3 V present on the HAT; the voltage doubler (D25) oscillates
+   (≈ 15 kHz at C22) and +V_DRV is about 7 V. Switch the Pi's supply on
+   and off a few times, and once through a slow ramp from a lab supply:
+   the oscillator must start every time. Measure the 5 V on the HAT (at
+   C2) idle and with the Pi under load (`stress-ng` on all cores plus a
+   USB drive copying): it must stay at or above 4.75 V. Measure the PWM
+   high level at J2 (pump connected, 100 % duty), idle and under load:
+   it must stay above 5 V. Measure the rise and fall times at J2 at
+   1000 Hz (simulated ≈ 0.1 µs; must be ≤ 2 µs) and note how far they
+   would allow the frequency range to go (ARCHITECTURE 5.3). Check that
+   the Pi reports no under-voltage (`vcgencmd get_throttled` returns
+   `0x0`). Then the comparison: remove R26 (the doubler's 0 Ω output
+   link), fit U2 (B0512S) and R25, and measure the same at 12 V.
 4. Watchdog (D24): `WD_OK` low after boot, high while a test script
    toggles the heartbeat at 20 Hz, low again within about 5–14 s after it
    stops (scope on C18, and the readback on GPIO 20). Then the window: 0.5 Hz
@@ -787,12 +792,15 @@ chain is H3 with the corrected Q7 drive (section 2), R9 = 100 Ω.
 | Group of 5, per board | ≈ €19.70 | ≈ €17.50 | 🟢 **≈ €18** |
 | Parts on the driver supply | 6 (U2, C3, C4, R2, R25, R26) | 1 (R26) | 🟡 13 small parts |
 
-Dropped: U2 (B0512S), C3, C4, R2, R25, R26. Added: Q15–Q18, R54–R57,
-C20–C23, D21, D22. The PT edition uses the same doubler and drops its
+Dropped: U2 (B0512S), C3, C4, R2 (U2 and R25 stay as unfitted rev A
+footprints). Added: Q15–Q18, R54–R57, C20–C23, D21, D22, R26 now as
+the doubler's 0 Ω output link. The PT edition uses the same doubler and drops its
 B0512S too.
 
 **Decision:** adopted. The 1-Wire edition has one build; the name
-"1-Wire Lite" is retired. Rev A keeps a footprint for the B0512S (U2,
-not fitted, with a 0 Ω link to +V_DRV) so bring-up can compare the
-doubler with the 12 V supply on the same board.
+"1-Wire Lite" is retired. The doubler reaches +V_DRV through a 0 Ω link (R26).
+Rev A keeps a footprint for the B0512S (U2, not fitted, with its own
+0 Ω link R25) so bring-up can compare the doubler with the 12 V supply
+on the same board; never fit R25 and R26 together. Released boards drop
+U2 and R25.
 
