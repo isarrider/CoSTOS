@@ -151,7 +151,7 @@
 <text x="1005.0" y="272.0" class="v" text-anchor="start">PUMP1</text>
 <path d="M975 280 V290 M963 290 H987 M967 295 H983 M971 300 H979" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <g transform="translate(990 120) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="1020.0" y="106.0" class="v" text-anchor="middle"><tspan class="r">R9</tspan> 470 Ω</text>
+<text x="1020.0" y="106.0" class="v" text-anchor="middle"><tspan class="r">R9</tspan> 470 Ω ½ W</text>
 <path class="w" d="M1050 120 L1110 120"/>
 <circle cx="1070" cy="120" r="3.5" fill="#222"/>
 <path class="w" d="M1070 120 L1070 130"/>
@@ -206,7 +206,7 @@
 <text x="1005.0" y="482.0" class="v" text-anchor="start">PUMP2</text>
 <path d="M975 490 V500 M963 500 H987 M967 505 H983 M971 510 H979" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <g transform="translate(990 330) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="1020.0" y="316.0" class="v" text-anchor="middle"><tspan class="r">R10</tspan> 470 Ω</text>
+<text x="1020.0" y="316.0" class="v" text-anchor="middle"><tspan class="r">R10</tspan> 470 Ω ½ W</text>
 <path class="w" d="M1050 330 L1110 330"/>
 <circle cx="1070" cy="330" r="3.5" fill="#222"/>
 <path class="w" d="M1070 330 L1070 340"/>
@@ -234,10 +234,11 @@
 <text x="640" y="500" class="n" text-anchor="start">R7/R8 hold the driver inputs low; R8 is fitted although</text>
 <text x="640" y="515" class="n" text-anchor="start">channel 2 is not, so IN B never floats.</text>
 <text x="640" y="530" class="n" text-anchor="start">R9 limits the current into a shorted cable; D4 clamps</text>
-<text x="640" y="545" class="n" text-anchor="start">spikes from the pump cable. Terminal order = cable colours</text>
-<text x="640" y="560" class="n" text-anchor="start">brown (PWM), blue (GND), black (FB).</text>
-<text x="640" y="575" class="n" text-anchor="start">D12 shows what really reaches the pump: off = stop,</text>
-<text x="640" y="590" class="n" text-anchor="start">brighter = faster (≈ 4.5 mA at 12 V, ≈ 1.3 mA in the Lite build).</text>
+<text x="640" y="545" class="n" text-anchor="start">spikes from the pump cable. Lite build: R9 100 Ω, D4 SMBJ6.0A</text>
+<text x="640" y="560" class="n" text-anchor="start">(4.1). R9 at least ½ W. Terminal order = cable colours</text>
+<text x="640" y="575" class="n" text-anchor="start">brown (PWM), blue (GND), black (FB).</text>
+<text x="640" y="590" class="n" text-anchor="start">D12 shows what really reaches the pump: off = stop,</text>
+<text x="640" y="605" class="n" text-anchor="start">brighter = faster (≈ 4.5 mA at 12 V, ≈ 1.3 mA in the Lite build).</text>
 <text x="20" y="610" class="h" text-anchor="start">6 · Pump feedback inputs (open collector, 75 Hz)</text>
 <polygon points="70,710 62,701 19,701 19,719 62,719" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="40.5" y="714" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">P1_FB</text>

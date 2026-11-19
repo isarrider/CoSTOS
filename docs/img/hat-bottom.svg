@@ -121,7 +121,7 @@
 <rect x="108" y="239" width="338" height="58" rx="3" fill="none" stroke="#ffffff" stroke-width="1.2"/>
 <text x="114" y="254" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! Solar-profile PWM pump only: no signal = stop</text>
 <text x="114" y="271" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! No 230 V on this board. Power: from the Pi only</text>
-<text x="114" y="288" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! R25 0 Ω = 12 V drive · R26 0 Ω = 5 V (Lite) · never both</text>
+<text x="114" y="288" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! Lite: R26, R9 = 100 Ω, D4 = 6.0A · never R25 + R26</text>
 <text x="112" y="330" text-anchor="start" style="font-size:10px;font-weight:400;fill:#ffffff">LEDs: PWR on · WD heartbeat · PUMP running · R1 relay on</text>
 <rect x="112" y="343" width="10" height="10" fill="none" stroke="#ffffff" stroke-width="1.2"/>
 <text x="127" y="352" text-anchor="start" style="font-size:10px;font-weight:400;fill:#ffffff">normal build</text>

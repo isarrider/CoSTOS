@@ -90,7 +90,7 @@ y = 252
 out.append(f'<rect x="{X0 - 4}" y="{y - 13}" width="338" height="58" rx="3" fill="none" stroke="{SILK}" stroke-width="1.2"/>')
 t(X0 + 2, y + 2, "! Solar-profile PWM pump only: no signal = stop", 10.5, 700)
 t(X0 + 2, y + 19, "! No 230 V on this board. Power: from the Pi only", 10.5, 700)
-t(X0 + 2, y + 36, "! R25 0 Ω = 12 V drive · R26 0 Ω = 5 V (Lite) · never both", 10.5, 700)
+t(X0 + 2, y + 36, "! Lite: R26, R9 = 100 Ω, D4 = 6.0A · never R25 + R26", 10.5, 700)
 t(X0, 330, "LEDs: PWR on · WD heartbeat · PUMP running · R1 relay on", 10)
 
 # build tick boxes

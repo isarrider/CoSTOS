@@ -134,7 +134,7 @@ def nf_chip(x, y, w, h, title, sub):
 if lite:
     nf_chip(368, 368, 78, 46, "Relay", "not fitted")
     nf_chip(454, 368, 78, 46, "DC/DC", "not fitted")
-    t(470, 228, "pump driver on 5 V via R26 (0 Ω)", 10, "#FFE082", 400, "middle")
+    t(470, 228, "5 V driver: R26 0 Ω, R9 100 Ω, D4 SMBJ6.0A", 10, "#FFE082", 400, "middle")
 else:
     chip(368, 368, 78, 46, "Relay", "MOSFET")
     chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")

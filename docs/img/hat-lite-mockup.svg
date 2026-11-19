@@ -132,7 +132,7 @@
 <rect x="454" y="368" width="78" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>
 <text class="th" x="493.0" y="388.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#E8F5E9">DC/DC</text>
 <text class="ts" x="493.0" y="403.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">not fitted</text>
-<text class="ts" x="470" y="228" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#FFE082">pump driver on 5 V via R26 (0 Ω)</text>
+<text class="ts" x="470" y="228" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#FFE082">5 V driver: R26 0 Ω, R9 100 Ω, D4 SMBJ6.0A</text>
 <rect x="282" y="304" width="78" height="46" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="321.0" y="324.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Feedback</text>
 <text class="ts" x="321.0" y="339.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">input 1</text>

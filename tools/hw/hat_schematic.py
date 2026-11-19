@@ -438,7 +438,7 @@ def sheet_pwm(path):
         s.part("R", 975, y + 60, "d", "R22" if n == 1 else "R24", "2.2 kΩ", lab="r")
         s.part("LED", 975, y + 120, "d", "D12" if n == 1 else "D14", f"PUMP{n}", lab="r")
         s.gnd(975, y + 160)
-        s.part("R", 990, y, "r", "R9" if n == 1 else "R10", "470 Ω")
+        s.part("R", 990, y, "r", "R9" if n == 1 else "R10", "470 Ω ½ W")
         s.wire((1050, y), (1110, y)); s.dot(1070, y)
         s.wire((1070, y), (1070, y + 10))
         s.part("TVS", 1070, y + 50, "u", "D4" if n == 1 else "D5", "SMBJ13A", lab="l")
@@ -453,7 +453,8 @@ def sheet_pwm(path):
         "R7/R8 hold the driver inputs low; R8 is fitted although",
         "channel 2 is not, so IN B never floats.",
         "R9 limits the current into a shorted cable; D4 clamps",
-        "spikes from the pump cable. Terminal order = cable colours",
+        "spikes from the pump cable. Lite build: R9 100 Ω, D4 SMBJ6.0A",
+        "(4.1). R9 at least ½ W. Terminal order = cable colours",
         "brown (PWM), blue (GND), black (FB).",
         "D12 shows what really reaches the pump: off = stop,",
         "brighter = faster (≈ 4.5 mA at 12 V, ≈ 1.3 mA in the Lite build).",

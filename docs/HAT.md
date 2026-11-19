@@ -52,7 +52,7 @@ until a real BOM exists. 🟢 good, 🟡 medium, 🔴 weak or missing.
 | **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €17** | 🔴 **≈ €68 more** |
 | ***Building and status*** | | | |
 | Hardest part to solder (only when building it yourself) | 🟡 MAX31865, SSOP-20 at 0.65 mm pitch | 🟡 same as the 1-Wire edition | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
-| Upgrade later | — | 🟢 to the normal build by soldering on U2, C3, C4, R2, R25 (remove R26) and the REL1 parts | — |
+| Upgrade later | — | 🟢 to the normal build: fit the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9 and D4, fit the REL1 parts | — |
 | Status | 🟡 rev A, designed first | 🟡 same board as the 1-Wire edition | 🔴 planned as the second board |
 
 ---
@@ -231,6 +231,24 @@ the 13 V TVS standoff at light load.
   TVS (SMD equivalent with the same breakdown voltage, e.g. SMBJ13A; not
   lower, since the unregulated 12 V can reach 13.5 V), 100 kΩ pull-down at
   the input (D1).
+- **R9 and D4 depend on the build**, like R25/R26, because the pump's
+  input draws current (about 3 mA, up to 7.5 mA) and R9 takes voltage
+  away before the signal reaches the pump:
+
+  | | Normal build (12 V driver) | Lite build (5 V driver) |
+  |---|---|---|
+  | R9 | 470 Ω | **100 Ω** |
+  | Lost across R9 at 3 mA | 1.4 V | 0.3 V |
+  | At the pump (needs ≥ 3.6 V at 3 mA, ~4 V to be safe) | ≈ 10.6 V | ≈ 4.7 V |
+  | Current into a shorted cable | ≈ 25 mA | ≈ 50 mA |
+  | D4 (TVS) | SMBJ13A: conducts just above the 12 V rail | **SMBJ6.0A**: conducts just above 5 V; a 13 V diode would never protect a 5 V driver |
+
+  With 470 Ω on a 5 V driver the pump would see only ≈ 3.6 V, its bare
+  minimum. Same values as the stripboard driver boards in HARDWARE.md (470 Ω
+  / 15 V TVS on the 12 V board, 100 Ω / 6.8 V TVS on the 5 V board).
+- **R9 package: at least 0.5 W** (e.g. 1210 or 2010). With a shorted pump
+  cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (Lite) for as long as
+  the short lasts, more than an 0805 resistor takes.
 - **Watchdog gating:** each PWM signal passes an AND gate with `WD_OK`, so
   a stopped watchdog also forces the PWM to 0 %. With a solar (PWM2)
   pump that means "stop", in addition to the relay cutting its mains.
@@ -538,7 +556,7 @@ it 1.2–1.4 mm), nothing printed over pads or under terminal bodies.
 | Where | What is printed | Read when | Readability |
 |---|---|---|---|
 | Top, at each terminal | Pin name next to every pin (A/B, 3V3/DQ/GND, PWM/GND/FB, +5V/OUT), terminal name and what it is for (PT1 collector, 1W-A, PUMP1 pump) | while wiring, HAT on the Pi | 🟢 the most useful text |
-| Top, small notes | LED names, "12 V" at R25 and "5 V (Lite)" at R26, outlines of unfitted parts, edition and revision | assembly, checking the LEDs | 🟢 |
+| Top, small notes | LED names, "12 V" at R25 and "5 V (Lite)" at R26, both values at R9 and D4, outlines of unfitted parts, edition and revision | assembly, checking the LEDs | 🟢 |
 | Bottom, cheat sheet | Table of all terminals with pins and use, pump wire colours (brown · blue · black), the three safety rules (solar-profile pump only, no 230 V on the board, never R25 and R26 together), LED meanings, tick boxes for normal or Lite build, repository URL | before mounting, or with the HAT off | 🟡 hidden once on the Pi |
 | Bottom, QR code (10 × 10 mm) | link to the repository | any time, with a phone | 🟢 |
 
@@ -738,7 +756,7 @@ into 8.2.
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
-| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω). Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
+| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 
@@ -986,7 +1004,8 @@ damage the Pi:
 3. **No power path of its own** (D18): powered by the Pi.
 4. **The weakest part fails safe.** The pump driver runs on 5 V instead of
    12 V, so the pump sees about 4.7 V against its ~4 V threshold
-   ([HARDWARE.md](HARDWARE.md#12-v-or-5-v)). If that isn't enough (long
+   ([HARDWARE.md](HARDWARE.md#12-v-or-5-v)), **with R9 = 100 Ω and D4 =
+   SMBJ6.0A** (4.1); with the normal build's 470 Ω it would be only ≈ 3.6 V. If that isn't enough (long
    cable, a pump with a higher threshold), the pump simply doesn't start,
    and the feedback input reports it.
 5. **The driver's supply margin is small, so the supply must be a proper
@@ -1034,6 +1053,7 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | 12 V DC/DC block: U2 with its input and output capacitors C3, C4, minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.7 V at the pump | **€3.08** |
 | Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€1.55** |
 | R26 (0 Ω) | not fitted | fitted | **−€0.01** |
+| R9 series resistor, D4 TVS (4.1) | 470 Ω, SMBJ13A | **100 Ω, SMBJ6.0A** | — |
 | ***The same in both*** | | | |
 | MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
 | Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
@@ -1041,9 +1061,9 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | Parts, single quantity | ≈ €30 | ≈ €25.50 | **≈ €4.60** |
 | **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €73 | **≈ €17** |
 | Assembled, per board in a batch of 5 | ≈ €27 | ≈ €20 | **≈ €7** |
-| Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26) and the REL1 parts | — |
+| Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9 to 470 Ω and D4 to SMBJ13A, and fit the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that
 would short the 12 V and 5 V rails. The silkscreen marks them "12 V" and
-"5 V (Lite)".
+"5 V (Lite)", and marks R9 "470 / Lite 100" and D4 "13A / Lite 6.0A".
 
