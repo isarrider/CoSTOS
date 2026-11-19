@@ -249,6 +249,26 @@ the 13 V TVS standoff at light load.
 - **R9 package: at least 0.5 W** (e.g. 1210 or 2010). With a shorted pump
   cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (Lite) for as long as
   the short lasts, more than an 0805 resistor takes.
+
+#### Driver chain: alternatives considered (D22)
+
+The chain from GPIO 18 to the terminal (step by step in
+[12.3](#123-the-pump-signal-step-by-step-lite-build)) has four jobs: raise
+3.3 V to at least 3.6 V (≈ 4.7 V wanted) at the pump, deliver its input
+current (up to 7.5 mA), go to 0 V when the watchdog trips, and survive a
+shorted or disturbed cable. Today an AND gate and a TC4427 do it, ≈ €8.60
+per order of two boards in parts and JLCPCB fees. Pump voltages for the
+Lite build at 3 mA; "price for one" against today.
+
+| Option | How | Pump voltage | Watchdog / fail behaviour | Robust on the cable | Price for one | Verdict |
+|---|---|---|---|---|---|---|
+| **A: AND gate + TC4427** (rev A) | As in 12.3 | 🟢 ≈ 4.7 V | 🟢 AND gate forces 0 V; pull-down at boot | 🟢 TC4427 takes shorts and spikes | — | 🟢 **rev A** |
+| B: one 5 V gate (74AHCT1G08), Lite only | TTL inputs accept 3.3 V, 5 V output, does the AND itself | 🟡 ≈ 4.1 V (R9 ≥ 220 Ω for its 25 mA limit); ≈ 3.4 V at 7.5 mA, below the minimum | 🟢 as A | 🟡 a logic gate on the field cable | ≈ −€5.40 (Lite) | 🔴 no margin; the normal build still needs the TC4427, so two footprints |
+| **C: driver with enable input** (e.g. UCC27524) instead of AND gate + TC4427 | WD_OK to the enable pin; under-voltage lockout holds the outputs low on a weak supply | 🟢 ≈ 4.7 V | 🟢 plus a clean stop on a weak supply (12.1 point 5); enable pins pulled up internally, so an external pull-down is needed | 🟢 like the TC4427 | ≈ −€3.60 (both builds) | 🟡 **check in the KiCad step** |
+| D: transistor + pull-up to 5 V | Transistor pulls down, resistor pulls up | 🔴 1 kΩ pull-up: ≈ 2 V at the pump | 🔴 inverts: Pi stopped or transistor open = **full speed** | 🟡 | ≈ −€5.50 | 🔴 unsafe fail direction |
+| E: discrete push-pull | Totem pole from basic transistors, no fees | 🟢 ≈ 4.5 V | 🟡 safety logic from transistors, needs careful checking | 🟡 | ≈ −€5.00 | 🔴 5–7 parts in the safety path instead of one proven chip |
+| F: Pi GPIO directly | Through a resistor | 🔴 3.3 V, below 3.6 V | 🔴 no gating | 🔴 Pi pin on the field cable | ≈ −€8.60 | 🔴 doesn't work |
+| G: level-shifter chip (TXS0101 etc.) | 3.3 V → 5 V translator | 🔴 made for logic inputs, not mA loads | 🟡 | 🔴 | ≈ −€2 | 🔴 |
 - **Watchdog gating:** each PWM signal passes an AND gate with `WD_OK`, so
   a stopped watchdog also forces the PWM to 0 %. With a solar (PWM2)
   pump that means "stop", in addition to the relay cutting its mains.
@@ -759,6 +779,7 @@ into 8.2.
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
+| D22 | How is the pump signal driven? | **AND gate + TC4427 for rev A** (4.1, alternatives table): proven, the same in both builds, fails to 0 V. A driver with an enable input and under-voltage lockout (option C) could replace both chips and save ≈ €3.60 for one; it is checked in the KiCad step. Single 5 V gate, transistor stages, the Pi pin directly and level shifters are out (too little voltage margin or unsafe fail direction) |
 
 ---
 
