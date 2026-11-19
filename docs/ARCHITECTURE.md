@@ -190,7 +190,7 @@ are reused as they are.
   chip-select decoder, and multi-channel ADCs (2 × ADS124S08, 2 ×
   AD7124-8), where fault detection, linearisation and input protection
   are left to the board and the software. Comparison:
-  [HAT.md 11.6](HAT.md#116-choice-of-measuring-chip).
+  [HAT-development.md 4](HAT-development.md#4-pt-edition-choice-of-measuring-chip-d13).
 - Collector sensor cables are long and outdoors, so add surge protection on
   that input (RESOL sells an SP10 for exactly this).
 - Calibration: a per-channel offset in config, checked against the RESOL
@@ -334,7 +334,7 @@ Rules:
 
   1000 Hz keeps both builds inside the rule with margin. (An earlier
   version allowed 4 kHz, counting only the cable; the TVS capacitance makes
-  that too fast.) Measured at bring-up (HAT 9). A higher limit would need a
+  that too fast.) Measured at bring-up ([HAT-development 6](HAT-development.md#6-bring-up-plan-rev-a)). A higher limit would need a
   TVS with less capacitance.
 - The frequency only sets the period; the duty cycle (the speed) is
   unaffected, so a change takes effect at once without a pump stop. The
@@ -1068,7 +1068,7 @@ come first.
 - Settled: the platform stays the Raspberry Pi (HAT D14). An ESP32-P4
   port on the Waveshare ESP32-P4-WIFI6-DEV-KIT, which has the Pi form
   factor, was checked and is documented as a possible later option
-  (HAT 2.1).
+  ([HAT-development 7](HAT-development.md#7-considered-waveshare-esp32-p4-wifi6-dev-kit)).
 
 ## 12. Related projects
 
@@ -1099,7 +1099,7 @@ CoSTOS (MIT). What we take from it as ideas:
   for a controller in a boiler room. Any microcontroller version of
   CoSTOS should have wired Ethernet, not only Wi-Fi. The most likely
   candidate is the ESP32-P4, which has a built-in Ethernet MAC. For now
-  CoSTOS stays on the Pi (HAT D14, pin check in HAT 2.1).
+  CoSTOS stays on the Pi (HAT D14, pin check in [HAT-development 7](HAT-development.md#7-considered-waveshare-esp32-p4-wifi6-dev-kit)).
 - **Standalone first:** it keeps controlling with no network at all and
   has a local display and buttons. CoSTOS's control loop is local too; its
   local indication is the HAT's hardware-driven status LEDs (HAT 4.8). A
@@ -1133,7 +1133,7 @@ CoSTOS (MIT). What we take from it as ideas:
 Compared in November 2026 before any code was written. **Decision: stay
 on the Raspberry Pi** (HAT D14): more people already own one, and Linux
 gives more flexibility. The ESP32-P4 is documented as a possible later
-port (pin check in HAT 2.1). Prices are single quantity; those marked
+port (pin check in [HAT-development 7](HAT-development.md#7-considered-waveshare-esp32-p4-wifi6-dev-kit)). Prices are single quantity; those marked
 "from memory" were not looked up.
 
 ### 13.1 Cost per controller, including the computer

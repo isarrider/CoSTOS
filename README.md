@@ -74,10 +74,13 @@ Mains wiring belongs in the hands of a qualified electrician.
   migration plan.
 - [Hardware needed](docs/HARDWARE.md): parts lists and build instructions,
   starting with the PWM pump output.
-- [HAT specification](docs/HAT.md): the planned plug-on board that
-  combines all of it, in two editions: 1 Pt1000 + two 1-Wire buses (also
-  as a cheaper Lite build), or 8 Pt1000 + one 1-Wire bus for installations
-  that keep their existing sensors.
+- [HAT](docs/HAT.md): the plug-on board that combines all of it, as it
+  will be built: two editions, 1 Pt1000 + two 1-Wire buses (also as a
+  cheaper Lite build), or 8 Pt1000 + one 1-Wire bus for installations that
+  keep their existing sensors. Choosing, wiring, costs.
+- [HAT development](docs/HAT-development.md): why the HAT is built this
+  way: decisions D1–D22, the alternatives that were dropped, the rev A
+  prototype and its bring-up and tests.
 - [Reference installation](docs/installation.md): the system CoSTOS is
   built to control first.
 

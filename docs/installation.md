@@ -66,7 +66,7 @@ be BX Plus inputs S1–S8.
     one probe or its cable takes down its whole bus: CoSTOS then treats
     those sensors as unknown, never as cold.
   - Cost comparison of both options:
-    [HAT.md 11.6](HAT.md#116-choice-of-measuring-chip).
+    [HAT-development.md 4](HAT-development.md#4-pt-edition-choice-of-measuring-chip-d13).
   - Wiring of this alternative:
     ![1 Pt1000 + 7 DS18B20 + PWM pump](img/wiring-1wire-edition.svg)
 - The heat generator ("Heizung") is a **heat pump** today; it was a gas
