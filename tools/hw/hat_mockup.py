@@ -125,7 +125,7 @@ else:
     t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
     t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
 # bottom rows
-chip(196, 368, 78, 46, "TC4427", "pump driver")
+chip(196, 368, 78, 46, "Pump driver", "Q4–Q7")
 chip(282, 368, 78, 46, "Bulk C", "5 V from the Pi")
 def nf_chip(x, y, w, h, title, sub):
     out.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
@@ -140,7 +140,7 @@ else:
     chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
 chip(282, 304, 78, 46, "Feedback", "input 1")
 chip(368, 304, 78, 46, "Watchdog", "heartbeat")
-chip(454, 304, 78, 46, "AND gate", "PWM gating")
+chip(454, 304, 78, 46, "Readback", "PWM check")
 # LEDs (row under the logo)
 for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
                                      ("#FFB300", "R1", lite), ("#FFB300", "R2", True)]):
