@@ -159,18 +159,21 @@
 <polygon points="890,250 882,241 846,241 846,259 882,259" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="864.0" y="254" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">1W_A</text>
 <text x="890" y="276" class="n" text-anchor="end">GPIO4 (pin 7)</text>
-<path class="w" d="M890 250 L1110 250"/>
-<circle cx="930" cy="250" r="3.5" fill="#222"/>
-<circle cx="1000" cy="250" r="3.5" fill="#222"/>
-<g transform="translate(930 250) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="914.0" y="218.0" class="r" text-anchor="end">R27</text>
-<text x="914.0" y="232.0" class="v" text-anchor="end">4.7 kΩ</text>
-<path d="M930 190 V178 M918 178 H942" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
-<text x="930" y="168" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
-<g transform="translate(1000 250) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
-<text x="1016.0" y="268.0" class="r" text-anchor="start">D15</text>
-<text x="1016.0" y="282.0" class="v" text-anchor="start">PESD5V0</text>
-<path d="M1000 290 V300 M988 300 H1012 M992 305 H1008 M996 310 H1004" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M890 250 L945 250"/>
+<circle cx="920" cy="250" r="3.5" fill="#222"/>
+<g transform="translate(920 250) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="904.0" y="218.0" class="r" text-anchor="end">R27</text>
+<text x="904.0" y="232.0" class="v" text-anchor="end">4.7 kΩ</text>
+<path d="M920 190 V178 M908 178 H932" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="920" y="168" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(945 250) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="975.0" y="276.0" class="v" text-anchor="middle"><tspan class="r">R29</tspan> 100 Ω</text>
+<path class="w" d="M1005 250 L1110 250"/>
+<circle cx="1035" cy="250" r="3.5" fill="#222"/>
+<g transform="translate(1035 250) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
+<text x="1051.0" y="268.0" class="r" text-anchor="start">D15</text>
+<text x="1051.0" y="282.0" class="v" text-anchor="start">PESD5V0</text>
+<path d="M1035 290 V300 M1023 300 H1047 M1027 305 H1043 M1031 310 H1039" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <rect x="1110" y="192" width="34" height="116" rx="3" style="fill:#E9E2CC;stroke:#8A7F5F;stroke-width:1.5"/>
 <circle cx="1127" cy="210" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 214 L1131 206" style="stroke:#5F6468;stroke-width:1.5"/>
 <text x="1152" y="214" class="pn" text-anchor="start">3V3</text>
@@ -188,18 +191,21 @@
 <polygon points="890,430 882,421 846,421 846,439 882,439" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="864.0" y="434" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">1W_B</text>
 <text x="890" y="456" class="n" text-anchor="end">GPIO17 (pin 11)</text>
-<path class="w" d="M890 430 L1110 430"/>
-<circle cx="930" cy="430" r="3.5" fill="#222"/>
-<circle cx="1000" cy="430" r="3.5" fill="#222"/>
-<g transform="translate(930 430) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="914.0" y="398.0" class="r" text-anchor="end">R28</text>
-<text x="914.0" y="412.0" class="v" text-anchor="end">4.7 kΩ</text>
-<path d="M930 370 V358 M918 358 H942" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
-<text x="930" y="348" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
-<g transform="translate(1000 430) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
-<text x="1016.0" y="448.0" class="r" text-anchor="start">D16</text>
-<text x="1016.0" y="462.0" class="v" text-anchor="start">PESD5V0</text>
-<path d="M1000 470 V480 M988 480 H1012 M992 485 H1008 M996 490 H1004" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M890 430 L945 430"/>
+<circle cx="920" cy="430" r="3.5" fill="#222"/>
+<g transform="translate(920 430) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="904.0" y="398.0" class="r" text-anchor="end">R28</text>
+<text x="904.0" y="412.0" class="v" text-anchor="end">4.7 kΩ</text>
+<path d="M920 370 V358 M908 358 H932" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="920" y="348" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(945 430) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="975.0" y="456.0" class="v" text-anchor="middle"><tspan class="r">R30</tspan> 100 Ω</text>
+<path class="w" d="M1005 430 L1110 430"/>
+<circle cx="1035" cy="430" r="3.5" fill="#222"/>
+<g transform="translate(1035 430) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L20 0 L12 9 Z M28 -9 L20 0 L28 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M17 -12 L20 -9 V9 L23 12"/></g>
+<text x="1051.0" y="448.0" class="r" text-anchor="start">D16</text>
+<text x="1051.0" y="462.0" class="v" text-anchor="start">PESD5V0</text>
+<path d="M1035 470 V480 M1023 480 H1047 M1027 485 H1043 M1031 490 H1039" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <rect x="1110" y="372" width="34" height="116" rx="3" style="fill:#E9E2CC;stroke:#8A7F5F;stroke-width:1.5"/>
 <circle cx="1127" cy="390" r="6" style="fill:#B0B6BA;stroke:#5F6468"/><path d="M1123 394 L1131 386" style="stroke:#5F6468;stroke-width:1.5"/>
 <text x="1152" y="394" class="pn" text-anchor="start">3V3</text>
@@ -216,8 +222,11 @@
 <path d="M1095 475 V485 M1083 485 H1107 M1087 490 H1103 M1091 495 H1099" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <text x="840" y="560" class="n" text-anchor="start">F2 feeds both buses' sensors: a shorted sensor</text>
 <text x="840" y="575" class="n" text-anchor="start">cable cannot pull down the Pi's 3.3 V rail.</text>
-<text x="840" y="590" class="n" text-anchor="start">DS2482-100 footprint (U10, n.f.) on SDA/SCL</text>
-<text x="840" y="605" class="n" text-anchor="start">(pins 3/5) can take over the buses later.</text>
+<text x="840" y="590" class="n" text-anchor="start">R29/R30 (100 Ω) limit the current into the GPIO</text>
+<text x="840" y="605" class="n" text-anchor="start">if DQ touches a wrong voltage; the pull-up sits</text>
+<text x="840" y="620" class="n" text-anchor="start">on the Pi side, so 1-Wire timing is unchanged.</text>
+<text x="840" y="635" class="n" text-anchor="start">DS2482-100 footprint (U10, n.f.) on SDA/SCL</text>
+<text x="840" y="650" class="n" text-anchor="start">(pins 3/5) can take over the buses later.</text>
 <g opacity="0.42"><rect x="928" y="662" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
 <text x="962" y="674" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
 </svg>

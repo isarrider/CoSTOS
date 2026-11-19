@@ -609,15 +609,21 @@ def sheet_sensors(path):
     for i, (bus, gpio, pin) in enumerate((("A", 4, 7), ("B", 17, 11))):
         y = 250 + 180 * i
         s.flag(890, y, f"1W_{bus}", "L"); s.text(890, y + 26, f"GPIO{gpio} (pin {pin})", "n", "end")
-        s.wire((890, y), (1110, y)); s.dot(930, y); s.dot(1000, y)
-        s.part("R", 930, y, "u", f"R{27 + i}", "4.7 kΩ", lab="l"); s.rail(930, y - 60, "+3V3")
-        s.part("TVS2", 1000, y, "d", f"D{15 + i}", "PESD5V0", lab="r"); s.gnd(1000, y + 40)
+        s.wire((890, y), (945, y)); s.dot(920, y)
+        s.part("R", 920, y, "u", f"R{27 + i}", "4.7 kΩ", lab="l"); s.rail(920, y - 60, "+3V3")
+        # series resistor between the GPIO side (pull-up) and the terminal side (ESD)
+        s.part("R", 945, y, "r", f"R{29 + i}", "100 Ω", lab="b")
+        s.wire((1005, y), (1110, y)); s.dot(1035, y)
+        s.part("TVS2", 1035, y, "d", f"D{15 + i}", "PESD5V0", lab="r"); s.gnd(1035, y + 40)
         t = s.term(1110, y, f"J{8 + i}", f"1W-{bus}", [(-40, "3V3"), (0, "DQ"), (40, "GND")])
         s.wire(t["3V3"], (1100, y - 40)); s.flag(1100, y - 40, "+3V3_SENS", "L")
         s.wire(t["GND"], (1095, y + 40), (1095, y + 45)); s.gnd(1095, y + 45)
     s.note(840, 560, [
         "F2 feeds both buses' sensors: a shorted sensor",
         "cable cannot pull down the Pi's 3.3 V rail.",
+        "R29/R30 (100 Ω) limit the current into the GPIO",
+        "if DQ touches a wrong voltage; the pull-up sits",
+        "on the Pi side, so 1-Wire timing is unchanged.",
         "DS2482-100 footprint (U10, n.f.) on SDA/SCL",
         "(pins 3/5) can take over the buses later.",
     ])

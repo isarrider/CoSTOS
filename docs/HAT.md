@@ -279,8 +279,12 @@ the 13 V TVS standoff at light load.
   driver: bus A on GPIO 4 (pin 7), bus B on GPIO 17 (pin 11). Up to about
   5 sensors per bus. A fault on one bus (damaged cable, short) only takes
   out the sensors on that bus.
-- Per bus: 4.7 kΩ pull-up to 3.3 V, ESD protection on DQ, and a 3-way
-  terminal (3V3, DQ, GND).
+- Per bus: 4.7 kΩ pull-up to 3.3 V on the Pi side, a **100 Ω series
+  resistor** in DQ, ESD protection on DQ at the terminal, and a 3-way
+  terminal (3V3, DQ, GND). The resistor limits the current into the GPIO
+  if DQ touches a wrong voltage (the ESD diode clamps a 12 V fault to about
+  6 V first); 22–100 Ω is the usual range and leaves the 1-Wire timing
+  unchanged.
 - **Sensors run in normal powered mode** (3 wires: 3V3, DQ, GND), never in
   parasite mode, which is unreliable at high temperatures and with several
   sensors converting at once.
@@ -738,7 +742,7 @@ reference installation plans to use it (see
 | | 1-Wire edition | PT edition |
 |---|---|---|
 | Pt1000 inputs | 1 (PT1, MAX31865), PT2 footprint not fitted | **8 (S1–S8) on one LTC2983**, each wired independently |
-| 1-Wire | 2 buses (GPIO4, GPIO17) | **1 bus (1W-A, GPIO4)**: same circuit (4.7 kΩ pull-up, ESD diode, polyfuse) |
+| 1-Wire | 2 buses (GPIO4, GPIO17) | **1 bus (1W-A, GPIO4)**: same circuit (4.7 kΩ pull-up, 100 Ω series resistor, ESD diode, polyfuse) |
 | Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way, all on the left edge | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*) on the left edge, plus 1W-A 3-way at the front |
 | SPI | CE0 (CE1 for PT2) | CE0 for the LTC2983 |
 | Extra GPIOs | | LTC2983 /RESET on GPIO22 (pin 15), INTERRUPT (conversion done) on GPIO27 (pin 13) |
