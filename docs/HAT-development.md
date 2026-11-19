@@ -746,6 +746,10 @@ had for cents:
 
 ### 9.2 Simulated (ngspice, standard 2N3904/2N3906/1N4148 models)
 
+The netlists and a script that re-runs them are in
+[tools/sim](../tools/sim/README.md); they also cover the H3 correction
+(section 2) and the capacitor watchdog (8.2).
+
 The pump input is modelled as a resistor and an LED, like the
 optocoupler inside the pump: 2.2 kΩ for a normal pump (≈ 2–3 mA), 470 Ω
 as a stress case (≈ 10 mA, the maximum Grundfos allows at 24 V). The

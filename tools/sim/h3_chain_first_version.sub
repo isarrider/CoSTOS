@@ -1,0 +1,14 @@
+* H3 chain: vsup pwm term 0 ; Q5 (watchdog) shown as closed
+.subckt CHAIN1 vsup pwm term 0
+R7 pwm 0 100k
+R33 pwm b4 10k
+Q4 n4 b4 0 Q3904
+R35 poff n4 2.7k
+R36 vsup poff 2.2k
+Q6 c6 poff vsup Q3906
+R9 c6 term {R9}
+R37 poff b7 10k
+Q7 term b7 0 Q3904
+R38 term 0 10k
+D4 0 term DTVS
+.ends

@@ -1,0 +1,20 @@
+* D25 voltage doubler: nodes vin vsup 0 (final values)
+.subckt DBL vin vsup 0
+* astable
+Rc1 vin c1 1k
+Rc2 vin c2 1k
+Rb1 vin b1 10k
+Rb2 vin b2 10k
+Ct1 c1 b2 4.7n
+Ct2 c2 b1 4.7n
+Q1 c1 b1 0 Q3904
+Q2 c2 b2 0 Q3904
+* push-pull follower
+Qn vin c2 sw Q3904
+Qp 0 c2 sw Q3906
+* doubler
+Cf sw a 2.2u
+D1 vin a D4148
+D2 a vsup D4148
+Co vsup 0 10u
+.ends
