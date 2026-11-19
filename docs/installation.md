@@ -42,7 +42,7 @@ be BX Plus inputs S1–S8.
 
 - **All eight sensors are Pt1000, each on its own 2-wire cable.**
 - **Plan for CoSTOS: keep all eight Pt1000 sensors** with the HAT's
-  [PT edition](HAT.md#11-pt-edition-8--pt1000) (8 × Pt1000 on an
+  [PT edition](HAT-PT.md) (8 × Pt1000 on an
   LTC2983, plus one 1-Wire bus). S1–S8 connect as they are: no new
   sensors, nothing changes at the store or the pipes, and the readings
   continue the vbus2influx history seamlessly. DS18B20 probes can still be

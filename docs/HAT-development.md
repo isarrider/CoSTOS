@@ -4,7 +4,8 @@ Status: **rev A prototype, not yet designed in KiCad**. This page is for
 everyone who wants to know *why* the HAT is built the way it is, check
 the design, test a prototype or change it. What the HAT **is** (the
 design as it will be built, terminals, wiring, costs) is in the release
-document, [HAT.md](HAT.md); this page does not repeat it.
+documents, [HAT-1wire.md](HAT-1wire.md) and [HAT-PT.md](HAT-PT.md) (the
+editions compared: [HAT.md](HAT.md)); this page does not repeat them.
 
 - [1. Decisions](#1-decisions): D1–D22, the short answer to every design
   question, referred to as "Dn" in both documents.
@@ -16,8 +17,9 @@ document, [HAT.md](HAT.md); this page does not repeat it.
 - [6. Bring-up plan (rev A)](#6-bring-up-plan-rev-a)
 - [7. Considered: Waveshare ESP32-P4-WIFI6-DEV-KIT](#7-considered-waveshare-esp32-p4-wifi6-dev-kit)
 
-Section numbers in the decisions (4.1, 12.1, …) refer to
-[HAT.md](HAT.md) unless they name this page.
+Section numbers in the decisions (4.1, 11.1, …) refer to
+[HAT-1wire.md](HAT-1wire.md) unless they name this page or the PT edition
+([HAT-PT.md](HAT-PT.md)).
 
 ## 1. Decisions
 
@@ -34,25 +36,25 @@ Section numbers in the decisions (4.1, 12.1, …) refer to
 | D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
 | D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |
 | D11 | VBus receiver on the HAT? | **No**: VBus is only needed while the BX Plus is still connected (shadow mode, switchable phase). The existing loose adapter plugs onto pins 1, 6 and 10 on top of the stacking header until then; after the switch-over it goes away and the UART is free |
-| D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board (section 11): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measuring chip: see D13 |
+| D12 | Offer a Pt1000-only HAT? | **Yes, as a second edition** of the same board ([HAT-PT.md](HAT-PT.md)): same outline and shared KiCad sheets for power, pump, relay and watchdog; only the sensor sheet differs. Measuring chip: see D13 |
 | D13 | Measuring chip for the PT edition? | **One LTC2983**: 8 independent 2-wire Pt1000 inputs (18 of its 20 inputs), excitation, fault detection and linearisation built in, result in °C, buffered inputs for simple protection. Costs a little more than 2 × ADS124S08 but needs far less analog design and software, and it frees GPIO4 for a 1-Wire bus. Comparison in section 4 of this page |
 | D14 | Raspberry Pi or ESP32-P4 (Waveshare ESP32-P4-WIFI6-DEV-KIT, same form factor)? | **Raspberry Pi**: more people already own one, and Linux gives more flexibility. The P4 board is a possible later port; its pin check is in section 7 of this page. On the P4, SCLK, REL1 and PWM2 would hit the RTC crystal and the audio amplifier |
 | D15 | How do the Pi, the HAT and the pump get their power? | **Option A** ([ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side)): the Pi's own USB-C supply in a socket (most people already have one), the pump permanently on 230 V and stopped over PWM only. Cheapest, no mains wiring, no switching wear, and the pump feedback works at all times. Accepted: one stop path instead of two. REL1 stays on the board for an optional cut-off relay (option C), which heating-profile pumps always need |
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
-| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
+| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 11): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: about four fees per order (since D22) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
-| D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the Lite build, 12.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
+| D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the Lite build, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
 
 ## 2. Pump driver chain: alternatives (D22)
 
-The chain as built is described in [HAT.md 4.1](HAT.md#41-pwm-pump-outputs)
-and, step by step, in [HAT.md 12.3](HAT.md#123-the-pump-signal-step-by-step-lite-build).
+The chain as built is described in [HAT-1wire.md 4.1](HAT-1wire.md#41-pwm-pump-outputs)
+and, step by step, in [HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-lite-build).
 
 The chain from GPIO 18 to the terminal (step by step in
-[HAT.md 12.3](HAT.md#123-the-pump-signal-step-by-step-lite-build)) has four jobs: raise
+[HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-lite-build)) has four jobs: raise
 3.3 V to at least 3.6 V (≈ 4.7 V wanted) at the pump, deliver its input
 current (up to 7.5 mA), go to 0 V when the watchdog trips, and survive a
 shorted or disturbed cable. The original design used an AND gate and a
@@ -90,7 +92,7 @@ UCC27524 datasheet:
 | Watchdog gating and driving in one chip: less easy to test and explain than a separate gate whose output can be measured on its own | 🟡 |
 | SMD only: the stripboard boards (HARDWARE.md) use the TC4427 in DIP-8, so HAT and stripboards would no longer share driver, tests and experience | 🟡 |
 | New, less proven part in this project; new bring-up tests and documentation | 🟡 |
-| Same 4.5 V minimum supply: no help for the Lite build's margin (12.1 point 5) | ⚪ |
+| Same 4.5 V minimum supply: no help for the Lite build's margin (11.1 point 5) | ⚪ |
 | A shared footprint for both options would double the variants (normal/Lite × A/C) and add another either/or rule (AND gate vs its 0 Ω bypass) | 🔴 |
 
 The benefit is almost only money, the drawbacks touch the safety concept.
@@ -287,7 +289,7 @@ to the AND gate + TC4427. The extra cost of carrying both on the prototype
 
 ## 3. Lite build: why no dedicated board (D19)
 
-The Lite build as built is described in [HAT.md 12](HAT.md#12-lite-build).
+The Lite build as built is described in [HAT-1wire.md 11](HAT-1wire.md#11-lite-build).
 
 **Why no dedicated Lite board:** the comparison that decided D19, both
 Lite variants against the normal build (single-quantity parts; 🟢 good,
@@ -315,7 +317,7 @@ Both savings columns come out the same: the saving comes only from parts
 that are not fitted, empty footprints cost nothing, and a dedicated board
 would have the same outline. The dedicated board would only add a second
 design to maintain and remove the upgrade path. After this comparison the
-second 1-Wire bus and the PWR LED were put back into the Lite build (12.2),
+second 1-Wire bus and the PWR LED were put back into the Lite build (11.2),
 so it now saves about €4.60 (≈ €4.50 since D22).
 
 ## 4. PT edition: choice of measuring chip (D13)

@@ -14,12 +14,12 @@ designed. Right now it covers:
 > solar-profile pump; see [230 V side](ARCHITECTURE.md#56-230-v-side)). So
 > the PWM stage must never output a high signal on its own: use only
 > non-inverting stages with a pull-down. The stripboard circuits here have
-> no hardware watchdog; that comes with the [HAT](HAT.md#46-hardware-watchdog).
+> no hardware watchdog; that comes with the [HAT](HAT-1wire.md#46-hardware-watchdog).
 > Use them for bench tests and supervised tests, not to run the pump
 > unattended. Leave mains wiring to a qualified electrician.
 
 The stripboard circuits here are the tested basis for a single plug-on
-board that combines everything: see the [HAT specification](HAT.md).
+board that combines everything: see the [HAT](HAT.md).
 
 Hole positions on stripboard are given as **row letter + column number**,
 as seen from the component side: `D8` is row D, column 8.

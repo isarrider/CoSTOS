@@ -41,7 +41,7 @@ CoSTOS without risking the system.
 - A display and buttons on the device (general rule). The UI is a web
   page, plus (optional) Home Assistant over MQTT; the device itself only
   has status LEDs: power, watchdog, pump and relay, all hardware-driven
-  (HAT 4.8).
+  (HAT-1wire 4.8).
 - Wi-Fi (general rule). CoSTOS connects over **wired Ethernet**; whatever
   platform it runs on must have an Ethernet port.
 - Certification. CoSTOS is a hobby project. Mains wiring is done by a
@@ -423,7 +423,7 @@ Pi's 5 V, or a ready-made optocoupler module) are in
   230 V, no mains relay.** Every stop goes over PWM. The **hardware PWM
   keeps running at its last duty cycle when the software crashes**, so the
   HAT's external watchdog gates the PWM line: no heartbeat, PWM forced low,
-  pump in stand-by (HAT 4.6). The pump's feedback output shows that it
+  pump in stand-by (HAT-1wire 4.6). The pump's feedback output shows that it
   really stopped. A mains relay or SSR (5.6 option C, HAT REL1) is an
   optional second stop path.
 - **Heating-profile pumps: the relay is mandatory.** With a heating profile
@@ -454,7 +454,7 @@ op-amp. Not planned for the first hardware version.
 
 The supported boards are the **Raspberry Pi 4 and Pi 5**; the **Pi 3 B /
 B+** uses the same chip family as the Pi 4 and should work unchanged
-(untested, [HAT.md](HAT.md#raspberry-pi-3)). The Pi 4 and Pi 5 differ more
+(untested, [HAT-1wire.md](HAT-1wire.md#raspberry-pi-3)). The Pi 4 and Pi 5 differ more
 than it seems: on the Pi 5, GPIO and PWM live in the separate RP1 chip,
 with different PWM chip and channel numbers. So the Linux backend uses the
 generic kernel interfaces only, not a Pi-specific library, and the same code
@@ -661,7 +661,7 @@ can be switched off.
 | **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
 | **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
 | **PWM output check** (CoSTOS addition, needs the HAT's output readback) | Continuously: the line is high while 0 % is commanded, or its measured duty (edge timestamps, like the feedback input) differs from the command. At every start: **watchdog self-test**, PWM set high and the heartbeat stopped, the line must drop to 0 V within about 3 s | Stuck driver, AND gate or transistor; a watchdog layer that no longer cuts the output; broken PWM path | Alarm. A failed self-test keeps the pump output off and the alarm active until the fault is fixed; with a permanently powered solar-profile pump that means the solar loop is not used, which is the safe side. The pump runs for at most 3 s during the self-test |
-| **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. Matters most for the HAT's Lite build, whose pump driver runs on this 5 V and stops working below 4.5 V ([HAT 12.1](HAT.md#121-rule-it-may-fail-but-it-may-not-break-anything)); the pump then stays stopped, which the pump feedback also reports |
+| **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. Matters most for the HAT's Lite build, whose pump driver runs on this 5 V and stops working below 4.5 V ([HAT-1wire 11.1](HAT-1wire.md#111-rule-it-may-fail-but-it-may-not-break-anything)); the pump then stays stopped, which the pump feedback also reports |
 
 A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
 is possible later, as on the BX Plus "fault relay". The web page and
@@ -1102,7 +1102,7 @@ CoSTOS (MIT). What we take from it as ideas:
   CoSTOS stays on the Pi (HAT D14, pin check in [HAT-development 7](HAT-development.md#7-considered-waveshare-esp32-p4-wifi6-dev-kit)).
 - **Standalone first:** it keeps controlling with no network at all and
   has a local display and buttons. CoSTOS's control loop is local too; its
-  local indication is the HAT's hardware-driven status LEDs (HAT 4.8). A
+  local indication is the HAT's hardware-driven status LEDs (HAT-1wire 4.8). A
   display is ruled out by the general rules (section 1).
 - **Low voltage and mains on separate boards,** joined by a ribbon cable.
   CoSTOS keeps mains off its board entirely (the Pi's own USB-C supply,

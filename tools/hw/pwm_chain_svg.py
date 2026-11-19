@@ -58,6 +58,6 @@ box(350, 230, 104, 56, NEUT, "LED D12", "R22 2.2 kΩ")
 box(463, 230, 104, 56, SAFE, "Q7", "to ground")
 box(576, 230, 94, 56, SAFE, "D4 TVS", "SMBJ6.0A")
 out.append('<text x="40" y="314" style="font-size:12px;fill:#555">Purple: the signal path. '
-           'Green: safety and protection. Voltages and roles: HAT.md 12.3.</text>')
+           'Green: safety and protection. Voltages and roles: HAT-1wire.md 11.3.</text>')
 out.append('</svg>')
 print("\n".join(out))

@@ -44,5 +44,5 @@
 <rect x="576" y="230" width="94" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
 <text x="623.0" y="252" text-anchor="middle" style="font-size:14px;font-weight:600;fill:#085041">D4 TVS</text>
 <text x="623.0" y="271" text-anchor="middle" style="font-size:12px;fill:#0F6E56">SMBJ6.0A</text>
-<text x="40" y="314" style="font-size:12px;fill:#555">Purple: the signal path. Green: safety and protection. Voltages and roles: HAT.md 12.3.</text>
+<text x="40" y="314" style="font-size:12px;fill:#555">Purple: the signal path. Green: safety and protection. Voltages and roles: HAT-1wire.md 11.3.</text>
 </svg>
