@@ -3,13 +3,11 @@
 
   python3 tools/hw/hat_mockup.py file    > docs/img/hat-mockup.svg      (1-Wire edition)
   python3 tools/hw/hat_mockup.py file pt > docs/img/hat-pt-mockup.svg   (PT edition)
-  python3 tools/hw/hat_mockup.py file lite > docs/img/hat-lite-mockup.svg (1-Wire Lite of the 1-Wire edition)
 
 ("widget" instead of "file" gives a variant for inline display in chat.)"""
 import sys
 widget = sys.argv[1] == "widget"
 pt = len(sys.argv) > 2 and sys.argv[2] == "pt"
-lite = len(sys.argv) > 2 and sys.argv[2] == "lite"
 out = []
 def t(x, y, s, size=12, color=None, weight=400, anchor="start", on_board=True):
     cls = "th" if weight == 500 else "ts"
@@ -106,7 +104,7 @@ if pt:
     term_h(410, 2, "REL2", ["+5V", "OUT"], fitted=False)
 else:
     term_h(390, 2, "REL2", ["+5V", "OUT"], fitted=False)
-term_h(500, 2, "REL1", ["+5V", "OUT"], fitted=not lite)
+term_h(500, 2, "REL1", ["+5V", "OUT"])
 # ---- signal paths on the silkscreen (D21): thin white lines, arrows, small text ----
 out.append('<defs><marker id="fa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" '
            'orient="auto-start-reverse"><path d="M1 1L9 5L1 9Z" fill="#ffffff"/></marker></defs>')
@@ -150,22 +148,16 @@ flow((205, 358), (194, 358))
 # row L: supply and checks
 chip(300, 376, 78, 30, "Bulk C", "5 V from the Pi")
 chip(400, 376, 78, 30, "Checks", "FB, RB → Pi")
-if lite:
-    nf_chip(205, 376, 78, 30, "DC/DC", "not fitted")
-    nf_chip(500, 332, 78, 36, "Relay", "not fitted")
-    t(500, 228, "5 V driver: R26, R9 100 Ω, D4 6.0A", 10, "#FFE082", 400, "middle")
-    flow((300, 381), (265, 381), (265, 370))
-else:
-    chip(205, 376, 78, 30, "DC/DC", "5 V → 12 V")
-    chip(500, 332, 78, 36, "Relay", "MOSFET")
-    flow((300, 391), (285, 391))
-    flow((244, 376), (244, 370))
-    flow((478, 350), (499, 350), dash=True)
-    flow((510, 368), (510, 447))
+chip(205, 376, 78, 30, "Doubler", "5 V → ≈ 7 V")
+chip(500, 332, 78, 36, "Relay", "MOSFET")
+flow((300, 391), (285, 391))
+flow((244, 376), (244, 370))
+flow((478, 350), (499, 350), dash=True)
+flow((510, 368), (510, 447))
 flow((192, 416), (198, 420), (439, 420), (439, 408)); ft(300, 416, "FB from the pump")
 # LEDs (row under the logo)
 for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
-                                     ("#FFB300", "R1", lite), ("#FFB300", "R2", True)]):
+                                     ("#FFB300", "R1", False), ("#FFB300", "R2", True)]):
     x = 470 + k * 26
     if nf:
         out.append(f'<circle cx="{x}" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
@@ -178,9 +170,9 @@ if pt:
     t(500, 220, "rev A · 8 × Pt1000 + 1-Wire", 11, "#C8E6C9", 400, "middle")
 else:
     t(500, 190, "CoSTOS HAT", 14, "#ffffff", 500, "middle")
-    t(500, 210, "1-Wire Lite · same board, fewer parts" if lite else "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
+    t(500, 210, "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
 t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
   + ("; S1–S8 and PUMP1 on the left, 1W-A at the front." if pt else
-     ("; dashed = not fitted in the 1-Wire Lite." if lite else "; sensors and PUMP1 on the left (D17).")), 11, None, 400, "start", on_board=False)
+     "; sensors and PUMP1 on the left (D17)."), 11, None, 400, "start", on_board=False)
 out.append('</svg>')
 print("\n".join(out))

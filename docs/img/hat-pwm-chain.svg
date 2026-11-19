@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="330" viewBox="0 0 680 330" font-family="Helvetica, Arial, sans-serif">
-<title>CoSTOS HAT, 1-Wire Lite: PWM signal path</title>
-<desc>Pi GPIO 18 (3.3 V PWM) into two transistor switches in series, Q4 for the PWM and Q5 for the watchdog, which drive Q6, the switch to the 5 V supply via R26, then R9 (100 ohm) to the PWM pin of J2. Below: R7 pull-down at the input, the PUMP1 LED D12 with R22 at the driver output, Q7 pulling the terminal to ground, and the TVS diode D4.</desc>
+<title>CoSTOS HAT, 1-Wire edition: PWM signal path</title>
+<desc>Pi GPIO 18 (3.3 V PWM) into two transistor switches in series, Q4 for the PWM and Q5 for the watchdog, which drive Q6, the switch to the driver supply of about 7 V from the voltage doubler, then R9 (100 ohm) to the PWM pin of J2. Below: R7 pull-down at the input, the PUMP1 LED D12 with R22 at the driver output, Q7 pulling the terminal to ground, and the TVS diode D4.</desc>
 <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#555" stroke-width="1.5"/></marker></defs>
 <rect width="680" height="330" fill="white"/>
 <rect x="165" y="30" width="100" height="44" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
 <text x="215.0" y="57.0" text-anchor="middle" style="font-size:14px;font-weight:600;fill:#085041">Watchdog OK</text>
 <rect x="290" y="30" width="100" height="44" rx="8" fill="#F1EFE8" stroke="#5F5E5A" stroke-width="1"/>
-<text x="340.0" y="57.0" text-anchor="middle" style="font-size:14px;font-weight:600;fill:#444441">+5 V via R26</text>
+<text x="340.0" y="57.0" text-anchor="middle" style="font-size:14px;font-weight:600;fill:#444441">≈ 7 V doubler</text>
 <line x1="215" y1="74" x2="215" y2="118" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
 <line x1="340" y1="74" x2="340" y2="118" stroke="#555" stroke-width="1.5" marker-end="url(#a)"/>
 <rect x="40" y="120" width="100" height="56" rx="8" fill="#EEEDFE" stroke="#534AB7" stroke-width="1"/>
@@ -43,6 +43,6 @@
 <text x="515.0" y="271" text-anchor="middle" style="font-size:12px;fill:#0F6E56">to ground</text>
 <rect x="576" y="230" width="94" height="56" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/>
 <text x="623.0" y="252" text-anchor="middle" style="font-size:14px;font-weight:600;fill:#085041">D4 TVS</text>
-<text x="623.0" y="271" text-anchor="middle" style="font-size:12px;fill:#0F6E56">SMBJ6.0A</text>
-<text x="40" y="314" style="font-size:12px;fill:#555">Purple: the signal path. Green: safety and protection. Voltages and roles: HAT-1wire.md 11.3.</text>
+<text x="623.0" y="271" text-anchor="middle" style="font-size:12px;fill:#0F6E56">SMBJ13A</text>
+<text x="40" y="314" style="font-size:12px;fill:#555">Purple: the signal path. Green: safety and protection. Voltages and roles: HAT-1wire.md 4.1.</text>
 </svg>

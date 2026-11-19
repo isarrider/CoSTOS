@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Draws the CoSTOS HAT circuit diagrams (rev A) as four SVG sheets:
 
-  docs/img/hat-sch-power.svg    power input, ideal diode, 12 V DC/DC, header
+  docs/img/hat-sch-power.svg    5 V from the Pi, voltage doubler for the pump driver, header
   docs/img/hat-sch-pwm.svg      watchdog, PWM pump outputs, feedback inputs
   docs/img/hat-sch-relay.svg    watchdog-switched relay supply, relay outputs
   docs/img/hat-sch-sensors.svg  Pt1000 (MAX31865) and 1-Wire inputs
@@ -312,9 +312,11 @@ class Sheet:
 
 # ======================================================================
 def sheet_power(path):
-    s = Sheet(1180, 650, "CoSTOS HAT rev A: 5 V from the Pi and 12 V supply",
+    s = Sheet(1180, 800, "CoSTOS HAT rev A: 5 V from the Pi and the pump driver supply",
               "The HAT takes 5 V from header pins 2 and 4 (the Pi runs from its own USB-C supply, no power input "
-              "on the HAT); bulk capacitor and power LED; isolated 5 to 12 V DC/DC for the pump drivers; table of the 40-pin header connections.")
+              "on the HAT); bulk capacitor and power LED; a voltage doubler from a two-transistor oscillator, a "
+              "push-pull pair and two diodes lifts the 5 V to about 7 V for the pump driver; table of the 40-pin "
+              "header connections.")
     s.heading(20, 30, "1 · 5 V from the Pi (header pins 2/4, no power input, D18)")
     s.flag(200, 130, "+5V from Pi pins 2, 4", side="L")
     s.wire((200, 130), (620, 130))
@@ -322,7 +324,7 @@ def sheet_power(path):
     s.dot(560, 130); s.part("R", 560, 130, "d", "R1", "1 kΩ", lab="r")
     s.part("LED", 560, 190, "d", "D2", "PWR green", lab="r"); s.gnd(560, 230)
     s.rail(620, 130, "+5V")
-    s.text(632, 150, "→ U2, Q12, LEDs", "n")
+    s.text(632, 150, "→ doubler, Q12, LEDs", "n")
     s.note(20, 300, [
         "The Pi runs from its own USB-C supply (D15); the HAT draws",
         "< 200 mA from header pins 2/4, behind the Pi's own input",
@@ -330,35 +332,54 @@ def sheet_power(path):
         "Earlier drafts had J1, F1, D1, Q1, U1 and C1 here (power input",
         "with ideal diode); those reference designators stay unused.",
     ])
-    # ---- 12 V DC/DC ----
-    s.heading(20, 490, "2 · Pump driver supply: 12 V (normal) or 5 V (1-Wire Lite)")
-    s.rail(40, 550, "+5V")
-    s.wire((40, 550), (150, 550))
-    s.dot(90, 550); s.part("C", 90, 550, "d", "C3", "4.7 µF", lab="r"); s.gnd(90, 590)
-    u2 = s.ic(170, 530, 160, 70, "U2", "B0512S-1WR3", [
-        ("l", 20, "Vin", "2"), ("l", 50, "GND", "1"), ("r", 20, "+Vo", "4"), ("r", 50, "0V", "3")])
-    s.wire(u2["GND"], (150, 595)); s.gnd(150, 595)
-    s.wire(u2["0V"], (360, 580), (360, 595)); s.gnd(360, 595)
-    s.wire(u2["+Vo"], (560, 550))
-    s.dot(400, 550); s.part("C", 400, 550, "d", "C4", "10 µF 25 V", lab="r"); s.gnd(400, 590)
-    s.dot(490, 550); s.part("R", 490, 550, "d", "R2", "1.5 kΩ ¼ W", lab="r"); s.gnd(490, 610)
-    s.rail(560, 550, "+12V")
-    s.wire((560, 550), (600, 550))
-    s.part("R", 600, 550, "r", "R25", "0 Ω")
-    s.wire((660, 550), (700, 550)); s.dot(700, 550)
-    s.rail(700, 550, "+V_DRV")
-    s.wire((700, 550), (700, 610))
+    # ---- voltage doubler (D25) ----
+    s.heading(20, 470, "2 · Pump driver supply: voltage doubler, 5 V → ≈ 7 V (D25)")
+    s.rail(20, 520, "+5V"); s.wire((20, 520), (530, 520))
+    for x, ref, lab in ((40, "R56", "r"), (100, "R54", "r"), (240, "R57", "l"), (300, "R55", "r")):
+        s.dot(x, 520); s.part("R", x, 520, "d", ref, "10 kΩ" if ref in ("R56", "R57") else "1 kΩ", lab=lab)
+    q15 = s.bjt(100, 640, "Q15", "", lab="-"); q16 = s.bjt(300, 640, "Q16", "", lab="-")
+    for q in (q15, q16):
+        s.wire(q["E"], (q["E"][0], 680)); s.gnd(q["E"][0], 680)
+    s.wire((100, 580), q15["C"]); s.wire((300, 580), q16["C"])
+    s.wire((40, 580), (40, 640), q15["B"]); s.wire((240, 580), (240, 640), q16["B"])
+    s.dot(100, 595); s.wire((100, 595), (150, 595)); s.part("C", 150, 595, "r", "C20", "4.7 nF", lab="a")
+    s.wire((190, 595), (240, 595)); s.dot(240, 595)
+    s.dot(40, 640); s.wire((40, 640), (40, 715), (150, 715)); s.part("C", 150, 715, "r", "C21", "4.7 nF", lab="b")
+    s.wire((190, 715), (340, 715), (340, 600), (300, 600)); s.dot(300, 600); s.dot(340, 600)
+    s.text(114, 668, "Q15", "r"); s.text(314, 668, "Q16", "r")
+    s.text(110, 772, "Q15, Q16: MMBT3904, oscillator ≈ 15 kHz", "n")
+    # push-pull
+    s.wire((340, 600), (400, 600)); s.dot(400, 600); s.text(352, 592, "OSC", "n")
+    q17 = s.bjt(430, 560, "Q17", "", lab="-"); q18 = s.bjt(430, 640, "Q18", "", pnp=True, lab="-")
+    s.wire((400, 560), (400, 640))
+    s.wire(q17["C"], (430, 520)); s.dot(430, 520)
+    s.wire(q17["E"], q18["E"]); s.dot(430, 600)
+    s.wire(q18["C"], (430, 680)); s.gnd(430, 680)
+    s.text(448, 552, "Q17", "r"); s.text(448, 566, "MMBT3904")
+    s.text(448, 646, "Q18", "r"); s.text(448, 660, "MMBT3906")
+    # doubler
+    s.wire((430, 600), (470, 600)); s.part("C", 470, 600, "r", "C22", "2.2 µF", lab="b")
+    s.wire((510, 600), (550, 600)); s.dot(530, 600)
+    s.wire((530, 520), (530, 540)); s.part("D", 530, 540, "d", "D21", "1N4148W", lab="r"); s.wire((530, 580), (530, 600))
+    s.part("D", 550, 600, "r", "D22", "1N4148W", lab="b")
+    s.wire((590, 600), (650, 600)); s.dot(635, 600)
+    s.part("C", 635, 600, "d", "C23", "10 µF", lab="r"); s.gnd(635, 640)
+    s.part("R", 650, 600, "r", "R26", "0 Ω", lab="a")
+    s.wire((710, 600), (745, 600)); s.rail(745, 600, "+V_DRV")
     s.begin_nf()
-    s.part("R", 700, 610, "r", "R26", "0 Ω (1-Wire Lite)", lab="b")
+    s.add(f'<rect x="470" y="700" width="250" height="44" rx="3" style="fill:white;stroke:{INK};stroke-width:2;stroke-dasharray:5 4"/>')
+    s.text(595, 719, "U2 B0512S 5 → 12 V (rev A only)", "v", "middle")
+    s.text(595, 735, "via R25 0 Ω → +V_DRV, with R26 removed", "n", "middle")
     s.end_nf()
-    s.rail(760, 610, "+5V")
-    s.note(800, 545, [
-        "U2: 1 W, isolated, unregulated; 0V tied to GND.",
-        "R2: minimum load (≈ 8 mA), keeps the output",
-        "below the TVS standoff (13 V) at light load.",
-        "+V_DRV feeds the pump driver U6: R25 fitted = 12 V",
-        "(normal build); 1-Wire Lite: U2, C3, C4, R2, R25 not",
-        "fitted, R26 fitted = 5 V. Never both.",
+    s.note(800, 540, [
+        "Q15/Q16 oscillate; Q17/Q18 switch C22 hard between",
+        "≈ 0.8 V and ≈ 4.3 V. While SW is low, C22 charges through",
+        "D21; when it goes high, D22 passes the lifted voltage into",
+        "C23: +V_DRV ≈ 5 V + swing − two diode drops ≈ 7 V.",
+        "Pump sees 6–7 V (needs 4 V), 5.2 V in the worst case.",
+        "Oscillator dead: +V_DRV ≈ 3.8 V, pump stops or runs",
+        "weakly, the readback reports it. Simulated: tools/sim.",
+        "Draws ≈ 10 mA from the Pi's 5 V.",
     ])
     # ---- header table ----
     hx, hy = 720, 50
@@ -376,6 +397,7 @@ def sheet_power(path):
         ("RB1", "31", "6", "pump 1 PWM readback"),
         ("RB2", "37", "26", "pump 2 PWM readback (n.f.)"),
         ("HEARTBEAT", "18", "24", "watchdog"),
+        ("WD_RB", "38", "20", "watchdog readback"),
         ("REL1", "22", "25", "relay output 1"),
         ("REL2", "29", "5", "relay output 2 (n.f.)"),
         ("MOSI", "19", "10", "SPI0"),
@@ -479,7 +501,7 @@ def sheet_pwm(path):
     s.wire(q6["C"], (1020, 440), (1060, 440)); s.dot(1040, 440)
     s.part("R", 1040, 440, "d", "R22", "2.2 kΩ", lab="l")
     s.part("LED", 1040, 500, "d", "D12", "PUMP1", lab="l"); s.gnd(1040, 540)
-    s.part("R", 1060, 440, "r", "R9", "470 Ω ½ W", lab="a")
+    s.part("R", 1060, 440, "r", "R9", "100 Ω ½ W", lab="a")
     s.wire((1120, 440), (1420, 440))
     s.dot(1170, 440); s.wire((1170, 440), (1170, 470))
     q7 = s.bjt(1170, 500, "Q7", "MMBT3904", sub="pull-down")
@@ -500,7 +522,7 @@ def sheet_pwm(path):
         "and Q7 pulls the terminal actively to 0 V = stop.",
         "R7 holds PWM1 low while the Pi boots. R9 limits a shorted",
         "cable and the brief Q6/Q7 overlap when switching.",
-        "1-Wire Lite: R9 100 Ω, D4 SMBJ6.0A, R31 6.8 kΩ (4.1).",
+        "+V_DRV ≈ 7 V from the voltage doubler (D25).",
         "D12 shows what leaves the board: off = stop, brighter = faster.",
         "Terminal order = cable colours brown, blue, black.",
         "PUMP2 (n.f.): the same chain, Q8–Q11, R39–R44, R10, R24,",
@@ -530,7 +552,7 @@ def sheet_pwm(path):
     s.heading(960, 655, "7 · PWM output readback")
     s.flag(1040, 710, "P1_OUT", "L")
     s.wire((1040, 710), (1060, 710))
-    s.part("R", 1060, 710, "r", "R31", "27 kΩ (1-Wire Lite 6.8 kΩ)", lab="a")
+    s.part("R", 1060, 710, "r", "R31", "12 kΩ", lab="a")
     s.wire((1120, 710), (1200, 710)); s.dot(1150, 710)
     s.part("R", 1150, 710, "d", "R32", "8.2 kΩ", lab="r"); s.gnd(1150, 770)
     s.flag(1200, 710, "RB1", "R"); s.text(1200, 738, "GPIO6 (pin 31)", "n")

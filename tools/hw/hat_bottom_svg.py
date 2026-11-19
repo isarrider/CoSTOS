@@ -34,8 +34,8 @@ out.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" vi
            'font-family="Helvetica, Arial, sans-serif">')
 out.append('<title>CoSTOS HAT, bottom side with the silkscreen wiring cheat sheet</title>')
 out.append('<desc>Bottom side of the 1-Wire edition seen from below: pin names at every terminal, '
-           'a table of all terminals, the safety notes, the R25/R26 rule, the LED meanings, a box to '
-           'tick the build, and a QR code to the repository.</desc>')
+           'a table of all terminals, the safety notes, the LED meanings, a box to '
+           'tick the pump driver supply on rev A, and a QR code to the repository.</desc>')
 out.append(f'<rect width="{W}" height="{H}" fill="white"/>')
 out.append('<rect x="80" y="30" width="520" height="452" rx="24" fill="#1E5631" stroke="#0F3A20" stroke-width="2"/>')
 for (cx, cy) in [(108, 58), (572, 58), (108, 450), (572, 450)]:
@@ -88,13 +88,13 @@ for k, (n, p, d) in enumerate(ROWS):
 
 y = 252
 out.append(f'<rect x="{X0 - 4}" y="{y - 13}" width="338" height="58" rx="3" fill="none" stroke="{SILK}" stroke-width="1.2"/>')
-t(X0 + 2, y + 2, "! Solar-profile PWM pump only: no signal = stop", 10.5, 700)
+t(X0 + 2, y + 2, "! Heating-profile pump: only with REL1 cutting its power", 10.5, 700)
 t(X0 + 2, y + 19, "! No 230 V on this board. Power: from the Pi only", 10.5, 700)
-t(X0 + 2, y + 36, "! 1-Wire Lite: R26, R9 100 Ω, D4 6.0A · not R25 + R26", 10.5, 700)
+t(X0 + 2, y + 36, "! Pump signal ≈ 7 V: for PWM inputs rated 4–24 V", 10.5, 700)
 t(X0, 330, "LEDs: PWR on · WD heartbeat · PUMP running · R1 relay on", 10)
 
 # build tick boxes
-for k, lab in enumerate(["normal build", "1-Wire Lite"]):
+for k, lab in enumerate(["doubler", "U2 12 V (rev A test)"]):
     bx = X0 + 112 * k
     out.append(f'<rect x="{bx}" y="343" width="10" height="10" fill="none" stroke="{SILK}" stroke-width="1.2"/>')
     t(bx + 15, 352, lab, 10)

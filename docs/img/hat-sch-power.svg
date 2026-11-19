@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="650" viewBox="0 0 1180 650" font-family="Helvetica, Arial, sans-serif">
-<title>CoSTOS HAT rev A: 5 V from the Pi and 12 V supply</title>
-<desc>The HAT takes 5 V from header pins 2 and 4 (the Pi runs from its own USB-C supply, no power input on the HAT); bulk capacitor and power LED; isolated 5 to 12 V DC/DC for the pump drivers; table of the 40-pin header connections.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="800" viewBox="0 0 1180 800" font-family="Helvetica, Arial, sans-serif">
+<title>CoSTOS HAT rev A: 5 V from the Pi and the pump driver supply</title>
+<desc>The HAT takes 5 V from header pins 2 and 4 (the Pi runs from its own USB-C supply, no power input on the HAT); bulk capacitor and power LED; a voltage doubler from a two-transistor oscillator, a push-pull pair and two diodes lifts the 5 V to about 7 V for the pump driver; table of the 40-pin header connections.</desc>
 <style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
-<rect width="1180" height="650" fill="white"/>
+<rect width="1180" height="800" fill="white"/>
 <text x="20" y="30" class="h" text-anchor="start">1 · 5 V from the Pi (header pins 2/4, no power input, D18)</text>
 <polygon points="200,130 192,121 37,121 37,139 192,139" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="114.5" y="134" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">+5V from Pi pins 2, 4</text>
@@ -22,75 +22,112 @@
 <path d="M560 230 V240 M548 240 H572 M552 245 H568 M556 250 H564" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <path d="M620 130 V118 M608 118 H632" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
 <text x="620" y="108" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
-<text x="632" y="150" class="n" text-anchor="start">→ U2, Q12, LEDs</text>
+<text x="632" y="150" class="n" text-anchor="start">→ doubler, Q12, LEDs</text>
 <text x="20" y="300" class="n" text-anchor="start">The Pi runs from its own USB-C supply (D15); the HAT draws</text>
 <text x="20" y="315" class="n" text-anchor="start">&lt; 200 mA from header pins 2/4, behind the Pi's own input</text>
 <text x="20" y="330" class="n" text-anchor="start">protection, so it needs no fuse, TVS or ideal diode (D18).</text>
 <text x="20" y="345" class="n" text-anchor="start">Earlier drafts had J1, F1, D1, Q1, U1 and C1 here (power input</text>
 <text x="20" y="360" class="n" text-anchor="start">with ideal diode); those reference designators stay unused.</text>
-<text x="20" y="490" class="h" text-anchor="start">2 · Pump driver supply: 12 V (normal) or 5 V (1-Wire Lite)</text>
-<path d="M40 550 V538 M28 538 H52" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
-<text x="40" y="528" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
-<path class="w" d="M40 550 L150 550"/>
-<circle cx="90" cy="550" r="3.5" fill="#222"/>
-<g transform="translate(90 550) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
-<text x="106.0" y="568.0" class="r" text-anchor="start">C3</text>
-<text x="106.0" y="582.0" class="v" text-anchor="start">4.7 µF</text>
-<path d="M90 590 V600 M78 600 H102 M82 605 H98 M86 610 H94" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<rect x="170" y="530" width="160" height="70" rx="3" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
-<text x="250.0" y="563.0" class="r" text-anchor="middle">U2</text>
-<text x="250.0" y="578.0" class="v" text-anchor="middle">B0512S-1WR3</text>
-<text x="175" y="554" class="pn" text-anchor="start">Vin</text>
-<text x="166" y="546" class="num" text-anchor="end">2</text>
-<path class="w" d="M170 550 L150 550"/>
-<text x="175" y="584" class="pn" text-anchor="start">GND</text>
-<text x="166" y="576" class="num" text-anchor="end">1</text>
-<path class="w" d="M170 580 L150 580"/>
-<text x="325" y="554" class="pn" text-anchor="end">+Vo</text>
-<text x="334" y="546" class="num" text-anchor="start">4</text>
-<path class="w" d="M330 550 L350 550"/>
-<text x="325" y="584" class="pn" text-anchor="end">0V</text>
-<text x="334" y="576" class="num" text-anchor="start">3</text>
-<path class="w" d="M330 580 L350 580"/>
-<path class="w" d="M150 580 L150 595"/>
-<path d="M150 595 V605 M138 605 H162 M142 610 H158 M146 615 H154" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path class="w" d="M350 580 L360 580 L360 595"/>
-<path d="M360 595 V605 M348 605 H372 M352 610 H368 M356 615 H364" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path class="w" d="M350 550 L560 550"/>
-<circle cx="400" cy="550" r="3.5" fill="#222"/>
-<g transform="translate(400 550) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
-<text x="416.0" y="568.0" class="r" text-anchor="start">C4</text>
-<text x="416.0" y="582.0" class="v" text-anchor="start">10 µF 25 V</text>
-<path d="M400 590 V600 M388 600 H412 M392 605 H408 M396 610 H404" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<circle cx="490" cy="550" r="3.5" fill="#222"/>
-<g transform="translate(490 550) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="506.0" y="578.0" class="r" text-anchor="start">R2</text>
-<text x="506.0" y="592.0" class="v" text-anchor="start">1.5 kΩ ¼ W</text>
-<path d="M490 610 V620 M478 620 H502 M482 625 H498 M486 630 H494" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path d="M560 550 V538 M548 538 H572" style="stroke:#c62828;stroke-width:2.5;fill:none"/>
-<text x="560" y="528" class="r" text-anchor="middle" style="fill:#c62828">+12V</text>
-<path class="w" d="M560 550 L600 550"/>
-<g transform="translate(600 550) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="630.0" y="536.0" class="v" text-anchor="middle"><tspan class="r">R25</tspan> 0 Ω</text>
-<path class="w" d="M660 550 L700 550"/>
-<circle cx="700" cy="550" r="3.5" fill="#222"/>
-<path d="M700 550 V538 M688 538 H712" style="stroke:#222;stroke-width:2.5;fill:none"/>
-<text x="700" y="528" class="r" text-anchor="middle" style="fill:#222">+V_DRV</text>
-<path class="w" d="M700 550 L700 610"/>
+<text x="20" y="470" class="h" text-anchor="start">2 · Pump driver supply: voltage doubler, 5 V → ≈ 7 V (D25)</text>
+<path d="M20 520 V508 M8 508 H32" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
+<text x="20" y="498" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
+<path class="w" d="M20 520 L530 520"/>
+<circle cx="40" cy="520" r="3.5" fill="#222"/>
+<g transform="translate(40 520) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="56.0" y="548.0" class="r" text-anchor="start">R56</text>
+<text x="56.0" y="562.0" class="v" text-anchor="start">10 kΩ</text>
+<circle cx="100" cy="520" r="3.5" fill="#222"/>
+<g transform="translate(100 520) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="116.0" y="548.0" class="r" text-anchor="start">R54</text>
+<text x="116.0" y="562.0" class="v" text-anchor="start">1 kΩ</text>
+<circle cx="240" cy="520" r="3.5" fill="#222"/>
+<g transform="translate(240 520) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="224.0" y="548.0" class="r" text-anchor="end">R57</text>
+<text x="224.0" y="562.0" class="v" text-anchor="end">10 kΩ</text>
+<circle cx="300" cy="520" r="3.5" fill="#222"/>
+<g transform="translate(300 520) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="316.0" y="548.0" class="r" text-anchor="start">R55</text>
+<text x="316.0" y="562.0" class="v" text-anchor="start">1 kΩ</text>
+<g transform="translate(100 640)"><circle cx="-4" cy="0" r="17" style="fill:white;stroke:#222;stroke-width:1.5"/><path class="w" d="M-30 0 H-10 M-10 -11 V11" style="stroke-width:2.5"/><path class="w" d="M-10 -5 L0 -13 V-30 M-10 5 L0 13 V30"/><path d="M0 13 L-7 12 L-3 7 Z" fill="#222"/></g>
+<g transform="translate(300 640)"><circle cx="-4" cy="0" r="17" style="fill:white;stroke:#222;stroke-width:1.5"/><path class="w" d="M-30 0 H-10 M-10 -11 V11" style="stroke-width:2.5"/><path class="w" d="M-10 -5 L0 -13 V-30 M-10 5 L0 13 V30"/><path d="M0 13 L-7 12 L-3 7 Z" fill="#222"/></g>
+<path class="w" d="M100 670 L100 680"/>
+<path d="M100 680 V690 M88 690 H112 M92 695 H108 M96 700 H104" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M300 670 L300 680"/>
+<path d="M300 680 V690 M288 690 H312 M292 695 H308 M296 700 H304" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M100 580 L100 610"/>
+<path class="w" d="M300 580 L300 610"/>
+<path class="w" d="M40 580 L40 640 L70 640"/>
+<path class="w" d="M240 580 L240 640 L270 640"/>
+<circle cx="100" cy="595" r="3.5" fill="#222"/>
+<path class="w" d="M100 595 L150 595"/>
+<g transform="translate(150 595) rotate(0)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="170.0" y="581.0" class="v" text-anchor="middle"><tspan class="r">C20</tspan> 4.7 nF</text>
+<path class="w" d="M190 595 L240 595"/>
+<circle cx="240" cy="595" r="3.5" fill="#222"/>
+<circle cx="40" cy="640" r="3.5" fill="#222"/>
+<path class="w" d="M40 640 L40 715 L150 715"/>
+<g transform="translate(150 715) rotate(0)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="170.0" y="741.0" class="v" text-anchor="middle"><tspan class="r">C21</tspan> 4.7 nF</text>
+<path class="w" d="M190 715 L340 715 L340 600 L300 600"/>
+<circle cx="300" cy="600" r="3.5" fill="#222"/>
+<circle cx="340" cy="600" r="3.5" fill="#222"/>
+<text x="114" y="668" class="r" text-anchor="start">Q15</text>
+<text x="314" y="668" class="r" text-anchor="start">Q16</text>
+<text x="110" y="772" class="n" text-anchor="start">Q15, Q16: MMBT3904, oscillator ≈ 15 kHz</text>
+<path class="w" d="M340 600 L400 600"/>
+<circle cx="400" cy="600" r="3.5" fill="#222"/>
+<text x="352" y="592" class="n" text-anchor="start">OSC</text>
+<g transform="translate(430 560)"><circle cx="-4" cy="0" r="17" style="fill:white;stroke:#222;stroke-width:1.5"/><path class="w" d="M-30 0 H-10 M-10 -11 V11" style="stroke-width:2.5"/><path class="w" d="M-10 -5 L0 -13 V-30 M-10 5 L0 13 V30"/><path d="M0 13 L-7 12 L-3 7 Z" fill="#222"/></g>
+<g transform="translate(430 640)"><circle cx="-4" cy="0" r="17" style="fill:white;stroke:#222;stroke-width:1.5"/><path class="w" d="M-30 0 H-10 M-10 -11 V11" style="stroke-width:2.5"/><path class="w" d="M-10 -5 L0 -13 V-30 M-10 5 L0 13 V30"/><path d="M-9 -6 L-2 -7 L-6 -12 Z" fill="#222"/></g>
+<path class="w" d="M400 560 L400 640"/>
+<path class="w" d="M430 530 L430 520"/>
+<circle cx="430" cy="520" r="3.5" fill="#222"/>
+<path class="w" d="M430 590 L430 610"/>
+<circle cx="430" cy="600" r="3.5" fill="#222"/>
+<path class="w" d="M430 670 L430 680"/>
+<path d="M430 680 V690 M418 690 H442 M422 695 H438 M426 700 H434" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<text x="448" y="552" class="r" text-anchor="start">Q17</text>
+<text x="448" y="566" class="v" text-anchor="start">MMBT3904</text>
+<text x="448" y="646" class="r" text-anchor="start">Q18</text>
+<text x="448" y="660" class="v" text-anchor="start">MMBT3906</text>
+<path class="w" d="M430 600 L470 600"/>
+<g transform="translate(470 600) rotate(0)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="490.0" y="626.0" class="v" text-anchor="middle"><tspan class="r">C22</tspan> 2.2 µF</text>
+<path class="w" d="M510 600 L550 600"/>
+<circle cx="530" cy="600" r="3.5" fill="#222"/>
+<path class="w" d="M530 520 L530 540"/>
+<g transform="translate(530 540) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/></g>
+<text x="546.0" y="558.0" class="r" text-anchor="start">D21</text>
+<text x="546.0" y="572.0" class="v" text-anchor="start">1N4148W</text>
+<path class="w" d="M530 580 L530 600"/>
+<g transform="translate(550 600) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/></g>
+<text x="570.0" y="626.0" class="v" text-anchor="middle"><tspan class="r">D22</tspan> 1N4148W</text>
+<path class="w" d="M590 600 L650 600"/>
+<circle cx="635" cy="600" r="3.5" fill="#222"/>
+<g transform="translate(635 600) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="651.0" y="618.0" class="r" text-anchor="start">C23</text>
+<text x="651.0" y="632.0" class="v" text-anchor="start">10 µF</text>
+<path d="M635 640 V650 M623 650 H647 M627 655 H643 M631 660 H639" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<g transform="translate(650 600) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="680.0" y="586.0" class="v" text-anchor="middle"><tspan class="r">R26</tspan> 0 Ω</text>
+<path class="w" d="M710 600 L745 600"/>
+<path d="M745 600 V588 M733 588 H757" style="stroke:#222;stroke-width:2.5;fill:none"/>
+<text x="745" y="578" class="r" text-anchor="middle" style="fill:#222">+V_DRV</text>
 <g opacity="0.42">
-<g transform="translate(700 610) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="730.0" y="636.0" class="v" text-anchor="middle"><tspan class="r">R26</tspan> 0 Ω (1-Wire Lite)</text>
+<rect x="470" y="700" width="250" height="44" rx="3" style="fill:white;stroke:#222;stroke-width:2;stroke-dasharray:5 4"/>
+<text x="595" y="719" class="v" text-anchor="middle">U2 B0512S 5 → 12 V (rev A only)</text>
+<text x="595" y="735" class="n" text-anchor="middle">via R25 0 Ω → +V_DRV, with R26 removed</text>
 </g>
-<path d="M760 610 V598 M748 598 H772" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
-<text x="760" y="588" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
-<text x="800" y="545" class="n" text-anchor="start">U2: 1 W, isolated, unregulated; 0V tied to GND.</text>
-<text x="800" y="560" class="n" text-anchor="start">R2: minimum load (≈ 8 mA), keeps the output</text>
-<text x="800" y="575" class="n" text-anchor="start">below the TVS standoff (13 V) at light load.</text>
-<text x="800" y="590" class="n" text-anchor="start">+V_DRV feeds the pump driver U6: R25 fitted = 12 V</text>
-<text x="800" y="605" class="n" text-anchor="start">(normal build); 1-Wire Lite: U2, C3, C4, R2, R25 not</text>
-<text x="800" y="620" class="n" text-anchor="start">fitted, R26 fitted = 5 V. Never both.</text>
+<text x="800" y="540" class="n" text-anchor="start">Q15/Q16 oscillate; Q17/Q18 switch C22 hard between</text>
+<text x="800" y="555" class="n" text-anchor="start">≈ 0.8 V and ≈ 4.3 V. While SW is low, C22 charges through</text>
+<text x="800" y="570" class="n" text-anchor="start">D21; when it goes high, D22 passes the lifted voltage into</text>
+<text x="800" y="585" class="n" text-anchor="start">C23: +V_DRV ≈ 5 V + swing − two diode drops ≈ 7 V.</text>
+<text x="800" y="600" class="n" text-anchor="start">Pump sees 6–7 V (needs 4 V), 5.2 V in the worst case.</text>
+<text x="800" y="615" class="n" text-anchor="start">Oscillator dead: +V_DRV ≈ 3.8 V, pump stops or runs</text>
+<text x="800" y="630" class="n" text-anchor="start">weakly, the readback reports it. Simulated: tools/sim.</text>
+<text x="800" y="645" class="n" text-anchor="start">Draws ≈ 10 mA from the Pi's 5 V.</text>
 <text x="720" y="30" class="h" text-anchor="start">3 · 40-pin header (Pi 4 / Pi 5)</text>
-<rect x="720" y="50" width="440" height="430" rx="4" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
+<rect x="720" y="50" width="440" height="450" rx="4" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
 <text x="730" y="69" class="r" text-anchor="start">Net</text>
 <text x="840" y="69" class="r" text-anchor="start">Pin</text>
 <text x="930" y="69" class="r" text-anchor="start">GPIO</text>
@@ -144,38 +181,42 @@
 <text x="840" y="315" class="pn" text-anchor="start">18</text>
 <text x="930" y="315" class="pn" text-anchor="start">24</text>
 <text x="980" y="315" class="n" text-anchor="start">watchdog</text>
-<text x="730" y="335" class="r" text-anchor="start" style="fill:#1565c0">REL1</text>
-<text x="840" y="335" class="pn" text-anchor="start">22</text>
-<text x="930" y="335" class="pn" text-anchor="start">25</text>
-<text x="980" y="335" class="n" text-anchor="start">relay output 1</text>
-<text x="730" y="355" class="r" text-anchor="start" style="fill:#9e9e9e">REL2</text>
-<text x="840" y="355" class="pn" text-anchor="start" style="fill:#9e9e9e">29</text>
-<text x="930" y="355" class="pn" text-anchor="start" style="fill:#9e9e9e">5</text>
-<text x="980" y="355" class="n" text-anchor="start">relay output 2 (n.f.)</text>
-<text x="730" y="375" class="r" text-anchor="start" style="fill:#1565c0">MOSI</text>
-<text x="840" y="375" class="pn" text-anchor="start">19</text>
-<text x="930" y="375" class="pn" text-anchor="start">10</text>
-<text x="980" y="375" class="n" text-anchor="start">SPI0</text>
-<text x="730" y="395" class="r" text-anchor="start" style="fill:#1565c0">MISO</text>
-<text x="840" y="395" class="pn" text-anchor="start">21</text>
-<text x="930" y="395" class="pn" text-anchor="start">9</text>
+<text x="730" y="335" class="r" text-anchor="start" style="fill:#1565c0">WD_RB</text>
+<text x="840" y="335" class="pn" text-anchor="start">38</text>
+<text x="930" y="335" class="pn" text-anchor="start">20</text>
+<text x="980" y="335" class="n" text-anchor="start">watchdog readback</text>
+<text x="730" y="355" class="r" text-anchor="start" style="fill:#1565c0">REL1</text>
+<text x="840" y="355" class="pn" text-anchor="start">22</text>
+<text x="930" y="355" class="pn" text-anchor="start">25</text>
+<text x="980" y="355" class="n" text-anchor="start">relay output 1</text>
+<text x="730" y="375" class="r" text-anchor="start" style="fill:#9e9e9e">REL2</text>
+<text x="840" y="375" class="pn" text-anchor="start" style="fill:#9e9e9e">29</text>
+<text x="930" y="375" class="pn" text-anchor="start" style="fill:#9e9e9e">5</text>
+<text x="980" y="375" class="n" text-anchor="start">relay output 2 (n.f.)</text>
+<text x="730" y="395" class="r" text-anchor="start" style="fill:#1565c0">MOSI</text>
+<text x="840" y="395" class="pn" text-anchor="start">19</text>
+<text x="930" y="395" class="pn" text-anchor="start">10</text>
 <text x="980" y="395" class="n" text-anchor="start">SPI0</text>
-<text x="730" y="415" class="r" text-anchor="start" style="fill:#1565c0">SCLK</text>
-<text x="840" y="415" class="pn" text-anchor="start">23</text>
-<text x="930" y="415" class="pn" text-anchor="start">11</text>
+<text x="730" y="415" class="r" text-anchor="start" style="fill:#1565c0">MISO</text>
+<text x="840" y="415" class="pn" text-anchor="start">21</text>
+<text x="930" y="415" class="pn" text-anchor="start">9</text>
 <text x="980" y="415" class="n" text-anchor="start">SPI0</text>
-<text x="730" y="435" class="r" text-anchor="start" style="fill:#1565c0">CS_PT1</text>
-<text x="840" y="435" class="pn" text-anchor="start">24</text>
-<text x="930" y="435" class="pn" text-anchor="start">8</text>
-<text x="980" y="435" class="n" text-anchor="start">CE0, MAX31865</text>
-<text x="730" y="455" class="r" text-anchor="start" style="fill:#9e9e9e">SDA, SCL</text>
-<text x="840" y="455" class="pn" text-anchor="start" style="fill:#9e9e9e">3, 5</text>
-<text x="930" y="455" class="pn" text-anchor="start" style="fill:#9e9e9e">2, 3</text>
-<text x="980" y="455" class="n" text-anchor="start">DS2482 only (n.f.)</text>
-<text x="730" y="475" class="r" text-anchor="start" style="fill:#9e9e9e">ID_SD, ID_SC</text>
-<text x="840" y="475" class="pn" text-anchor="start" style="fill:#9e9e9e">27, 28</text>
-<text x="930" y="475" class="pn" text-anchor="start" style="fill:#9e9e9e">0, 1</text>
-<text x="980" y="475" class="n" text-anchor="start">ID EEPROM (n.f.)</text>
-<g opacity="0.42"><rect x="928" y="622" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
-<text x="962" y="634" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
+<text x="730" y="435" class="r" text-anchor="start" style="fill:#1565c0">SCLK</text>
+<text x="840" y="435" class="pn" text-anchor="start">23</text>
+<text x="930" y="435" class="pn" text-anchor="start">11</text>
+<text x="980" y="435" class="n" text-anchor="start">SPI0</text>
+<text x="730" y="455" class="r" text-anchor="start" style="fill:#1565c0">CS_PT1</text>
+<text x="840" y="455" class="pn" text-anchor="start">24</text>
+<text x="930" y="455" class="pn" text-anchor="start">8</text>
+<text x="980" y="455" class="n" text-anchor="start">CE0, MAX31865</text>
+<text x="730" y="475" class="r" text-anchor="start" style="fill:#9e9e9e">SDA, SCL</text>
+<text x="840" y="475" class="pn" text-anchor="start" style="fill:#9e9e9e">3, 5</text>
+<text x="930" y="475" class="pn" text-anchor="start" style="fill:#9e9e9e">2, 3</text>
+<text x="980" y="475" class="n" text-anchor="start">DS2482 only (n.f.)</text>
+<text x="730" y="495" class="r" text-anchor="start" style="fill:#9e9e9e">ID_SD, ID_SC</text>
+<text x="840" y="495" class="pn" text-anchor="start" style="fill:#9e9e9e">27, 28</text>
+<text x="930" y="495" class="pn" text-anchor="start" style="fill:#9e9e9e">0, 1</text>
+<text x="980" y="495" class="n" text-anchor="start">ID EEPROM (n.f.)</text>
+<g opacity="0.42"><rect x="928" y="772" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
+<text x="962" y="784" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
 </svg>
