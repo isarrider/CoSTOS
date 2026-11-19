@@ -439,7 +439,7 @@ def sheet_pwm(path):
     s.rail(420, 230, "+3V3"); s.part("R", 420, 230, "d", "R51", "10 kΩ", lab="r")
     s.wire((420, 290), (420, 340), (320, 340)); s.dot(420, 340)
     s.wire((420, 340), (480, 340)); s.flag(480, 340, "WD_RB", "R")
-    s.text(480, 366, "GPIO7 (pin 26), low = on", "n")
+    s.text(480, 366, "GPIO20 (pin 38), low = on", "n")
     # rev A comparison: 74LVC1G123
     s.begin_nf()
     s.add(f'<rect x="440" y="392" width="230" height="44" rx="3" style="fill:white;stroke:{INK};stroke-width:2;stroke-dasharray:5 4"/>')
@@ -451,7 +451,7 @@ def sheet_pwm(path):
         "(τ ≈ 2.4 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about",
         "1 kHz (R48/C16) → WD_OK below the MOSFET threshold within 1.1–3.1 s → pump and relays off.",
         "No single failed part keeps WD_OK up (two R in parallel, two C in series).",
-        "WD_RB: never read C18 directly, GPIO7's boot pull-up would charge it.",
+        "WD_RB: never read C18 directly, a GPIO's boot pull-up or pull-down would move it.",
         "JP1 forces WD_OK for bench tests (open by default).",
         "Rev A: fit U3 and R53, remove R48 to compare with the 74LVC1G123.",
     ])

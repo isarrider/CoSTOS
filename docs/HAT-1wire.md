@@ -319,8 +319,8 @@ reasoning, simulation and failure analysis are in
   so nothing runs while the Pi boots.
 - No single failed part keeps it on: the drain resistors are two in
   parallel, the coupling capacitors two in series.
-- **Readback on GPIO 7** (through Q14, low = watchdog on): at every start
-  the self-test stops the heartbeat and measures the real timeout
+- **Readback on GPIO 20** (pin 38, through Q14, low = watchdog on): at
+  every start the self-test stops the heartbeat and measures the real timeout
   (alarm outside about 0.8–5 s).
 - LED "WD", and jumper JP1 to force `WD_OK` for bench tests (clearly
   marked, open by default).
@@ -417,7 +417,7 @@ channel numbers behind GPIO 18/19 differ, which is software configuration.
 | PWM readback 1 | 31 | GPIO 6 | GPIO 6 |
 | PWM readback 2 (only if fitted) | 37 | GPIO 26 | GPIO 26 |
 | Heartbeat | 18 | GPIO 24 | GPIO 24 |
-| Watchdog readback | 26 | GPIO 7 | GPIO 7 |
+| Watchdog readback | 38 | GPIO 20 | GPIO 20 |
 | Relay 1 | 22 | GPIO 25 | GPIO 25 |
 | Relay 2 (only if fitted) | 29 | GPIO 5 | GPIO 5 |
 | ID EEPROM | 27 / 28 | ID_SD / ID_SC | ID_SD / ID_SC |
@@ -438,9 +438,8 @@ set this up; listed here so it can be checked by hand.
 **`/boot/firmware/config.txt`**
 
 ```ini
-# SPI0 for the MAX31865 (CE0 only, so GPIO 7 is free for the watchdog readback)
+# SPI0 for the MAX31865 (CE0)
 dtparam=spi=on
-dtoverlay=spi0-1cs
 # Two 1-Wire buses for the DS18x20 sensors (external pull-ups on the HAT;
 # no "pullup" parameter, which would mean parasite power)
 dtoverlay=w1-gpio,gpiopin=4
@@ -451,7 +450,7 @@ gpio=24,25,5=op,dl
 # PWM output readback: inputs with pull-down
 gpio=6,26=ip,pd
 # Watchdog readback (pulled up on the HAT, low = watchdog on)
-gpio=7=ip,np
+gpio=20=ip,np
 
 [pi3]
 # Same as the Pi 4 (untested on the Pi 3)

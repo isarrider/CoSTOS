@@ -84,7 +84,7 @@
 <path class="w" d="M420 340 L480 340"/>
 <polygon points="480,340 488,331 531,331 531,349 488,349" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="509.5" y="344" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_RB</text>
-<text x="480" y="366" class="n" text-anchor="start">GPIO7 (pin 26), low = on</text>
+<text x="480" y="366" class="n" text-anchor="start">GPIO20 (pin 38), low = on</text>
 <g opacity="0.42">
 <rect x="440" y="392" width="230" height="44" rx="3" style="fill:white;stroke:#222;stroke-width:2;stroke-dasharray:5 4"/>
 <text x="555" y="411" class="v" text-anchor="middle">U3 74LVC1G123 (rev A only)</text>
@@ -94,7 +94,7 @@
 <text x="20" y="477" class="n" text-anchor="start">(τ ≈ 2.4 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about</text>
 <text x="20" y="492" class="n" text-anchor="start">1 kHz (R48/C16) → WD_OK below the MOSFET threshold within 1.1–3.1 s → pump and relays off.</text>
 <text x="20" y="507" class="n" text-anchor="start">No single failed part keeps WD_OK up (two R in parallel, two C in series).</text>
-<text x="20" y="522" class="n" text-anchor="start">WD_RB: never read C18 directly, GPIO7's boot pull-up would charge it.</text>
+<text x="20" y="522" class="n" text-anchor="start">WD_RB: never read C18 directly, a GPIO's boot pull-up or pull-down would move it.</text>
 <text x="20" y="537" class="n" text-anchor="start">JP1 forces WD_OK for bench tests (open by default).</text>
 <text x="20" y="552" class="n" text-anchor="start">Rev A: fit U3 and R53, remove R48 to compare with the 74LVC1G123.</text>
 <text x="640" y="30" class="h" text-anchor="start">5 · PWM pump output PUMP1 (transistor chain H3, D22)</text>
