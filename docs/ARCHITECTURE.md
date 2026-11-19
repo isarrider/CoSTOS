@@ -299,30 +299,43 @@ the feedback signal can confirm the pump reacts.
 #### PWM frequency: settable per output
 
 The frequency is a setting per PWM output (Settings → Hardware), not a
-constant. It costs nothing: the Pi's hardware PWM takes any period, and the
-HAT's TC4427 driver switches in nanoseconds, so nothing on the board
-depends on it.
+constant. It costs nothing in software: the Pi's hardware PWM takes any
+period. The upper limit comes from the HAT's output (below): the TVS diode
+at the terminal slows the edges, so the range is **100–1000 Hz**.
 
 | | **Fixed 500 Hz** | **Settable per output** (chosen) |
 |---|---|---|
 | Wilo / Grundfos solar pumps | 🟢 inside every range (100–5000, 100–4000, some Wilo variants 100–1000 Hz) | 🟢 same default |
 | Pump or datasheet that asks for its nominal 1 kHz | 🟡 works, but outside the maker's nominal value | 🟢 set 1000 Hz |
 | Slow optocoupler in the signal path ([HARDWARE.md option 2](HARDWARE.md#option-2-optocoupler-module)) | 🔴 1–2 % duty error | 🟢 set 200 Hz, error halved |
-| PWM → 0–10 V converter modules, other loads (fans, valves) | 🔴 often need 1–3 kHz | 🟢 set what the module needs |
+| PWM → 0–10 V converter modules, other loads (fans, valves) | 🔴 often need 1–3 kHz | 🟡 only if the module accepts ≤ 1 kHz (the HAT output's limit, below) |
 | Risk of a wrong value | 🟢 none | 🟡 limited: range checked (below) |
 | Cost | — | none: one config field, already in the web UI |
 
 Rules:
 
-- **Default 500 Hz** (the RESOL uses 512 Hz). Pump presets carry the
-  range from the maker's datasheet; a custom profile accepts **100–4000 Hz**,
-  the range every listed pump accepts except the Wilo 100–1000 Hz variants,
-  whose preset limits it further.
+- **Default 500 Hz** (the RESOL uses 512 Hz). Allowed range **100–1000 Hz**:
+  it contains the default and Wilo's nominal 1 kHz, and every listed pump
+  accepts it, including the Wilo variants limited to 100–1000 Hz. Pump
+  presets can narrow it further from the maker's datasheet.
 - A value outside the range is **refused when the config is saved or
   loaded** (plausibility rule, 6.1), with the allowed range in the message;
   CoSTOS never runs an output at a frequency it has not checked.
-- At 4 kHz the edge rule (rise/fall ≤ T/500 = 0.5 µs) is still met: the
-  470 Ω series resistor with about 300 pF of 3 m cable gives about 0.3 µs.
+- **Why 1000 Hz at most: the edge rule** (rise/fall ≤ T/500, 2 µs at
+  1 kHz). The HAT's driver switches in ≈ 25 ns, but behind its series
+  resistor R9 sits the TVS diode D4, and a TVS diode is also a capacitor:
+  about 3.85 nF for the SMBJ6.0A (Lite), about 1 nF for the SMBJ13A
+  (normal), at 0 V, plus ≈ 0.3 nF of cable:
+
+  | HAT build | R9 | TVS + cable | 10–90 % edge | Rule met up to |
+  |---|---|---|---|---|
+  | Lite | 100 Ω | ≈ 4.15 nF | ≈ 0.9 µs | ≈ 2.2 kHz |
+  | Normal | 470 Ω | ≈ 1.3 nF | ≈ 1.3 µs | ≈ 1.5 kHz |
+
+  1000 Hz keeps both builds inside the rule with margin. (An earlier
+  version allowed 4 kHz, counting only the cable; the TVS capacitance makes
+  that too fast.) Measured at bring-up (HAT 9). A higher limit would need a
+  TVS with less capacitance.
 - The frequency only sets the period; the duty cycle (the speed) is
   unaffected, so a change takes effect at once without a pump stop. The
   watchdog gating and the "no signal = stop" behaviour do not depend on it.

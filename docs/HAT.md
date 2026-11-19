@@ -38,7 +38,7 @@ until a real BOM exists. 🟢 good, 🟡 medium, 🔴 weak or missing.
 | 1-Wire buses for DS18x20 | 🟢 2 | 🟢 2 | 🟡 1 |
 | ***Outputs*** | | | |
 | PUMP1, PWM with feedback | 🟢 12 V drive, ≈ 10.6 V at the pump | 🟡 5 V drive, ≈ 4.7 V at the pump (threshold ~4 V) | 🟢 12 V drive |
-| PWM frequency | 🟢 settable, 100–4000 Hz ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)) | 🟢 same | 🟢 same |
+| PWM frequency | 🟢 settable, 100–1000 Hz ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)) | 🟢 same | 🟢 same |
 | REL1 (cut-off relay, valve, on/off load) | 🟢 yes | 🔴 not fitted | 🟢 yes |
 | Pumps | 🟢 solar profile; heating profile with a cut-off relay | 🟡 solar profile only | 🟢 solar profile; heating profile with a cut-off relay |
 | Unfitted spare positions | PT2, PUMP2, REL2, DS2482 | the same, plus REL1 and the DC/DC | PUMP2, REL2 |
@@ -353,7 +353,8 @@ part with a real push-pull output, both edges driven in ≈ 25 ns.
 - Per output a 3-way terminal: **PWM, GND, FB**, in the cable's order
   (brown, blue, black).
 - **Frequency settable** per output in software, default 500 Hz, checked
-  range 100–4000 Hz; the driver does not depend on it
+  range 100–1000 Hz, limited by the edge speed through R9 into D4's
+  capacitance
   ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)).
 
 ### 4.2 Pump feedback inputs
@@ -814,6 +815,8 @@ into 8.2.
    (at C2) idle and with the Pi under load (`stress-ng` on all cores plus
    a USB drive copying): it must stay at or above 4.75 V. **Lite build:**
    also measure the PWM high level at J2 (pump connected, 100 % duty),
+   and the rise and fall times at J2 at 1000 Hz (must be ≤ 2 µs, both
+   builds),
    idle and under load; it must stay above 4.5 V. Check that the Pi
    reports no under-voltage (`vcgencmd get_throttled` returns `0x0`).
 4. Watchdog: `WD_OK` low after boot, high while a test script toggles the
