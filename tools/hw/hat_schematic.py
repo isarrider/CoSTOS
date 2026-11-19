@@ -435,7 +435,7 @@ def sheet_pwm(path):
         if nf: s.begin_nf()
         s.wire(u6["OUT A" if n == 1 else "OUT B"], (990, y))
         s.dot(975, y); s.wire((975, y), (975, y + 60))
-        s.part("R", 975, y + 60, "d", "R22" if n == 1 else "R24", "4.7 kΩ", lab="r")
+        s.part("R", 975, y + 60, "d", "R22" if n == 1 else "R24", "2.2 kΩ", lab="r")
         s.part("LED", 975, y + 120, "d", "D12" if n == 1 else "D14", f"PUMP{n}", lab="r")
         s.gnd(975, y + 160)
         s.part("R", 990, y, "r", "R9" if n == 1 else "R10", "470 Ω")
@@ -456,7 +456,7 @@ def sheet_pwm(path):
         "spikes from the pump cable. Terminal order = cable colours",
         "brown (PWM), blue (GND), black (FB).",
         "D12 shows what really reaches the pump: off = stop,",
-        "brighter = faster (≈ 2 mA at 12 V).",
+        "brighter = faster (≈ 4.5 mA at 12 V, ≈ 1.3 mA in the Lite build).",
     ])
     # ---- feedback ----
     s.heading(20, 610, "6 · Pump feedback inputs (open collector, 75 Hz)")

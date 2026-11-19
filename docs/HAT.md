@@ -370,9 +370,22 @@ software is wrong; none needs an overlay or any software.
 |---|---|---|---|
 | PWR | green | 5 V rail | the HAT has power |
 | WD | green | watchdog output WD_OK | heartbeat seen, outputs enabled (4.6) |
-| **PUMP1** | green | TC4427 output via 4.7 kΩ | what really reaches the pump: off = stop, brighter = faster |
+| **PUMP1** | green | TC4427 output via 2.2 kΩ | what really reaches the pump: off = stop, brighter = faster |
 | R1 | yellow | relay output 1 | relay or SSR switched on |
 | PUMP2, R2 | | | only with the unfitted second channels |
+
+**LED type: forward voltage ≈ 2 V** (red, yellow, orange, or the classic
+yellow-green "green"), not the bright pure green with ≈ 3 V. The WD LED
+runs from 3.3 V: with a 2 V LED it gets ≈ 1.3 mA, with a 3 V LED only
+≈ 0.3 mA, which is barely visible. The PUMP1 resistor is 2.2 kΩ so the LED
+stays visible in the Lite build too (5 V driver):
+
+| LED | Supply | Resistor | Current (Vf ≈ 2 V) |
+|---|---|---|---|
+| PWR | 5 V | 1 kΩ | ≈ 3 mA |
+| WD | 3.3 V | 1 kΩ | ≈ 1.3 mA |
+| PUMP1 | 12 V (normal) / ≈ 4.9 V (Lite) | 2.2 kΩ | ≈ 4.5 mA / ≈ 1.3 mA at 100 %, times the duty cycle |
+| R1 | 5 V | 1 kΩ | ≈ 3 mA |
 
 Alarms are shown on the web page, as metrics and (optionally) over MQTT,
 not on an LED. The LEDs face up; a closed enclosure needs a window or
@@ -719,7 +732,7 @@ into 8.2.
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω). Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
-| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering |
+| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 
 ---
