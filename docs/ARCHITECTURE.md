@@ -324,12 +324,12 @@ Rules:
 - **Why 1000 Hz at most: the edge rule** (rise/fall ≤ T/500, 2 µs at
   1 kHz). The HAT's driver switches in ≈ 25 ns, but behind its series
   resistor R9 sits the TVS diode D4, and a TVS diode is also a capacitor:
-  about 3.85 nF for the SMBJ6.0A (Lite), about 1 nF for the SMBJ13A
+  about 3.85 nF for the SMBJ6.0A (1-Wire Lite), about 1 nF for the SMBJ13A
   (normal), at 0 V, plus ≈ 0.3 nF of cable:
 
   | HAT build | R9 | TVS + cable | 10–90 % edge | Rule met up to |
   |---|---|---|---|---|
-  | Lite | 100 Ω | ≈ 4.15 nF | ≈ 0.9 µs | ≈ 2.2 kHz |
+  | 1-Wire Lite | 100 Ω | ≈ 4.15 nF | ≈ 0.9 µs | ≈ 2.2 kHz |
   | Normal | 470 Ω | ≈ 1.3 nF | ≈ 1.3 µs | ≈ 1.5 kHz |
 
   1000 Hz keeps both builds inside the rule with margin. (An earlier
@@ -356,7 +356,7 @@ when the signal is missing**, so the requirement is:
 - **Not allowed in the standard setup:** a heating-profile pump (Wilo
   PWM1, Grundfos profile A), where no signal means full speed, and an old
   on/off pump without PWM. Both need their mains switched by a relay on
-  REL1 (option C), which the Lite build doesn't have; the setup wizard
+  REL1 (option C), which the 1-Wire Lite doesn't have; the setup wizard
   refuses a heating profile without a configured cut-off relay.
 
 #### Output circuit (per pump)
@@ -661,7 +661,7 @@ can be switched off.
 | **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
 | **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
 | **PWM output check** (CoSTOS addition, needs the HAT's output readback) | Continuously: the line is high while 0 % is commanded, or its measured duty (edge timestamps, like the feedback input) differs from the command. At every start: **watchdog self-test**, PWM set high and the heartbeat stopped, the line must drop to 0 V within about 3 s | Stuck driver, AND gate or transistor; a watchdog layer that no longer cuts the output; broken PWM path | Alarm. A failed self-test keeps the pump output off and the alarm active until the fault is fixed; with a permanently powered solar-profile pump that means the solar loop is not used, which is the safe side. The pump runs for at most 3 s during the self-test |
-| **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. Matters most for the HAT's Lite build, whose pump driver runs on this 5 V and stops working below 4.5 V ([HAT-1wire 11.1](HAT-1wire.md#111-rule-it-may-fail-but-it-may-not-break-anything)); the pump then stays stopped, which the pump feedback also reports |
+| **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. Matters most for the HAT's 1-Wire Lite, whose pump driver runs on this 5 V and stops working below 4.5 V ([HAT-1wire 11.1](HAT-1wire.md#111-rule-it-may-fail-but-it-may-not-break-anything)); the pump then stays stopped, which the pump feedback also reports |
 
 A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
 is possible later, as on the BX Plus "fault relay". The web page and

@@ -153,6 +153,6 @@
 <circle cx="552" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>
 <text class="ts" x="552" y="284" text-anchor="middle" style="font-size:10px;font-weight:400;fill:#E8F5E9">R2</text>
 <text class="th" x="470" y="190" text-anchor="middle" style="font-size:14px;font-weight:500;fill:#ffffff">CoSTOS HAT</text>
-<text class="ts" x="470" y="210" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">Lite build · same board, fewer parts</text>
-<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; dashed = not fitted in the Lite build.</text>
+<text class="ts" x="470" y="210" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#C8E6C9">1-Wire Lite · same board, fewer parts</text>
+<text class="ts" x="40" y="538" text-anchor="start" style="font-size:11px;font-weight:400;fill:#555555">Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals; dashed = not fitted in the 1-Wire Lite.</text>
 </svg>

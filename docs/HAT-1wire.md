@@ -1,9 +1,9 @@
-# CoSTOS HAT: 1-Wire edition (and its Lite build)
+# CoSTOS HAT: 1-Wire edition (and 1-Wire Lite)
 
 Status: **design for rev A, not yet built or tested**. This page describes
 the 1-Wire edition as it will be built: 1 Pt1000 input (collector) plus
-two 1-Wire buses for DS18x20 sensors, and its cheaper Lite build
-([section 11](#11-lite-build)). Which HAT to choose:
+two 1-Wire buses for DS18x20 sensors, and the cheaper 1-Wire Lite
+([section 11](#11-1-wire-lite)). Which HAT to choose:
 [HAT.md](HAT.md). The PT edition, which shares everything except the
 sensor inputs: [HAT-PT.md](HAT-PT.md). Why it is built this way, the
 dropped alternatives and the prototype tests:
@@ -76,7 +76,7 @@ The Pi 3 B and B+ have the same 40-pin header, HAT size and mounting holes,
 and the same PWM, SPI and 1-Wire blocks as the Pi 4, so the HAT and the
 software should work unchanged. **Untested**: it gets checked in bring-up
 ([bring-up](HAT-development.md#6-bring-up-plan-rev-a)) if a Pi 3 is at hand. For someone with a spare Pi 3 it is the cheapest
-way in: with the Lite build, the HAT is then the only purchase.
+way in: with the 1-Wire Lite, the HAT is then the only purchase.
 
 | | Pi 3 B / B+ | Pi 4 / Pi 5 |
 |---|---|---|
@@ -150,7 +150,7 @@ the 13 V TVS standoff at light load.
 - **The driver is a transistor chain (H3, D22)**, from basic parts only:
 
   ```
-              +V_DRV (12 V normal / 5 V Lite)
+              +V_DRV (12 V normal / 5 V 1-Wire Lite)
                 │
               ┌─┴── R36 2.2 kΩ
               ├──┤ Q6 MMBT3906 PNP "to the supply" ──► R9 ──┬───────► J2 PWM
@@ -177,12 +177,12 @@ the 13 V TVS standoff at light load.
   to it as a jumper-selected fallback).
 - P6KE15A-class TVS at the terminal (SMD equivalent with the same
   breakdown voltage, SMBJ13A; not lower, since the unregulated 12 V can
-  reach 13.5 V), R9 470 Ω, R7 at the input (D1); Lite values below.
+  reach 13.5 V), R9 470 Ω, R7 at the input (D1); 1-Wire Lite values below.
 - **R9 and D4 depend on the build**, like R25/R26, because the pump's
   input draws current (about 3 mA, up to 7.5 mA) and R9 takes voltage
   away before the signal reaches the pump:
 
-  | | Normal build (12 V driver) | Lite build (5 V driver) |
+  | | Normal build (12 V driver) | 1-Wire Lite (5 V driver) |
   |---|---|---|
   | R9 | 470 Ω | **100 Ω** |
   | Lost across R9 at 3 mA | 1.4 V | 0.3 V |
@@ -194,13 +194,13 @@ the 13 V TVS standoff at light load.
   minimum. Same values as the stripboard driver boards in HARDWARE.md (470 Ω
   / 15 V TVS on the 12 V board, 100 Ω / 6.8 V TVS on the 5 V board). With
   the transistor chain the output sits ≈ 0.15 V below +V_DRV, so the pump
-  sees ≈ 10.5 V (normal) and ≈ 4.55 V (Lite).
+  sees ≈ 10.5 V (normal) and ≈ 4.55 V (1-Wire Lite).
 - **Output readback** (any driver chain): a divider from the PWM terminal
   (behind R9) to a GPIO lets CoSTOS see what really leaves the board.
   PUMP1 on GPIO 6 (pin 31), PUMP2 on GPIO 26 (pin 37, unfitted with
   PUMP2). R31 (top, build-dependent like R9) and R32 8.2 kΩ to GND:
 
-  | | Normal (12 V) | Lite (5 V) |
+  | | Normal (12 V) | 1-Wire Lite (5 V) |
   |---|---|---|
   | R31 | 27 kΩ | 6.8 kΩ |
   | At the GPIO when high | ≈ 2.8 V (≈ 3.1 V at 13.5 V) | ≈ 2.7 V |
@@ -215,7 +215,7 @@ the 13 V TVS standoff at light load.
   fallback chain, a stuck driver or AND gate) directly, and a silently lost watchdog layer before it matters. The
   pump runs for at most those 3 s.
 - **R9 package: at least 0.5 W** (e.g. 1210 or 2010). With a shorted pump
-  cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (Lite) for as long as
+  cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (1-Wire Lite) for as long as
   the short lasts, more than an 0805 resistor takes.
 
 - **Watchdog gating:** the watchdog switch Q5 sits in series with the PWM
@@ -339,7 +339,7 @@ only has a bulk capacitor and a power LED on its 5 V rail.
 - **Supply:** the official Raspberry Pi USB-C supply (27 W for the Pi 5,
   15 W for the Pi 4) or an equivalent; for a Pi 3 its micro-USB supply
   (5.1 V, 2.5 A). **No phone chargers or long, thin USB cables**: the
-  Lite build's pump driver runs on this 5 V and has only about 0.5 V of
+  1-Wire Lite's pump driver runs on this 5 V and has only about 0.5 V of
   margin (11.1, point 5). The Pi 5 negotiates 5 A over USB
   power delivery, so no `PSU_MAX_CURRENT` setting is needed.
 - **DIN-rail builds** (ARCHITECTURE 5.6 options B/C): a 5 V DIN-rail
@@ -365,13 +365,13 @@ software is wrong; none needs an overlay or any software.
 yellow-green "green"), not the bright pure green with ≈ 3 V. The WD LED
 runs from 3.3 V: with a 2 V LED it gets ≈ 1.3 mA, with a 3 V LED only
 ≈ 0.3 mA, which is barely visible. The PUMP1 resistor is 2.2 kΩ so the LED
-stays visible in the Lite build too (5 V driver):
+stays visible in the 1-Wire Lite too (5 V driver):
 
 | LED | Supply | Resistor | Current (Vf ≈ 2 V) |
 |---|---|---|---|
 | PWR | 5 V | 1 kΩ | ≈ 3 mA |
 | WD | 3.3 V | 1 kΩ | ≈ 1.3 mA |
-| PUMP1 | 12 V (normal) / ≈ 4.9 V (Lite) | 2.2 kΩ | ≈ 4.5 mA / ≈ 1.3 mA at 100 %, times the duty cycle |
+| PUMP1 | 12 V (normal) / ≈ 4.9 V (1-Wire Lite) | 2.2 kΩ | ≈ 4.5 mA / ≈ 1.3 mA at 100 %, times the duty cycle |
 | R1 | 5 V | 1 kΩ | ≈ 3 mA |
 
 Alarms are shown on the web page, as metrics and (optionally) over MQTT,
@@ -527,8 +527,8 @@ it 1.2–1.4 mm), nothing printed over pads or under terminal bodies.
 | Where | What is printed | Read when | Readability |
 |---|---|---|---|
 | Top, at each terminal | Pin name next to every pin (A/B, 3V3/DQ/GND, PWM/GND/FB, +5V/OUT), terminal name and what it is for (PT1 collector, 1W-A, PUMP1 pump) | while wiring, HAT on the Pi | 🟢 the most useful text |
-| Top, small notes | LED names, "12 V" at R25 and "5 V (Lite)" at R26, both values at R9 and D4, outlines of unfitted parts, edition and revision | assembly, checking the LEDs | 🟢 |
-| Bottom, cheat sheet | Table of all terminals with pins and use, pump wire colours (brown · blue · black), the three safety rules (solar-profile pump only, no 230 V on the board, never R25 and R26 together), LED meanings, tick boxes for normal or Lite build, repository URL | before mounting, or with the HAT off | 🟡 hidden once on the Pi |
+| Top, small notes | LED names, "12 V" at R25 and "5 V (1-Wire Lite)" at R26, both values at R9 and D4, outlines of unfitted parts, edition and revision | assembly, checking the LEDs | 🟢 |
+| Bottom, cheat sheet | Table of all terminals with pins and use, pump wire colours (brown · blue · black), the three safety rules (solar-profile pump only, no 230 V on the board, never R25 and R26 together), LED meanings, tick boxes for normal or 1-Wire Lite, repository URL | before mounting, or with the HAT off | 🟡 hidden once on the Pi |
 | Bottom, QR code (10 × 10 mm) | link to the repository | any time, with a phone | 🟢 |
 
 Not printed: **DS18B20 wire colours**. They differ between makers (red /
@@ -616,16 +616,16 @@ Rough JLCPCB estimates, incl. shipping and 19 % import VAT, built from
 their published fees (setup fee, per-joint fees for SMD and through-hole,
 a feeder fee of about €2.80 per non-basic part type, a hand-soldering fee
 per order) plus the parts at LCSC prices. Model: a **fixed part per
-order** (≈ €54.40 for the normal build, ≈ €48.40 for the Lite build with
+order** (≈ €54.40 for the normal build, ≈ €48.40 for the 1-Wire Lite with
 two non-basic part types fewer) plus a **variable part per board**
-(≈ €13.30 normal, ≈ €7.80 Lite, ≈ €47.30 PT edition with the consigned
+(≈ €13.30 normal, ≈ €7.80 1-Wire Lite, ≈ €47.30 PT edition with the consigned
 LTC2983). Without the power input (D18) and with the transistor driver
 chain (D22), which each removed two non-basic part types.
 
 **What one controller costs**, by how you get the board (estimates, all
 incl. 19 % VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
 
-| How you get it | What you pay for | **1-Wire edition** | **1-Wire, Lite build** | **Lite saves** | **PT edition** |
+| How you get it | What you pay for | **1-Wire edition** | **1-Wire Lite** | **1-Wire Lite saves** | **PT edition** |
 |---|---|---|---|---|---|
 | **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €81** | 🔴 **≈ €64** | ≈ €17 | 🔴 **≈ €149** |
 | **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €24** | 🟢 **≈ €17.50** | ≈ €6.50 | 🟢 **≈ €58** |
@@ -635,7 +635,7 @@ The parts lists (8.1, [HAT-PT.md 5](HAT-PT.md#5-space-and-cost), 11.2) show **�
 the parts for one board excluding VAT, with one third of the PCB set, so
 it fits a group build, not someone building a single board.
 
-For one controller, the fixed costs dominate: that is why the Lite build, with two non-basic
+For one controller, the fixed costs dominate: that is why the 1-Wire Lite, with two non-basic
 part types fewer, saves more per order (≈ €17) than its parts suggest
 (≈ €4.50). AISLER's assembly price is not estimated
 here; it gets quoted with the BOM.
@@ -655,26 +655,26 @@ the result; the decision number in brackets leads to the reason.
 
 ---
 
-## 11. Lite build
+## 11. 1-Wire Lite
 
 The cheapest way to a CoSTOS controller: **the same 1-Wire edition
 board with fewer parts fitted**, not a separate board. It saves about
 **€4.50 per board** in parts (≈ €17 for one controller), can be upgraded to the full build by soldering the
 missing parts on, and needs no second layout (why not a dedicated Lite
-board: [HAT-development.md 3](HAT-development.md#3-lite-build-why-no-dedicated-board-d19)).
+board: [HAT-development.md 3](HAT-development.md#3-1-wire-lite-why-no-dedicated-board-d19)).
 
-![CoSTOS HAT, Lite build, top view](img/hat-lite-mockup.svg)
+![CoSTOS HAT, 1-Wire Lite, top view](img/hat-lite-mockup.svg)
 
 ### 11.1 Rule: it may fail, but it may not break anything
 
-The Lite build may stop working; it must never leave the pump running or
+The 1-Wire Lite may stop working; it must never leave the pump running or
 damage the Pi:
 
 1. **Every fault ends in "pump stopped".** The PWM line keeps its
-   pull-down and the watchdog switch in the driver chain (4.1, 4.6), and the Lite build only
+   pull-down and the watchdog switch in the driver chain (4.1, 4.6), and the 1-Wire Lite only
    supports **solar-profile pumps** (Wilo PWM2, Grundfos profile C), where
    no signal or a low signal means stop. The setup wizard refuses a
-   heating profile on a Lite build.
+   heating profile on a 1-Wire Lite.
 2. **Field wiring can't reach the Pi.** The MAX31865 with its ±45 V input
    protection stays on the collector input, and every terminal keeps its
    series resistors, ESD diodes, TVS diode and polyfuse. A short or a
@@ -688,7 +688,7 @@ damage the Pi:
    cable, a pump with a higher threshold), the pump simply doesn't start,
    and the feedback input reports it.
 5. **The pump signal follows the Pi's 5 V, so the supply must be a proper
-   one.** In the Lite build the driver runs directly on the Pi's 5 V rail
+   one.** In the 1-Wire Lite the driver runs directly on the Pi's 5 V rail
    (R26), which sits a little below the supply's label. The transistor
    chain (D22) has no minimum supply of its own: the pump gets the rail
    minus ≈ 0.15 V (Q6) and ≈ 0.3 V (R9), against its 3.6 V minimum:
@@ -708,7 +708,7 @@ damage the Pi:
    solar-profile pump, **stays stopped**. Nothing breaks, but the
    pump silently doesn't run on a sunny day. So:
 
-   - **Lite build: official Raspberry Pi supply, or one that holds
+   - **1-Wire Lite: official Raspberry Pi supply, or one that holds
      5.1 V under load. No phone chargers, no long USB cables.** The normal
      build is far less sensitive (its 12 V comes from an isolated DC/DC),
      but the same advice applies.
@@ -722,14 +722,14 @@ damage the Pi:
    - **Bring-up measures it** ([step 3](HAT-development.md#6-bring-up-plan-rev-a)): the 5 V on the HAT and the PWM
      high level at the pump, idle and under load.
 
-### 11.2 Normal build against Lite build
+### 11.2 Normal build against 1-Wire Lite
 
-Single-quantity parts; "saved" is what the Lite build saves on that row.
+Single-quantity parts; "saved" is what the 1-Wire Lite saves on that row.
 🟢 good, 🟡 medium, 🔴 weak.
 
-| | **Normal build** | **Lite build** | **Saved** |
+| | **Normal build** | **1-Wire Lite** | **Saved** |
 |---|---|---|---|
-| ***Left out in the Lite build*** | | | |
+| ***Left out in the 1-Wire Lite*** | | | |
 | 12 V DC/DC block: U2 with its input and output capacitors C3, C4, minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.7 V at the pump | **€3.08** |
 | Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€1.55** |
 | R26 (0 Ω) | not fitted | fitted | **−€0.01** |
@@ -746,15 +746,15 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that
 would short the 12 V and 5 V rails. The silkscreen marks them "12 V" and
-"5 V (Lite)", and marks R9 "470 / Lite 100" and D4 "13A / Lite 6.0A".
+"5 V (1-Wire Lite)", and marks R9 "470 / 1-Wire Lite 100" and D4 "13A / 1-Wire Lite 6.0A".
 
 
-### 11.3 The pump signal, step by step (Lite build)
+### 11.3 The pump signal, step by step (1-Wire Lite)
 
 From the Pi pin to the pump terminal, with the voltage at each step.
 Regenerate with `python3 tools/hw/pwm_chain_svg.py > docs/img/hat-lite-pwm-chain.svg`.
 
-![PWM signal path of the Lite build](img/hat-lite-pwm-chain.svg)
+![PWM signal path of the 1-Wire Lite](img/hat-lite-pwm-chain.svg)
 
 1. **Pi GPIO 18** makes the PWM in hardware (5.5): 0 V or 3.3 V, 500 Hz
    by default. Too low for the pump on its own, which needs at least

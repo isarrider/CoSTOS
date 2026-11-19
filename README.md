@@ -50,7 +50,7 @@ installation, so that's the reference for which functions come first.
 - Raspberry Pi 4 or Raspberry Pi 5 with its own USB-C power supply, or a
   Raspberry Pi 3 B / B+ with its micro-USB supply (should work, untested;
   [details](docs/HAT-1wire.md#raspberry-pi-3))
-- The [CoSTOS HAT](docs/HAT.md) (1-Wire edition, its Lite build, or the PT
+- The [CoSTOS HAT](docs/HAT.md) (1-Wire edition, 1-Wire Lite, or the PT
   edition; [which one?](docs/HAT.md#which-hat-all-editions-compared)), or for a bench setup: an LTC2983 or MAX31865 for Pt1000
   sensors, a 4.7 kΩ pull-up for DS18x20 sensors
 - **A high-efficiency pump with a PWM input in the solar profile** (Wilo
@@ -77,7 +77,7 @@ Mains wiring belongs in the hands of a qualified electrician.
 - [HAT](docs/HAT.md): the plug-on board that combines all of it: the
   editions compared, and which one to choose.
   - [1-Wire edition](docs/HAT-1wire.md) (1 Pt1000 + two 1-Wire buses, also
-    as a cheaper Lite build): the board as it will be built, wiring, costs.
+    as a cheaper 1-Wire Lite): the board as it will be built, wiring, costs.
   - [PT edition](docs/HAT-PT.md) (8 Pt1000 + one 1-Wire bus, for
     installations that keep their existing sensors).
 - [HAT development](docs/HAT-development.md): why the HAT is built this

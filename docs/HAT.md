@@ -13,7 +13,7 @@ passed its tests, this line will say "released".
 | Document | For whom | What's in it |
 |---|---|---|
 | **HAT.md** (this page) | Everyone choosing a HAT | The editions side by side |
-| [HAT-1wire.md](HAT-1wire.md) | Building, ordering or wiring the 1-Wire edition or its Lite build | The board as it will be built: functions, terminals, wiring, silkscreen, LEDs, Pi configuration, costs, Lite build |
+| [HAT-1wire.md](HAT-1wire.md) | Building, ordering or wiring the 1-Wire edition or 1-Wire Lite | The board as it will be built: functions, terminals, wiring, silkscreen, LEDs, Pi configuration, costs, 1-Wire Lite |
 | [HAT-PT.md](HAT-PT.md) | The same for the PT edition | What differs from the 1-Wire edition: the 8 Pt1000 inputs on one LTC2983, terminals, configuration, costs |
 | [HAT-development.md](HAT-development.md) | Checking, testing or changing the design | Decisions D1–D22 with their reasons, the alternatives that were dropped, the rev A prototype, bring-up and tests |
 
@@ -22,7 +22,7 @@ passed its tests, this line will say "released".
 - **1-Wire edition** ([HAT-1wire.md](HAT-1wire.md)): 1 Pt1000 input
   (collector) plus two 1-Wire buses for DS18x20 sensors. For new
   installations and anyone replacing their sensors.
-- **1-Wire edition, Lite build** ([HAT-1wire.md 11](HAT-1wire.md#11-lite-build)):
+- **1-Wire Lite** ([HAT-1wire.md 11](HAT-1wire.md#11-1-wire-lite)):
   the same board with fewer parts fitted: no 12 V converter, no relay
   output. The cheapest way in; solar-profile pumps only.
 - **PT edition** ([HAT-PT.md](HAT-PT.md)): 8 Pt1000 inputs on one LTC2983
@@ -32,9 +32,9 @@ passed its tests, this line will say "released".
 All of them need a **PWM pump in the solar profile** (no signal = stop),
 which is a safety requirement: [ARCHITECTURE 5.3](ARCHITECTURE.md#pump-requirement-safety).
 
-| 1-Wire edition | Lite build | PT edition |
+| 1-Wire edition | 1-Wire Lite | PT edition |
 |---|---|---|
-| ![1-Wire edition](img/hat-mockup.svg) | ![Lite build](img/hat-lite-mockup.svg) | ![PT edition](img/hat-pt-mockup.svg) |
+| ![1-Wire edition](img/hat-mockup.svg) | ![1-Wire Lite](img/hat-lite-mockup.svg) | ![PT edition](img/hat-pt-mockup.svg) |
 
 ## Which HAT? All editions compared
 
@@ -42,7 +42,7 @@ Prices are estimates until a real BOM exists (cost model:
 [HAT-1wire.md 8.2](HAT-1wire.md#82-fully-assembled-rough-estimate)).
 🟢 good, 🟡 medium, 🔴 weak or missing.
 
-| | **1-Wire edition** | **1-Wire, Lite build** | **PT edition** |
+| | **1-Wire edition** | **1-Wire Lite** | **PT edition** |
 |---|---|---|---|
 | **Best for** | new installations, or replacing the sensors anyway | a tight budget with a solar-profile pump | keeping the existing Pt1000 sensors (e.g. replacing a RESOL) |
 | ***Sensors*** | | | |

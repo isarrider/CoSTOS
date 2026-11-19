@@ -201,7 +201,7 @@
 <text x="1180" y="165" class="n" text-anchor="start">and Q7 pulls the terminal actively to 0 V = stop.</text>
 <text x="1180" y="180" class="n" text-anchor="start">R7 holds PWM1 low while the Pi boots. R9 limits a shorted</text>
 <text x="1180" y="195" class="n" text-anchor="start">cable and the brief Q6/Q7 overlap when switching.</text>
-<text x="1180" y="210" class="n" text-anchor="start">Lite build: R9 100 Ω, D4 SMBJ6.0A, R31 6.8 kΩ (4.1).</text>
+<text x="1180" y="210" class="n" text-anchor="start">1-Wire Lite: R9 100 Ω, D4 SMBJ6.0A, R31 6.8 kΩ (4.1).</text>
 <text x="1180" y="225" class="n" text-anchor="start">D12 shows what leaves the board: off = stop, brighter = faster.</text>
 <text x="1180" y="240" class="n" text-anchor="start">Terminal order = cable colours brown, blue, black.</text>
 <text x="1180" y="255" class="n" text-anchor="start">PUMP2 (n.f.): the same chain, Q8–Q11, R39–R44, R10, R24,</text>
@@ -267,7 +267,7 @@
 <text x="1007.0" y="714" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">P1_OUT</text>
 <path class="w" d="M1040 710 L1060 710"/>
 <g transform="translate(1060 710) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="1090.0" y="696.0" class="v" text-anchor="middle"><tspan class="r">R31</tspan> 27 kΩ (Lite 6.8 kΩ)</text>
+<text x="1090.0" y="696.0" class="v" text-anchor="middle"><tspan class="r">R31</tspan> 27 kΩ (1-Wire Lite 6.8 kΩ)</text>
 <path class="w" d="M1120 710 L1200 710"/>
 <circle cx="1150" cy="710" r="3.5" fill="#222"/>
 <g transform="translate(1150 710) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>

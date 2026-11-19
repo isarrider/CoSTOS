@@ -3,7 +3,7 @@
 
   python3 tools/hw/hat_mockup.py file    > docs/img/hat-mockup.svg      (1-Wire edition)
   python3 tools/hw/hat_mockup.py file pt > docs/img/hat-pt-mockup.svg   (PT edition)
-  python3 tools/hw/hat_mockup.py file lite > docs/img/hat-lite-mockup.svg (Lite build of the 1-Wire edition)
+  python3 tools/hw/hat_mockup.py file lite > docs/img/hat-lite-mockup.svg (1-Wire Lite of the 1-Wire edition)
 
 ("widget" instead of "file" gives a variant for inline display in chat.)"""
 import sys
@@ -156,9 +156,9 @@ if pt:
     t(480, 220, "rev A · 8 × Pt1000 + 1-Wire", 11, "#C8E6C9", 400, "middle")
 else:
     t(470, 190, "CoSTOS HAT", 14, "#ffffff", 500, "middle")
-    t(470, 210, "Lite build · same board, fewer parts" if lite else "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
+    t(470, 210, "1-Wire Lite · same board, fewer parts" if lite else "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
 t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
   + ("; S1–S8 and PUMP1 on the left, 1W-A at the front." if pt else
-     ("; dashed = not fitted in the Lite build." if lite else "; sensors and PUMP1 on the left (D17).")), 11, None, 400, "start", on_board=False)
+     ("; dashed = not fitted in the 1-Wire Lite." if lite else "; sensors and PUMP1 on the left (D17).")), 11, None, 400, "start", on_board=False)
 out.append('</svg>')
 print("\n".join(out))

@@ -121,12 +121,12 @@
 <rect x="108" y="239" width="338" height="58" rx="3" fill="none" stroke="#ffffff" stroke-width="1.2"/>
 <text x="114" y="254" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! Solar-profile PWM pump only: no signal = stop</text>
 <text x="114" y="271" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! No 230 V on this board. Power: from the Pi only</text>
-<text x="114" y="288" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! Lite: R26, R9 = 100 Ω, D4 = 6.0A · never R25 + R26</text>
+<text x="114" y="288" text-anchor="start" style="font-size:10.5px;font-weight:700;fill:#ffffff">! 1-Wire Lite: R26, R9 100 Ω, D4 6.0A · not R25 + R26</text>
 <text x="112" y="330" text-anchor="start" style="font-size:10px;font-weight:400;fill:#ffffff">LEDs: PWR on · WD heartbeat · PUMP running · R1 relay on</text>
 <rect x="112" y="343" width="10" height="10" fill="none" stroke="#ffffff" stroke-width="1.2"/>
 <text x="127" y="352" text-anchor="start" style="font-size:10px;font-weight:400;fill:#ffffff">normal build</text>
 <rect x="224" y="343" width="10" height="10" fill="none" stroke="#ffffff" stroke-width="1.2"/>
-<text x="239" y="352" text-anchor="start" style="font-size:10px;font-weight:400;fill:#ffffff">Lite build</text>
+<text x="239" y="352" text-anchor="start" style="font-size:10px;font-weight:400;fill:#ffffff">1-Wire Lite</text>
 <rect x="386" y="340" width="92" height="92" fill="#ffffff"/>
 <rect x="392.00" y="346.00" width="2.76" height="2.76" fill="#1E5631"/>
 <rect x="394.76" y="346.00" width="2.76" height="2.76" fill="#1E5631"/>

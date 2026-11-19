@@ -316,7 +316,7 @@ def sheet_power(path):
         "with ideal diode); those reference designators stay unused.",
     ])
     # ---- 12 V DC/DC ----
-    s.heading(20, 490, "2 · Pump driver supply: 12 V (normal) or 5 V (Lite build)")
+    s.heading(20, 490, "2 · Pump driver supply: 12 V (normal) or 5 V (1-Wire Lite)")
     s.rail(40, 550, "+5V")
     s.wire((40, 550), (150, 550))
     s.dot(90, 550); s.part("C", 90, 550, "d", "C3", "4.7 µF", lab="r"); s.gnd(90, 590)
@@ -334,7 +334,7 @@ def sheet_power(path):
     s.rail(700, 550, "+V_DRV")
     s.wire((700, 550), (700, 610))
     s.begin_nf()
-    s.part("R", 700, 610, "r", "R26", "0 Ω (Lite)", lab="b")
+    s.part("R", 700, 610, "r", "R26", "0 Ω (1-Wire Lite)", lab="b")
     s.end_nf()
     s.rail(760, 610, "+5V")
     s.note(800, 545, [
@@ -342,7 +342,7 @@ def sheet_power(path):
         "R2: minimum load (≈ 8 mA), keeps the output",
         "below the TVS standoff (13 V) at light load.",
         "+V_DRV feeds the pump driver U6: R25 fitted = 12 V",
-        "(normal build); Lite build: U2, C3, C4, R2, R25 not",
+        "(normal build); 1-Wire Lite: U2, C3, C4, R2, R25 not",
         "fitted, R26 fitted = 5 V. Never both.",
     ])
     # ---- header table ----
@@ -480,7 +480,7 @@ def sheet_pwm(path):
         "and Q7 pulls the terminal actively to 0 V = stop.",
         "R7 holds PWM1 low while the Pi boots. R9 limits a shorted",
         "cable and the brief Q6/Q7 overlap when switching.",
-        "Lite build: R9 100 Ω, D4 SMBJ6.0A, R31 6.8 kΩ (4.1).",
+        "1-Wire Lite: R9 100 Ω, D4 SMBJ6.0A, R31 6.8 kΩ (4.1).",
         "D12 shows what leaves the board: off = stop, brighter = faster.",
         "Terminal order = cable colours brown, blue, black.",
         "PUMP2 (n.f.): the same chain, Q8–Q11, R39–R44, R10, R24,",
@@ -510,7 +510,7 @@ def sheet_pwm(path):
     s.heading(960, 655, "7 · PWM output readback")
     s.flag(1040, 710, "P1_OUT", "L")
     s.wire((1040, 710), (1060, 710))
-    s.part("R", 1060, 710, "r", "R31", "27 kΩ (Lite 6.8 kΩ)", lab="a")
+    s.part("R", 1060, 710, "r", "R31", "27 kΩ (1-Wire Lite 6.8 kΩ)", lab="a")
     s.wire((1120, 710), (1200, 710)); s.dot(1150, 710)
     s.part("R", 1150, 710, "d", "R32", "8.2 kΩ", lab="r"); s.gnd(1150, 770)
     s.flag(1200, 710, "RB1", "R"); s.text(1200, 738, "GPIO6 (pin 31)", "n")

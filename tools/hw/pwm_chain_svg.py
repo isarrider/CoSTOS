@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the PWM signal path of the HAT's Lite build, from the Pi pin to the
+"""Draws the PWM signal path of the HAT's 1-Wire Lite, from the Pi pin to the
 pump terminal, with the parts hanging off it.
 
   python3 tools/hw/pwm_chain_svg.py > docs/img/hat-lite-pwm-chain.svg
@@ -31,7 +31,7 @@ def dash(x, y1, y2):
 
 out.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
            'font-family="Helvetica, Arial, sans-serif">')
-out.append('<title>CoSTOS HAT, Lite build: PWM signal path</title>')
+out.append('<title>CoSTOS HAT, 1-Wire Lite: PWM signal path</title>')
 out.append('<desc>Pi GPIO 18 (3.3 V PWM) into two transistor switches in series, Q4 for the PWM and Q5 '
            'for the watchdog, which drive Q6, the switch to the 5 V supply via R26, then R9 (100 ohm) to the '
            'PWM pin of J2. Below: R7 pull-down at the input, the PUMP1 LED D12 with R22 at the driver '

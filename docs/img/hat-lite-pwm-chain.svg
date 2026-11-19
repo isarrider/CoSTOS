@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="680" height="330" viewBox="0 0 680 330" font-family="Helvetica, Arial, sans-serif">
-<title>CoSTOS HAT, Lite build: PWM signal path</title>
+<title>CoSTOS HAT, 1-Wire Lite: PWM signal path</title>
 <desc>Pi GPIO 18 (3.3 V PWM) into two transistor switches in series, Q4 for the PWM and Q5 for the watchdog, which drive Q6, the switch to the 5 V supply via R26, then R9 (100 ohm) to the PWM pin of J2. Below: R7 pull-down at the input, the PUMP1 LED D12 with R22 at the driver output, Q7 pulling the terminal to ground, and the TVS diode D4.</desc>
 <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#555" stroke-width="1.5"/></marker></defs>
 <rect width="680" height="330" fill="white"/>

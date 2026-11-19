@@ -11,7 +11,7 @@ editions compared: [HAT.md](HAT.md)); this page does not repeat them.
   question, referred to as "Dn" in both documents.
 - [2. Pump driver chain: alternatives](#2-pump-driver-chain-alternatives-d22)
   and the rev A prototype test of the transistor chain.
-- [3. Lite build: why no dedicated board](#3-lite-build-why-no-dedicated-board-d19)
+- [3. 1-Wire Lite: why no dedicated board](#3-1-wire-lite-why-no-dedicated-board-d19)
 - [4. PT edition: choice of measuring chip](#4-pt-edition-choice-of-measuring-chip-d13)
 - [5. Assembly services compared](#5-assembly-services-compared-d7-d20)
 - [6. Bring-up plan (rev A)](#6-bring-up-plan-rev-a)
@@ -43,36 +43,36 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
-| D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 11): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
+| D19 | A separate low-cost board? | **No: 1-Wire Lite, a lighter build of the 1-Wire edition** (section 11): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: about four fees per order (since D22) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
-| D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the Lite build, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
+| D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the 1-Wire Lite, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
 
 ## 2. Pump driver chain: alternatives (D22)
 
 The chain as built is described in [HAT-1wire.md 4.1](HAT-1wire.md#41-pwm-pump-outputs)
-and, step by step, in [HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-lite-build).
+and, step by step, in [HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-1-wire-lite).
 
 The chain from GPIO 18 to the terminal (step by step in
-[HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-lite-build)) has four jobs: raise
+[HAT-1wire.md 11.3](HAT-1wire.md#113-the-pump-signal-step-by-step-1-wire-lite)) has four jobs: raise
 3.3 V to at least 3.6 V (≈ 4.7 V wanted) at the pump, deliver its input
 current (up to 7.5 mA), go to 0 V when the watchdog trips, and survive a
 shorted or disturbed cable. The original design used an AND gate and a
 TC4427, ≈ €8.60 per order of two boards in parts and JLCPCB fees; the
 transistor chain H3 replaced it as the default. Pump voltages for the
-Lite build at 3 mA; "price for one" against today.
+1-Wire Lite at 3 mA; "price for one" against today.
 
 | Option | How | Pump voltage | Watchdog / fail behaviour | Robust on the cable | Price for one | Verdict |
 |---|---|---|---|---|---|---|
 | A: AND gate + TC4427 (original design) | 74LVC1G08 gates the PWM with WD_OK, TC4427 drives | 🟢 ≈ 4.7 V | 🟢 AND gate forces 0 V; pull-down at boot | 🟢 TC4427 takes shorts and spikes | — | 🟡 **prototype fallback** (jumper on rev A) |
-| B: one 5 V gate (74AHCT1G08), Lite only | TTL inputs accept 3.3 V, 5 V output, does the AND itself | 🟡 ≈ 4.1 V (R9 ≥ 220 Ω for its 25 mA limit); ≈ 3.4 V at 7.5 mA, below the minimum | 🟢 as A | 🟡 a logic gate on the field cable | ≈ −€5.40 (Lite) | 🔴 no margin; the normal build still needs the TC4427, so two footprints |
+| B: one 5 V gate (74AHCT1G08), 1-Wire Lite only | TTL inputs accept 3.3 V, 5 V output, does the AND itself | 🟡 ≈ 4.1 V (R9 ≥ 220 Ω for its 25 mA limit); ≈ 3.4 V at 7.5 mA, below the minimum | 🟢 as A | 🟡 a logic gate on the field cable | ≈ −€5.40 (1-Wire Lite) | 🔴 no margin; the normal build still needs the TC4427, so two footprints |
 | C: driver with enable input (UCC27524) instead of AND gate + TC4427 | WD_OK to the enable pins; pin-compatible with the TC4427 (its NC pins 1/8 are ENA/ENB) | 🟢 ≈ 4.7 V | 🔴 enable pins pulled **up** internally (200 kΩ): open = enabled, so safety depends on an external pull-down; gating and driving in one chip. Under-voltage lockout only below ≈ 3.8 V (3.5–4.1 V), so no help between 4.5 and 4 V | 🟢 like the TC4427 | ≈ −€3.60 (≈ −€1.30 per board in a group of 5) | 🔴 reviewed and dropped (below) |
 | D: transistor + pull-up to 5 V | Transistor pulls down, resistor pulls up | 🔴 1 kΩ pull-up: ≈ 2 V at the pump | 🔴 inverts: Pi stopped or transistor open = **full speed** | 🟡 | ≈ −€5.50 | 🔴 unsafe fail direction |
 | E: discrete push-pull | Totem pole from basic transistors, no fees | 🟢 ≈ 4.5 V | 🟡 safety logic from transistors, needs careful checking | 🟡 | ≈ −€5.00 | 🔴 5–7 parts in the safety path instead of one proven chip |
 | F: Pi GPIO directly | Through a resistor | 🔴 3.3 V, below 3.6 V | 🔴 no gating | 🔴 Pi pin on the field cable | ≈ −€8.60 | 🔴 doesn't work |
 | G: level-shifter chip (TXS0101 etc.) | 3.3 V → 5 V translator | 🔴 made for logic inputs, not mA loads | 🟡 | 🔴 | ≈ −€2 | 🔴 |
-| **H2: three transistors instead of AND gate + TC4427** | Two NPNs in series (PWM and watchdog: "two switches in a row") drive a PNP high-side switch; pull-down and a small ESD diode at the terminal | 🟢 ≈ 4.3 V (Lite), ≈ 7–8 V (normal) | 🟢 open parts end in 0 V; 🟡 three parts can fail short | 🟡 small ESD diode instead of the 600 W TVS | ≈ −€8.60 | 🟡 superseded by H3 |
-| **H3: H2 plus an active pull-down transistor at the terminal** | As H2; a third transistor behind R9 pulls the terminal low whenever Q2 is off | 🟢 ≈ 4.55 V (Lite), ≈ 10.5 V (normal) | 🟢 open parts end in 0 V; the new transistor fails to "stop" or "slower edge" | 🟢 the 600 W TVS stays | **≈ −€8.55** | 🟢 **default** (D22); confirmed on the rev A prototype (below) |
+| **H2: three transistors instead of AND gate + TC4427** | Two NPNs in series (PWM and watchdog: "two switches in a row") drive a PNP high-side switch; pull-down and a small ESD diode at the terminal | 🟢 ≈ 4.3 V (1-Wire Lite), ≈ 7–8 V (normal) | 🟢 open parts end in 0 V; 🟡 three parts can fail short | 🟡 small ESD diode instead of the 600 W TVS | ≈ −€8.60 | 🟡 superseded by H3 |
+| **H3: H2 plus an active pull-down transistor at the terminal** | As H2; a third transistor behind R9 pulls the terminal low whenever Q2 is off | 🟢 ≈ 4.55 V (1-Wire Lite), ≈ 10.5 V (normal) | 🟢 open parts end in 0 V; the new transistor fails to "stop" or "slower edge" | 🟢 the 600 W TVS stays | **≈ −€8.55** | 🟢 **default** (D22); confirmed on the rev A prototype (below) |
 | H: two transistors instead of the TC4427 (AND gate stays) | NPN pulls the base of a PNP high-side switch down; a resistor pulls the output low | 🟢 ≈ 4.6 V | 🟢 non-inverting, open parts end in 0 V; two parts instead of one can fail "stuck high" | 🟡 relies on D4 and R9; 40 V transistors | ≈ −€5.30 | 🔴 the resistor pull-down is too slow against D4's capacitance; a fix needs a third transistor (below) |
 
 **Option C in detail, and why it was dropped.** Checked against TI's
@@ -92,8 +92,8 @@ UCC27524 datasheet:
 | Watchdog gating and driving in one chip: less easy to test and explain than a separate gate whose output can be measured on its own | 🟡 |
 | SMD only: the stripboard boards (HARDWARE.md) use the TC4427 in DIP-8, so HAT and stripboards would no longer share driver, tests and experience | 🟡 |
 | New, less proven part in this project; new bring-up tests and documentation | 🟡 |
-| Same 4.5 V minimum supply: no help for the Lite build's margin (11.1 point 5) | ⚪ |
-| A shared footprint for both options would double the variants (normal/Lite × A/C) and add another either/or rule (AND gate vs its 0 Ω bypass) | 🔴 |
+| Same 4.5 V minimum supply: no help for the 1-Wire Lite's margin (11.1 point 5) | ⚪ |
+| A shared footprint for both options would double the variants (normal/1-Wire Lite × A/C) and add another either/or rule (AND gate vs its 0 Ω bypass) | 🔴 |
 
 The benefit is almost only money, the drawbacks touch the safety concept.
 If the real JLCPCB quote shows the fees matter more, the better lever is a
@@ -104,7 +104,7 @@ because it is simpler to explain and uses only basic parts (no JLCPCB fee).
 The AND gate stays, so the watchdog logic is unchanged.
 
 ```
-               +V_DRV (5 V Lite / 12 V normal)
+               +V_DRV (5 V 1-Wire Lite / 12 V normal)
                  │
                ┌─┴── R3 2.2 kΩ (holds Q2 off)
                │  ┌── emitter
@@ -117,7 +117,7 @@ The AND gate stays, so the watchdog logic is unchanged.
               GND
 ```
 
-| Value | Lite (5 V) | Normal (12 V) |
+| Value | 1-Wire Lite (5 V) | Normal (12 V) |
 |---|---|---|
 | Q1 base current (R1, from 3.3 V) | 0.26 mA | 0.26 mA |
 | Q2 base current (R2, minus 0.3 mA in R3) | ≈ 1.2 mA | ≈ 3.8 mA |
@@ -139,7 +139,7 @@ What sinks it, in this simple form: **the falling edge.** Only R4 pulls the
 line low, and it has to discharge the TVS diode D4 through R9. D4 is not a
 small part electrically: an SMBJ6.0A has about 3.85 nF of junction
 capacitance (at 0 V; less with voltage applied), the SMBJ13A about 1 nF,
-plus ≈ 0.3 nF of cable. With R4 = 1 kΩ that gives a time constant of ≈ 4.6 µs in the Lite build, a
+plus ≈ 0.3 nF of cable. With R4 = 1 kΩ that gives a time constant of ≈ 4.6 µs in the 1-Wire Lite, a
 10–90 % edge of ≈ 10 µs, against the edge rule of ≤ T/500 (4 µs at
 500 Hz, ARCHITECTURE 5.3). A smaller R4 wastes current (470 Ω: 10 mA at
 5 V, 25 mA and 0.3 W at 12 V) and is still borderline. Pulling the line
@@ -157,7 +157,7 @@ small protection diode. The watchdog AND moves into transistors as well,
 so the whole pump chain needs no part with a JLCPCB fee.
 
 ```
-              +V_DRV (5 V Lite / 12 V normal)
+              +V_DRV (5 V 1-Wire Lite / 12 V normal)
                 │
               ┌─┴── R3 2.2 kΩ (holds Q2 off)
               ├──┤ Q2 MMBT3906 PNP ──► R9 ──┬──► J2 PWM
@@ -181,11 +181,11 @@ as the boot pull-down on PWM1.
 | Parts with a JLCPCB fee | 2 | **0** (all basic) |
 | **Price for one** | — | **≈ −€8.60** (≈ 10 % of €90, ≈ 12 % of €73) |
 | Group order of 5 | — | ≈ −€2.60 per board |
-| Pump voltage at 3 mA | ≈ 4.7 V Lite, ≈ 10.6 V normal | ≈ 4.3 V Lite, ≈ 7–8 V normal (R9/R4 divider): above the 3.6 V minimum in both |
+| Pump voltage at 3 mA | ≈ 4.7 V 1-Wire Lite, ≈ 10.6 V normal | ≈ 4.3 V 1-Wire Lite, ≈ 7–8 V normal (R9/R4 divider): above the 3.6 V minimum in both |
 | Falling edge | driven, ≈ 25 ns + R9 into D4 | R4 discharges cable and diode directly: ≈ 1.3 µs with ≈ 0.6 nF |
-| Rising edge | through R9 into D4 | through R9 into the small diode: ≈ 0.3 µs (Lite), ≈ 1.3 µs (normal) |
+| Rising edge | through R9 into D4 | through R9 into the small diode: ≈ 0.3 µs (1-Wire Lite), ≈ 1.3 µs (normal) |
 | Edge rule ≤ T/500 met up to | ≈ 1.5–2.2 kHz (D4 capacitance) | ≈ 1.5 kHz: **the 100–1000 Hz range stays** |
-| Wasted current while high | ≈ 4 mA (driver) | ≈ 4.5 mA (Lite), ≈ 8 mA (normal) in R4 |
+| Wasted current while high | ≈ 4 mA (driver) | ≈ 4.5 mA (1-Wire Lite), ≈ 8 mA (normal) in R4 |
 | Overvoltage rating of the active parts | 22 V (TC4427 abs. max) | 40 V (transistors) |
 | Cable protection | 600 W TVS (SMBJ) | small ESD/TVS diode, a few hundred pF: enough for static and switching spikes on a 3 m cable, less margin for large surges |
 | Single faults ending in "full speed" | AND gate output stuck high, TC4427 output stage short | Q2 short; Q1a short (while the watchdog is OK). Q1b short silently removes the watchdog layer |
@@ -235,7 +235,7 @@ high, Q6 turns off and Q7 turns on and pulls the terminal actively to 0 V.
 **Shoot-through:** while switching, Q6 and Q7 can both be on for about a
 microsecond (a saturated transistor needs that long to switch off).
 Because Q7 sits behind R9, that current is limited by R9 to the same
-≈ 50 mA (Lite) / ≈ 25 mA (normal) a shorted cable causes, which the design
+≈ 50 mA (1-Wire Lite) / ≈ 25 mA (normal) a shorted cable causes, which the design
 already takes; at 1000 Hz it is a few µs per period and no heat to speak
 of.
 
@@ -287,15 +287,15 @@ H3 is the default; if it fails these tests, the released board goes back
 to the AND gate + TC4427. The extra cost of carrying both on the prototype
 (two more fees for one order) is less than a second prototype order.
 
-## 3. Lite build: why no dedicated board (D19)
+## 3. 1-Wire Lite: why no dedicated board (D19)
 
-The Lite build as built is described in [HAT-1wire.md 11](HAT-1wire.md#11-lite-build).
+The 1-Wire Lite as built is described in [HAT-1wire.md 11](HAT-1wire.md#11-1-wire-lite).
 
 **Why no dedicated Lite board:** the comparison that decided D19, both
 Lite variants against the normal build (single-quantity parts; 🟢 good,
 🟡 medium, 🔴 weak):
 
-| | **Normal HAT** (1-Wire edition) | **HAT Lite** (own board) | **Lite as build option** | **Saved: Lite (own board)** | **Saved: Lite build option** |
+| | **Normal HAT** (1-Wire edition) | **HAT Lite** (own board) | **1-Wire Lite (build option)** | **Saved: Lite (own board)** | **Saved: 1-Wire Lite** |
 |---|---|---|---|---|---|
 | ***What's left out*** | | | | | |
 | 12 V converter + its load resistor | 🟢 12 V pump signal, large margin | 🟡 5 V, small margin (≈ 4.7 V against 4 V) | 🟡 5 V via a 0 Ω link; converter can be fitted later | **€3.05** | **€3.05** |
@@ -317,7 +317,7 @@ Both savings columns come out the same: the saving comes only from parts
 that are not fitted, empty footprints cost nothing, and a dedicated board
 would have the same outline. The dedicated board would only add a second
 design to maintain and remove the upgrade path. After this comparison the
-second 1-Wire bus and the PWR LED were put back into the Lite build (11.2),
+second 1-Wire bus and the PWR LED were put back into the 1-Wire Lite (11.2),
 so it now saves about €4.60 (≈ €4.50 since D22).
 
 ## 4. PT edition: choice of measuring chip (D13)
@@ -441,7 +441,7 @@ into 8.2.
    rises by well under 200 mA, power LED on.
 3. 12 V and 3.3 V present on the HAT. Measure the 5 V on the HAT
    (at C2) idle and with the Pi under load (`stress-ng` on all cores plus
-   a USB drive copying): it must stay at or above 4.75 V. **Lite build:**
+   a USB drive copying): it must stay at or above 4.75 V. **1-Wire Lite:**
    also measure the PWM high level at J2 (pump connected, 100 % duty),
    and the rise and fall times at J2 at 1000 Hz (must be ≤ 2 µs, both
    builds),
