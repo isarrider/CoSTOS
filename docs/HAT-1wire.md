@@ -482,9 +482,10 @@ terminals** on **two edges**, as in the [mockup](#mockup):
 
 - **Left edge** (everything that is normally wired, D17): PT1, 1W-A,
   1W-B, PUMP1. The PT edition: the S1–S8 block and PUMP1.
-- **Front (bottom) edge** (rarely used or not fitted): REL1, REL2, PT2,
-  PUMP2 (REL2, PT2 and PUMP2 not fitted in rev A). The PT edition: REL1,
-  REL2, 1W-A, PUMP2. There is no power terminal (D18).
+- **Front (bottom) edge** (rarely used or not fitted), from the left:
+  PUMP2, PT2, REL2, REL1 (PUMP2, PT2 and REL2 not fitted in rev A; REL1
+  sits right below its relay circuit). The PT edition: PUMP2, 1W-A, REL2,
+  REL1. There is no power terminal (D18).
 - The top edge holds the 40-pin header. The right edge stays free: on the
   Pi, the USB and Ethernet sockets sit right next to it.
 
@@ -527,6 +528,7 @@ it 1.2–1.4 mm), nothing printed over pads or under terminal bodies.
 | Where | What is printed | Read when | Readability |
 |---|---|---|---|
 | Top, at each terminal | Pin name next to every pin (A/B, 3V3/DQ/GND, PWM/GND/FB, +5V/OUT), terminal name and what it is for (PT1 collector, 1W-A, PUMP1 pump) | while wiring, HAT on the Pi | 🟢 the most useful text |
+| Top, signal paths | Thin lines with arrows and small text from each terminal through its circuit to the Pi: PT1 → MAX31865 → SPI, the 1-Wire buses → GPIO4/17, GPIO18 (PWM) and GPIO24 (heartbeat) → the transistor chain → PUMP1, WD_OK, 12 V from the DC/DC, the pump feedback → checks, the relay → REL1 (see the [mockup](#mockup)). Lines and text stay off pads and component bodies | when tracing a fault, or learning how the board works | 🟢 |
 | Top, small notes | LED names, "12 V" at R25 and "5 V (1-Wire Lite)" at R26, both values at R9 and D4, outlines of unfitted parts, edition and revision | assembly, checking the LEDs | 🟢 |
 | Bottom, cheat sheet | Table of all terminals with pins and use, pump wire colours (brown · blue · black), the three safety rules (solar-profile pump only, no 230 V on the board, never R25 and R26 together), LED meanings, tick boxes for normal or 1-Wire Lite, repository URL | before mounting, or with the HAT off | 🟡 hidden once on the Pi |
 | Bottom, QR code (10 × 10 mm) | link to the repository | any time, with a phone | 🟢 |
