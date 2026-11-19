@@ -379,7 +379,11 @@ Pi's 5 V, or a ready-made optocoupler module) are in
 - **Driver**: a small low-side MOSFET gate driver IC as level shifter. It
   accepts 3.3 V logic, outputs 0/12 V push-pull with edges far below a
   microsecond, and sources plenty of current. A plain transistor with a
-  pull-up resistor also works but has slow, weak rising edges.
+  pull-up resistor also works but has slow, weak rising edges. **The HAT
+  uses a discrete push-pull chain instead** (two transistors in series as
+  the watchdog AND, one to the supply, one to ground; [HAT-1wire 4.1](HAT-1wire.md#41-pwm-pump-outputs),
+  D22): the same job from basic parts, without the driver IC's 4.5 V
+  minimum supply. The stripboard boards in HARDWARE.md use the TC4427.
 - **12 V supply**: a small isolated 5 V → 12 V DC/DC module, or one 12 V
   supply for the whole controller with a buck converter for the SBC.
 - **Protection**: series resistor (current limit if the cable is shorted)

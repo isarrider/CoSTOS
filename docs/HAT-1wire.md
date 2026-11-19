@@ -600,7 +600,7 @@ are the Pi, its USB-C supply, an optional relay and the sensors.
 | AO3400A, 1N4148W | 2 | 0.20 |
 | **Total** | | **≈ 28.60** |
 
-Earlier figures (before D18 and D22) are in the decisions. The watchdog with AND gate and relay supply switch is about €1.50–2 of
+Earlier figures (before D18 and D22) are in the decisions. The watchdog (with its switch in the pump driver chain) and the relay supply switch are about €1.50–2 of
 this (D8). Pluggable terminals would add about €4 (D10). The PT edition's
 list is in [HAT-PT.md 5](HAT-PT.md#5-space-and-cost).
 

@@ -37,6 +37,10 @@ input needs a high level of about 4 V or more and takes at most 15 V and
 A Raspberry Pi pin gives 3.3 V and very little current, so something has to
 sit in between. See
 [PWM pump outputs](ARCHITECTURE.md#53-pwm-pump-outputs) for the background.
+The stripboard boards below use a TC4427 driver chip. The HAT does the
+same job with four transistors and the watchdog built in
+([HAT-1wire 4.1](HAT-1wire.md#41-pwm-pump-outputs)); that chain could also
+be built on a stripboard with through-hole 2N3904/2N3906 transistors.
 
 iPWM pumps like this one also have a **black** wire: a **feedback output**
 that reports the pump's status (stopped, running, warning, error, no power)
