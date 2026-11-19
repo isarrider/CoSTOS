@@ -660,6 +660,7 @@ can be switched off.
 | **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) |
 | **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
 | **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
+| **PWM output check** (CoSTOS addition, needs the HAT's output readback) | Continuously: the line is high while 0 % is commanded, or its measured duty (edge timestamps, like the feedback input) differs from the command. At every start: **watchdog self-test**, PWM set high and the heartbeat stopped, the line must drop to 0 V within about 3 s | Stuck driver, AND gate or transistor; a watchdog layer that no longer cuts the output; broken PWM path | Alarm. A failed self-test keeps the pump output off and the alarm active until the fault is fixed; with a permanently powered solar-profile pump that means the solar loop is not used, which is the safe side. The pump runs for at most 3 s during the self-test |
 | **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. Matters most for the HAT's Lite build, whose pump driver runs on this 5 V and stops working below 4.5 V ([HAT 12.1](HAT.md#121-rule-it-may-fail-but-it-may-not-break-anything)); the pump then stays stopped, which the pump feedback also reports |
 
 A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
@@ -769,6 +770,10 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
     - A mismatch between commanded and reported state (stop commanded but
       running, run commanded but stand-by or no power) also raises an
       alarm (`costos_alarm{kind}`, 6.2).
+  - **PWM output readback** (6.2, "PWM output check"):
+    - `costos_pump_output_duty_01`: the duty measured at the terminal, %.
+    - `costos_watchdog_selftest`: 1 if the last start-up self-test passed,
+      0 if it failed.
   - **Supply voltage** (6.2, "supply under-voltage"):
     - `costos_supply_undervoltage`: 1 while the Pi reports under-voltage,
       else 0.
@@ -828,7 +833,8 @@ Optional, off by default, set up under Settings → Integrations.
 - **What triggers a mail** (each can be switched off):
   - every alarm from the function checks (6.2): sensor fault, no
     circulation, ΔT too high, night circulation, pump feedback error or
-    mismatch, supply under-voltage, store maximum reached;
+    mismatch, PWM output check or watchdog self-test failed, supply
+    under-voltage, store maximum reached;
   - safety interventions: collector emergency shutdown, store hard limit,
     watchdog trip seen after a restart;
   - VictoriaMetrics unreachable for longer than a set time, buffer full;
