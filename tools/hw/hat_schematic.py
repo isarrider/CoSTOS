@@ -608,8 +608,8 @@ def sheet_sensors(path):
         y = 250 + 180 * i
         s.flag(890, y, f"1W_{bus}", "L"); s.text(890, y + 26, f"GPIO{gpio} (pin {pin})", "n", "end")
         s.wire((890, y), (1110, y)); s.dot(930, y); s.dot(1000, y)
-        s.part("R", 930, y, "u", f"R{22 + i}", "4.7 kΩ", lab="l"); s.rail(930, y - 60, "+3V3")
-        s.part("TVS2", 1000, y, "d", f"D{12 + i}", "PESD5V0", lab="r"); s.gnd(1000, y + 40)
+        s.part("R", 930, y, "u", f"R{27 + i}", "4.7 kΩ", lab="l"); s.rail(930, y - 60, "+3V3")
+        s.part("TVS2", 1000, y, "d", f"D{15 + i}", "PESD5V0", lab="r"); s.gnd(1000, y + 40)
         t = s.term(1110, y, f"J{8 + i}", f"1W-{bus}", [(-40, "3V3"), (0, "DQ"), (40, "GND")])
         s.wire(t["3V3"], (1100, y - 40)); s.flag(1100, y - 40, "+3V3_SENS", "L")
         s.wire(t["GND"], (1095, y + 40), (1095, y + 45)); s.gnd(1095, y + 45)
