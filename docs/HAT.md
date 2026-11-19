@@ -269,6 +269,7 @@ Lite build at 3 mA; "price for one" against today.
 | E: discrete push-pull | Totem pole from basic transistors, no fees | 🟢 ≈ 4.5 V | 🟡 safety logic from transistors, needs careful checking | 🟡 | ≈ −€5.00 | 🔴 5–7 parts in the safety path instead of one proven chip |
 | F: Pi GPIO directly | Through a resistor | 🔴 3.3 V, below 3.6 V | 🔴 no gating | 🔴 Pi pin on the field cable | ≈ −€8.60 | 🔴 doesn't work |
 | G: level-shifter chip (TXS0101 etc.) | 3.3 V → 5 V translator | 🔴 made for logic inputs, not mA loads | 🟡 | 🔴 | ≈ −€2 | 🔴 |
+| H: two transistors instead of the TC4427 (AND gate stays) | NPN pulls the base of a PNP high-side switch down; a resistor pulls the output low | 🟢 ≈ 4.6 V | 🟢 non-inverting, open parts end in 0 V; two parts instead of one can fail "stuck high" | 🟡 relies on D4 and R9; 40 V transistors | ≈ −€5.30 | 🔴 the resistor pull-down is too slow against D4's capacitance; a fix needs a third transistor (below) |
 
 **Option C in detail, and why it was dropped.** Checked against TI's
 UCC27524 datasheet:
@@ -293,6 +294,57 @@ UCC27524 datasheet:
 The benefit is almost only money, the drawbacks touch the safety concept.
 If the real JLCPCB quote shows the fees matter more, the better lever is a
 basic-part equivalent of the AND gate: same circuit, no fee.
+
+**Option H in detail: two transistors instead of the TC4427.** Worked out
+because it is simpler to explain and uses only basic parts (no JLCPCB fee).
+The AND gate stays, so the watchdog logic is unchanged.
+
+```
+               +V_DRV (5 V Lite / 12 V normal)
+                 │
+               ┌─┴── R3 2.2 kΩ (holds Q2 off)
+               │  ┌── emitter
+               ├──┤ Q2 MMBT3906 (PNP)
+        R2     │  └── collector ──┬──► R9 → D4 → J2 PWM
+        2.7 kΩ │                  │
+               │                R4 pull-down
+ AND ─R1 10 kΩ─► Q1 MMBT3904 (NPN)│
+               │                 GND
+              GND
+```
+
+| Value | Lite (5 V) | Normal (12 V) |
+|---|---|---|
+| Q1 base current (R1, from 3.3 V) | 0.26 mA | 0.26 mA |
+| Q2 base current (R2, minus 0.3 mA in R3) | ≈ 1.2 mA | ≈ 3.8 mA |
+| Q2 load while high: pump (≤ 7.5 mA) + R4 + PUMP1 LED | ≈ 14 mA | ≈ 24 mA |
+| Q2 saturated? (forced gain ≤ 12, MMBT3906 h_FE ≥ 60) | 🟢 yes | 🟢 yes |
+| Output high / at the pump (3 mA through R9) | ≈ 4.85 V / ≈ 4.55 V | ≈ 11.9 V / ≈ 10.5 V |
+| Shorted cable: Q2 current | ≈ 55 mA, ≈ 0.05 W in Q2 | ≈ 37 mA |
+| Parts against the TC4427 | Q1, Q2, R1–R4 (6) instead of TC4427, C7, C8, R8 (4) | same |
+| Price for one | ≈ −€5.30 (TC4427 and its fee gone) | same |
+
+What speaks for it: everything is a basic part; it is easy to explain
+("one transistor switches the other"); open parts end in 0 V = stop; the
+transistors are rated 40 V, against the TC4427's 22 V absolute maximum,
+so overvoltage from the cable has more headroom. Both a small-signal
+transistor and a small driver IC have very low failure rates; in the field
+the risk is overvoltage on the cable, which favours the 40 V parts.
+
+What sinks it, in this simple form: **the falling edge.** Only R4 pulls the
+line low, and it has to discharge the TVS diode D4 through R9. D4 is not a
+small part electrically: an SMBJ6.0A has about 3.85 nF of junction
+capacitance (at 0 V; less with voltage applied), the SMBJ13A about 1 nF,
+plus ≈ 0.3 nF of cable. With R4 = 1 kΩ that gives a time constant of ≈ 4.6 µs in the Lite build, a
+10–90 % edge of ≈ 10 µs, against the edge rule of ≤ T/500 (4 µs at
+500 Hz, ARCHITECTURE 5.3). A smaller R4 wastes current (470 Ω: 10 mA at
+5 V, 25 mA and 0.3 W at 12 V) and is still borderline. Pulling the line
+low actively needs a third transistor (a push-pull output), with care
+against both output transistors conducting at once during switching:
+then it is about eight parts, no longer simpler than one TC4427.
+
+**Result:** the TC4427 stays. It is the simple solution after all: one
+part with a real push-pull output, both edges driven in ≈ 25 ns.
 - **Watchdog gating:** each PWM signal passes an AND gate with `WD_OK`, so
   a stopped watchdog also forces the PWM to 0 %. With a solar (PWM2)
   pump that means "stop", in addition to the relay cutting its mains.
@@ -803,7 +855,7 @@ into 8.2.
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
-| D22 | How is the pump signal driven? | **AND gate + TC4427, in both builds** (4.1, alternatives table). Proven, the same as on the stripboard boards, fails to 0 V, the watchdog gate measurable on its own. A driver with enable input (UCC27524) was reviewed in detail and dropped: it saves only ≈ €3.60 for one, its enable pins default to "enabled", it merges gating and driving, and its under-voltage lockout only acts below ≈ 3.8 V. If fees matter, a basic-part AND gate is the lever. Single 5 V gate, transistor stages, the Pi pin directly and level shifters are out (too little voltage margin or unsafe fail direction) |
+| D22 | How is the pump signal driven? | **AND gate + TC4427, in both builds** (4.1, alternatives table). Proven, the same as on the stripboard boards, fails to 0 V, the watchdog gate measurable on its own, both edges actively driven. Reviewed in detail and dropped: a driver with enable input (UCC27524; saves ≈ €3.60 for one, but its enable pins default to "enabled" and its under-voltage lockout only acts below ≈ 3.8 V) and two transistors instead of the TC4427 (saves ≈ €5.30, but the resistor pull-down is too slow against the TVS capacitance; a push-pull fix needs about eight parts). If fees matter, a basic-part AND gate is the lever. Single 5 V gate, single transistor, the Pi pin directly and level shifters are out |
 
 ---
 
