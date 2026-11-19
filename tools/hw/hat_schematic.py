@@ -464,8 +464,10 @@ def sheet_pwm(path):
         nf = n == 2
         y = 710
         if nf: s.begin_nf()
-        s.flag(x0, y, f"P{n}_FB", "L")
-        s.wire((x0, y), (x0 + 40, y)); s.dot(x0 + 40, y)
+        s.flag(x0 - 50, y, f"P{n}_FB", "L")
+        s.wire((x0 - 50, y), (x0 + 40, y)); s.dot(x0 + 40, y)
+        # ESD diode first, right at the terminal's FB pin
+        s.dot(x0 - 10, y); s.part("TVS2", x0 - 10, y, "d", "D17" if n == 1 else "D18", "PESD5V0", lab="l"); s.gnd(x0 - 10, y + 40)
         s.part("R", x0 + 40, y, "u", "R11" if n == 1 else "R13", "4.7 kΩ", lab="l")
         s.rail(x0 + 40, y - 60, "+3V3")
         s.part("R", x0 + 40, y, "r", "R12" if n == 1 else "R14", "10 kΩ", lab="b")

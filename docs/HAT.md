@@ -48,7 +48,7 @@ until a real BOM exists. 🟢 good, 🟡 medium, 🔴 weak or missing.
 | **Price for one** (smallest assembled order: 2 boards) | ≈ €90 | 🟢 **≈ €73** | 🔴 ≈ €158 |
 | Assembled, per board in a group order of 5 | ≈ €27 | 🟢 ≈ €20 | 🔴 ≈ €61 |
 | Build it yourself (parts + 3 bare PCBs) | ≈ €51 | 🟢 ≈ €45 | 🔴 ≈ €92 |
-| Parts for one board (excl. VAT) | ≈ €30 | ≈ €25.40 | ≈ €65 (LTC2983 ≈ €39 of it) |
+| Parts for one board (excl. VAT) | ≈ €30 | ≈ €25.50 | ≈ €65 (LTC2983 ≈ €39 of it) |
 | **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €17** | 🔴 **≈ €68 more** |
 | ***Building and status*** | | | |
 | Hardest part to solder (only when building it yourself) | 🟡 MAX31865, SSOP-20 at 0.65 mm pitch | 🟡 same as the 1-Wire edition | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
@@ -247,6 +247,11 @@ the 13 V TVS standoff at light load.
 - One per PWM output (FB2 unfitted in rev A, with PUMP2). Same circuit as on the stripboard: 4.7 kΩ
   pull-up to 3.3 V at the terminal, 10 kΩ series resistor, 1 nF to GND at
   the GPIO.
+- **ESD diode (PESD5V0, D17) as the first part at the terminal's FB pin**,
+  like on every other input: it catches static discharges from the cable
+  before they reach the GPIO. In normal operation (0–3.3 V) it does
+  nothing. If the PWM and FB wires are swapped, it clamps the 12 V to
+  about 6 V, so only about 0.3 mA reaches the GPIO through the 10 kΩ.
 - Optional per output in software; an unconnected input reads as
   constant high and is ignored.
 
@@ -578,7 +583,7 @@ are the Pi, its USB-C supply, an optional relay and the sensors.
 | LEDs (PWR, WD, PUMP1, R1) | 4 | 0.65 |
 | 74LVC1G123 | 1 | 0.40 |
 | SMBJ13A | 1 | 0.20 |
-| PESD5V0 ESD diodes | 4 | 0.40 |
+| PESD5V0 ESD diodes (PT1 × 2, 1W-A, 1W-B, FB1) | 5 | 0.50 |
 | 74LVC1G08 | 1 | 0.20 |
 | 100 mA polyfuse | 1 | 0.20 |
 | AO3400A, 1N4148W | 2 | 0.20 |
@@ -614,7 +619,7 @@ incl. 19 % VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
 | **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €27** | 🟢 **≈ €20** | ≈ €7 | 🟢 **≈ €61** |
 | **Build it yourself** | parts for one board plus a set of 3 bare PCBs (AISLER, ≈ €19); needs SMD soldering (fine-pitch MAX31865 / LTC2983); parts shipping not included | 🟡 **≈ €51** | 🟡 **≈ €45** | ≈ €5.50 | 🟡 **≈ €92** |
 
-The parts lists (8.1, 11.5, 12.2) show **≈ €30 / €25.40 / €65**: that is
+The parts lists (8.1, 11.5, 12.2) show **≈ €30 / €25.50 / €65**: that is
 the parts for one board excluding VAT, with one third of the PCB set, so
 it fits a group build, not someone building a single board.
 
@@ -806,7 +811,7 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 | Resistors and capacitors, about 45 (incl. the 2 kΩ 0.1 % sense resistor and 16 protection resistors) | — | 3.80 |
 | B0512S-1WR3 DC/DC | 1 | 3.00 |
 | 40-pin stacking header and 4 spacers | 1 | 3.00 |
-| PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire) | 17 | 1.70 |
+| PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire, FB1) | 18 | 1.80 |
 | TC4427 | 1 | 1.30 |
 | TPS22918 | 1 | 0.60 |
 | LEDs (PWR, WD, PUMP1, R1) | 4 | 0.65 |
@@ -976,7 +981,7 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
 | Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
 | ***Totals*** | | | |
-| Parts, single quantity | ≈ €30 | ≈ €25.40 | **≈ €4.60** |
+| Parts, single quantity | ≈ €30 | ≈ €25.50 | **≈ €4.60** |
 | **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €73 | **≈ €17** |
 | Assembled, per board in a batch of 5 | ≈ €27 | ≈ €20 | **≈ €7** |
 | Upgrade | — | 🟢 solder on U2, C4, R2, R25 (remove R26) and the REL1 parts | — |
