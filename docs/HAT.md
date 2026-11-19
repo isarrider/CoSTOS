@@ -269,7 +269,8 @@ Lite build at 3 mA; "price for one" against today.
 | E: discrete push-pull | Totem pole from basic transistors, no fees | 🟢 ≈ 4.5 V | 🟡 safety logic from transistors, needs careful checking | 🟡 | ≈ −€5.00 | 🔴 5–7 parts in the safety path instead of one proven chip |
 | F: Pi GPIO directly | Through a resistor | 🔴 3.3 V, below 3.6 V | 🔴 no gating | 🔴 Pi pin on the field cable | ≈ −€8.60 | 🔴 doesn't work |
 | G: level-shifter chip (TXS0101 etc.) | 3.3 V → 5 V translator | 🔴 made for logic inputs, not mA loads | 🟡 | 🔴 | ≈ −€2 | 🔴 |
-| **H2: three transistors instead of AND gate + TC4427** | Two NPNs in series (PWM and watchdog: "two switches in a row") drive a PNP high-side switch; pull-down and a small ESD diode at the terminal | 🟢 ≈ 4.3 V (Lite), ≈ 7–8 V (normal) | 🟢 open parts end in 0 V; 🟡 three parts can fail short | 🟡 small ESD diode instead of the 600 W TVS | **≈ −€8.60** | 🟡 **candidate, tested on the rev A prototype** (below) |
+| **H2: three transistors instead of AND gate + TC4427** | Two NPNs in series (PWM and watchdog: "two switches in a row") drive a PNP high-side switch; pull-down and a small ESD diode at the terminal | 🟢 ≈ 4.3 V (Lite), ≈ 7–8 V (normal) | 🟢 open parts end in 0 V; 🟡 three parts can fail short | 🟡 small ESD diode instead of the 600 W TVS | ≈ −€8.60 | 🟡 superseded by H3 |
+| **H3: H2 plus an active pull-down transistor at the terminal** | As H2; a third transistor behind R9 pulls the terminal low whenever Q2 is off | 🟢 ≈ 4.55 V (Lite), ≈ 10.5 V (normal) | 🟢 open parts end in 0 V; the new transistor fails to "stop" or "slower edge" | 🟢 the 600 W TVS stays | **≈ −€8.55** | 🟢 **candidate, tested on the rev A prototype** (below) |
 | H: two transistors instead of the TC4427 (AND gate stays) | NPN pulls the base of a PNP high-side switch down; a resistor pulls the output low | 🟢 ≈ 4.6 V | 🟢 non-inverting, open parts end in 0 V; two parts instead of one can fail "stuck high" | 🟡 relies on D4 and R9; 40 V transistors | ≈ −€5.30 | 🔴 the resistor pull-down is too slow against D4's capacitance; a fix needs a third transistor (below) |
 
 **Option C in detail, and why it was dropped.** Checked against TI's
@@ -395,29 +396,92 @@ cable protection at once, all in the safety path, and the smaller
 protection diode is the open question for a boiler room, where the pump's
 signal cable often runs next to its 230 V cable.
 
-**4 kHz is not possible with H2 either:** the edge rule needs ≤ 0.5 µs at
+**Option H3: H2 plus an active pull-down (candidate, replaces H2).** Nearly
+all of H2's weak points come from the resistor that pulls the line low.
+A third transistor at the terminal does that job actively:
+
+```
+              +V_DRV (5 V / 12 V)
+                │
+              ┌─┴── R3 2.2 kΩ
+              ├──┤ Q2 MMBT3906 PNP ──► R9 ──┬──────────────► J2 PWM
+       node X │                             ├── D4 SMBJ (600 W TVS), as today
+              │                             ├──┤ Q3 MMBT3904 NPN "pull-down switch"
+              │                             │     base from node X via R5 10 kΩ
+             R2 2.7 kΩ                      └── R4 10 kΩ to GND (keeps the line defined)
+              │
+ PWM1 ─R1a 10 kΩ─► Q1a MMBT3904   "PWM switch"
+ WD_OK ─R1b 10 kΩ─► Q1b MMBT3904  "watchdog switch"
+              │
+             GND
+```
+
+Both switches on: node X goes low, Q2 switches the output to the supply,
+Q3 has no base current and is off. Either switch off: R3 pulls node X
+high, Q2 turns off and Q3 turns on and pulls the terminal actively to 0 V.
+
+| | H2 | **H3** |
+|---|---|---|
+| Falling edge | R4 discharges cable and diode: ≈ 1.3 µs | Q3 discharges them directly: well under 1 µs |
+| Cable protection | small ESD diode (open question) | **the 600 W SMBJ TVS stays**: the fall is active, the rise through R9 is the same as with the TC4427 |
+| Pump voltage at 3 mA | ≈ 4.3 V / ≈ 7–8 V (R9/R4 divider) | ≈ 4.55 V / ≈ 10.5 V (no divider) |
+| Wasted current while high | ≈ 4.5 / 8 mA | ≈ 0.5 / 1.2 mA (R4 10 kΩ) |
+| Frequency range | 100–1000 Hz | 100–1000 Hz (the rise through R9 into the TVS sets it, as with the TC4427) |
+| Parts with a JLCPCB fee | 0 | 0 |
+| Price for one vs AND gate + TC4427 | ≈ −€8.60 | ≈ −€8.55 (one transistor and one resistor more) |
+
+**Shoot-through:** while switching, Q2 and Q3 can both be on for about a
+microsecond (a saturated transistor needs that long to switch off).
+Because Q3 sits behind R9, that current is limited by R9 to the same
+≈ 50 mA (Lite) / ≈ 25 mA (normal) a shorted cable causes, which the design
+already takes; at 1000 Hz it is a few µs per period and no heat to speak
+of.
+
+**Fail behaviour, part by part:**
+
+| Part | Breaks open | Breaks short |
+|---|---|---|
+| Q1a (PWM switch) | 🟢 stop | 🔴 follows only the watchdog: full speed while CoSTOS runs (caught by the output readback, 4.1) |
+| Q1b (watchdog switch) | 🟢 stop | 🟡 works, but the watchdog layer is silently gone (caught by the readback self-test at start) |
+| Q2 (to the supply) | 🟢 stop | 🔴 stuck high: full speed (caught by the readback and the pump feedback) |
+| Q3 (pull-down) | 🟡 slower falling edge through R4; pump still runs and stops | 🟢 output stuck at 0 V = stop; R9 limits the current |
+
+The dangerous and the silent faults exist in the AND gate + TC4427 chain
+too, inside the chips; the readback (4.1) catches them in either chain.
+
+**Possible later:** "digital" transistors with built-in resistors (e.g.
+DTC114 / DTA114) or dual transistors in one package would cut the parts
+from nine to about five; only worth it if JLCPCB has them as basic parts,
+checked with the BOM.
+
+**4 kHz is not possible with H2 or H3 either:** the edge rule needs ≤ 0.5 µs at
 4 kHz; R4 would have to be ≈ 300 Ω (≈ 40 mA and 0.5 W at 12 V). No listed
 pump needs more than 1 kHz, so the range stays 100–1000 Hz.
 
 **Test on the rev A prototype, not on a stripboard.** The first assembled
 order (rev A) is a prototype anyway (bring-up plan, section 9). It carries
-**both chains**, populated by JLCPCB, selected by solder jumpers (prototype
-only; the released board keeps one chain and no jumpers):
+**both chains** (AND gate + TC4427, and H3), populated by JLCPCB, selected
+by solder jumpers (prototype only; the released board keeps one chain and
+no jumpers):
 
 1. Both chains on the same board, switched by jumper, measured with the
    same pump and cable: high level at J2 and at the pump (3 mA and with
    the pump's maximum current), rise and fall time at 1000 Hz.
-2. Watchdog: with H2, the output must go to 0 V within ≈ 3 s after the
-   heartbeat stops, measured at J2.
-3. Fail behaviour by hand: lift R1a, R1b, R2 one at a time (output must
-   stay at 0 V); short Q1a, Q1b (document the effect).
-4. Bursts: switch the pump's 230 V (and a nearby contactor or the boiler)
+2. Watchdog: with H3, the output must go to 0 V within ≈ 3 s after the
+   heartbeat stops, measured at J2 and seen by the output readback.
+3. Fail behaviour by hand: lift R1a, R1b, R2, R5 one at a time (output must
+   stay at 0 V); lift Q3 (output still stops, slower falling edge); short
+   Q1a, Q1b, Q3 (document the effect; the readback must report Q1a and
+   the self-test Q1b).
+4. Shoot-through: current from +V_DRV during switching at 1000 Hz, and
+   the temperature of Q2, Q3 and R9 after an hour.
+5. Bursts: switch the pump's 230 V (and a nearby contactor or the boiler)
    on and off many times with the signal cable laid next to the mains
    cable; the PWM output and the pump must not react, and nothing may fail.
-5. ESD with the HAT powered: discharges to the J2 terminals (by hand from
+6. ESD with the HAT powered: discharges to the J2 terminals (by hand from
    a charged body, or with an ESD gun if one can be borrowed).
 
-If H2 passes, it becomes the chain for the released board; if not, the
+If H3 passes, it becomes the chain for the released board; if not, the
 AND gate + TC4427 stays. The extra cost of carrying both on the prototype
 (two more fees for one order) is less than a second prototype order.
 - **Watchdog gating:** each PWM signal passes an AND gate with `WD_OK`, so
@@ -908,7 +972,7 @@ into 8.2.
 9. Repeat steps 3–8 on the other board (Pi 4 ↔ Pi 5), and on a Pi 3 B / B+
    if one is at hand.
 10. Pump driver chains (D22): compare the AND gate + TC4427 chain and the
-    three-transistor chain H2 by jumper, as in the test list in 4.1.
+    transistor chain H3 by jumper, as in the test list in 4.1.
 
 ## 10. Decisions
 
@@ -935,7 +999,7 @@ into 8.2.
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
-| D22 | How is the pump signal driven? | **Open, decided after the rev A prototype.** Baseline: AND gate + TC4427 (proven, fails to 0 V, both edges driven). Candidate: **H2, three transistors** replacing both chips (≈ €8.60 less for one, no JLCPCB fee in the chain, easy to explain), with the pull-down at the terminal and a small ESD diode instead of the 600 W TVS. The rev A prototype carries both chains, selected by jumper, and is tested as in 4.1. Dropped: a driver with enable input (UCC27524), two transistors with a resistor pull-down behind R9 (too slow), single gate, single transistor, the Pi pin directly, level shifters. The PWM range stays 100–1000 Hz either way |
+| D22 | How is the pump signal driven? | **Open, decided after the rev A prototype.** Baseline: AND gate + TC4427 (proven, fails to 0 V, both edges driven). Candidate: **H3, four transistors** replacing both chips: two NPNs in series as the AND (PWM and watchdog), a PNP to the supply and an NPN pull-down at the terminal. ≈ €8.55 less for one, no JLCPCB fee in the chain, the 600 W TVS and full pump voltage stay, easy to explain. The rev A prototype carries both chains, selected by jumper, tested as in 4.1. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (needed a weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. The PWM range stays 100–1000 Hz either way |
 
 ---
 
