@@ -1067,3 +1067,33 @@ The two 0 Ω positions R25 and R26 must **never be fitted together**: that
 would short the 12 V and 5 V rails. The silkscreen marks them "12 V" and
 "5 V (Lite)", and marks R9 "470 / Lite 100" and D4 "13A / Lite 6.0A".
 
+
+### 12.3 The pump signal, step by step (Lite build)
+
+From the Pi pin to the pump terminal, with the voltage at each step.
+Regenerate with `python3 tools/hw/pwm_chain_svg.py > docs/img/hat-lite-pwm-chain.svg`.
+
+![PWM signal path of the Lite build](img/hat-lite-pwm-chain.svg)
+
+1. **Pi GPIO 18** makes the PWM in hardware (5.5): 0 V or 3.3 V, 500 Hz
+   by default. Too low for the pump on its own, which needs at least
+   3.6 V at 3 mA.
+2. **AND gate U4** (74LVC1G08, on 3.3 V) passes the signal only while the
+   watchdog reports OK (4.6). If CoSTOS hangs, its output goes to 0 V
+   after about 3 s.
+3. **R7** (100 kΩ to GND) holds the driver input at 0 V while the Pi
+   boots, before GPIO 18 is configured. 0 V means "pump stopped".
+4. **Driver U6** (TC4427) runs on the Pi's 5 V through R26 and turns the
+   3.3 V signal into 0 V / about 5 V, strong enough for the pump's input
+   current and the cable. Its supply margin is in 12.1, point 5.
+5. **R9** (100 Ω, at least ½ W) drops only about 0.3 V at the pump's
+   ~3 mA, so the pump sees about 4.7 V. With a shorted cable it limits the
+   current to about 50 mA.
+6. **D4** (SMBJ6.0A) at the terminal catches spikes coming back on the
+   cable.
+7. **LED D12** with R22 (2.2 kΩ) sits right at the driver output and shows
+   what really leaves the board: off = stop, brighter = faster.
+
+Three active stages (the Pi's PWM, the AND gate, the driver) and two
+protection parts. The normal build has the same chain with the driver on
+12 V, R9 = 470 Ω and D4 = SMBJ13A (4.1).
