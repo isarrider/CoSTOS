@@ -7,7 +7,7 @@ design as it will be built, terminals, wiring, costs) is in the release
 documents, [HAT-1wire.md](HAT-1wire.md) and [HAT-PT.md](HAT-PT.md) (the
 editions compared: [HAT.md](HAT.md)); this page does not repeat them.
 
-- [1. Decisions](#1-decisions): D1–D24, the short answer to every design
+- [1. Decisions](#1-decisions): D1–D25, the short answer to every design
   question, referred to as "Dn" in both documents.
 - [2. Pump driver chain: alternatives](#2-pump-driver-chain-alternatives-d22)
   and the rev A prototype test of the transistor chain.
@@ -17,6 +17,7 @@ editions compared: [HAT.md](HAT.md)); this page does not repeat them.
 - [6. Bring-up plan (rev A)](#6-bring-up-plan-rev-a)
 - [7. Considered: Waveshare ESP32-P4-WIFI6-DEV-KIT](#7-considered-waveshare-esp32-p4-wifi6-dev-kit)
 - [8. Relay supply switch and watchdog without fee parts](#8-relay-supply-switch-and-watchdog-without-fee-parts-d23-d24)
+- [9. One 1-Wire build: a voltage doubler instead of the DC/DC](#9-one-1-wire-build-a-voltage-doubler-instead-of-the-dcdc-d25)
 
 Section numbers in the decisions (4.1, 11.1, …) refer to
 [HAT-1wire.md](HAT-1wire.md) unless they name this page or the PT edition
@@ -26,7 +27,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 
 | # | Question | Decision |
 |---|---|---|
-| D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
+| D1 | 12 V (DC/DC) or 5 V driver supply? | ~~**12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module~~, replaced by D25: a voltage doubler from basic parts (≈ 7 V) |
 | D2 | One or two PWM outputs and relay outputs? | **Two positions each, one fitted**: PUMP1 and REL1 for the solar pump; PUMP2 and REL2 stay unfitted until a second pump is added |
 | D3 | How many Pt1000 inputs? | **One** (revised): PT1 for the collector. The unfitted PT2 position (second MAX31865, terminal) was dropped: it made the board, the KiCad work and the docs bigger for an option few would use, and fitting it later meant hand-soldering an SSOP-20. A second Pt1000 (e.g. a flow line that passes 125 °C) means the PT edition. Frees space on the front edge |
 | D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
@@ -44,12 +45,13 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D16 | Spacer height: per board, or one for all? | **One tall height for all** (≈ 16–17 mm with a stacking header): fits the Pi 5 with active cooler or a passive heatsink, and a Pi 4; one BOM. Check that a passive heatsink stays below about 14 mm |
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
-| D19 | A separate low-cost board? | **No: 1-Wire Lite, a lighter build of the 1-Wire edition** (section 11): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
+| D19 | A separate low-cost board? | ~~Replaced by D25: there is only one 1-Wire build now.~~ Until then: **No: 1-Wire Lite, a lighter build of the 1-Wire edition** (section 11): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: about two fees per order (since D24) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal and the signal paths (lines, arrows and small text from each terminal through its circuit to its GPIO) on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 | D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the 1-Wire Lite, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
 | D23 | Can the relay supply switch and the watchdog be built from basic parts? | **Relay supply switch: yes**, an AO3401A P-MOSFET switched by an MMBT3904 from WD_OK (both JLCPCB basic parts) replaces the TPS22918: one loading fee less, ≈ €3 less for one controller on the 1-Wire and PT editions; it fails safe the same way. Watchdog: see D24. Section 8 of this page |
 | D24 | Which watchdog? | **A capacitor watchdog from basic parts** instead of the 74LVC1G123: the software toggles the heartbeat at about 20 Hz while the control loop is healthy; each edge pumps a little charge into a capacitor through two diodes, and the capacitor holds the gates of the MOSFETs that let the pump signal and the relay supply through. Heartbeat stops (or is stuck, too slow or too fast) → the capacitor empties → everything off within about 5–14 s, long on purpose: the watchdog only ever switches off, and nothing in a solar system turns dangerous within seconds. No single failed part leaves it on (two drain resistors in parallel, two coupling capacitors in series), and a readback on GPIO20 lets the self-test measure the timeout at every start. No fee, about €4 less for one on every edition, only 3.3 V, easy to explain. Simulated; rev A carries both, selected by 0 Ω. Section 8.2 of this page |
+| D25 | One 1-Wire build instead of normal and 1-Wire Lite? | **Yes**: the 12 V DC/DC (B0512S) is replaced by a **voltage doubler from basic parts** (two-transistor oscillator, push-pull pair, two diodes, three capacitors) that lifts the Pi's 5 V to about 7 V, and REL1 is fitted on every board (no fee part since D23). The pump sees 6–7 V (4 V needed), 5.2 V even in the worst case, against 4.1 V on the 1-Wire Lite. One set of values (R9 100 Ω, D4 SMBJ13A, R31 12 kΩ), no 0 Ω selection, and the last fee part apart from the measuring chip goes: ≈ €63 for one with everything the normal board had. The PT edition uses the same doubler. Simulated in ngspice. Section 9 of this page |
 
 ## 2. Pump driver chain: alternatives (D22)
 
@@ -310,7 +312,7 @@ to the AND gate + TC4427. The extra cost of carrying both on the prototype
 
 ## 3. 1-Wire Lite: why no dedicated board (D19)
 
-The 1-Wire Lite as built is described in [HAT-1wire.md 11](HAT-1wire.md#11-1-wire-lite).
+**History:** since D25 there is only one 1-Wire build, so the 1-Wire Lite no longer exists; this section records how it was decided.
 
 **Why no dedicated Lite board:** the comparison that decided D19, both
 Lite variants against the normal build (single-quantity parts; 🟢 good,
@@ -699,3 +701,94 @@ narrow the window at the slow end (Linux stalls would trip it).
 fitted, with a 0 Ω link R53 from its output to `WD_OK`; bring-up can
 compare both. Designators: R48–R53, C16–C19, D19, D20, Q14; Q5 and Q13
 become AO3400A (R34, R46 and R47 go).
+
+## 9. One 1-Wire build: a voltage doubler instead of the DC/DC (D25)
+
+Until D25 the 1-Wire edition came in two builds: the normal build with a
+12 V DC/DC (B0512S) for the pump signal and a relay output, and the
+1-Wire Lite, which ran the pump signal from the Pi's 5 V and left the
+relay output out. The normal build had three advantages; each can now be
+had for cents:
+
+| What the normal build had | Why it mattered | Since D25 |
+|---|---|---|
+| REL1 relay output | heating-profile pumps (no signal = full speed, so only cutting the power stops them), on/off loads, an optional cut-off relay | 🟢 fitted on every board: no fee part since D23, ≈ €0.20 |
+| 12 V pump signal, large margin | the pump needs a high level of 4–24 V; the 1-Wire Lite gave ≈ 4.8 V, ≈ 4.1 V in the worst case | 🟢 the doubler gives 6–7 V, 5.2 V in the worst case |
+| An isolated DC/DC | — | nothing lost: the driver chain ties the 12 V return to the Pi's ground, so the isolation was never used |
+
+### 9.1 The doubler
+
+```
+ +5V ──┬── R54 1 kΩ ──┬─ C20 4.7 nF ─┐       ┌── R55 1 kΩ ──┐
+       │              │ (Q15 C)      └ Q16 B │              │ (Q16 C) = OSC
+       ├── R56 10 kΩ ─┘ Q15 B ─ C21 4.7 nF ── Q16 C          │
+       └── R57 10 kΩ ── Q16 B        Q15, Q16 MMBT3904, emitters to GND
+                                     two-transistor oscillator, ≈ 15 kHz
+
+ OSC ──┬─► Q17 MMBT3904 (collector +5V) ─┐
+       └─► Q18 MMBT3906 (collector GND) ─┴── SW ── C22 2.2 µF ──● A
+                                                                 │
+ +5V ─────────────────── D21 1N4148W ──►|────────────────────────●
+                                                                 │
+                         A ── D22 1N4148W ──►|── +V_DRV ── C23 10 µF to GND
+```
+
+- **Q15/Q16** form the classic two-transistor oscillator (astable
+  multivibrator), about 15 kHz, square wave.
+- **Q17/Q18** are a push-pull pair: they let the oscillator's weak
+  output switch C22 hard between about 0.8 V and 4.3 V.
+- **C22, D21, D22** are the doubler: while SW is low, C22 charges to
+  about 4.3 V through D21; when SW goes high, C22's other side is lifted
+  by the same swing and D22 passes that into C23. +V_DRV ends up at
+  5 V + swing − two diode drops ≈ 7 V.
+- The oscillator runs all the time, independently of the Pi's software.
+  It draws about 10 mA from the Pi's 5 V.
+
+### 9.2 Simulated (ngspice, standard 2N3904/2N3906/1N4148 models)
+
+The pump input is modelled as a resistor and an LED, like the
+optocoupler inside the pump: 2.2 kΩ for a normal pump (≈ 2–3 mA), 470 Ω
+as a stress case (≈ 10 mA, the maximum Grundfos allows at 24 V). The
+chain is H3 with the corrected Q7 drive (section 2), R9 = 100 Ω.
+
+| At the pump terminal, PWM high | Pi's 5 V | 1-Wire Lite (5 V) | **Doubler (D25)** | Normal build (12 V) |
+|---|---|---|---|---|
+| Normal pump | 5.0 V | 4.80 V | 🟢 **6.66 V** | 9.82 V |
+| Normal pump, Pi flags under-voltage | 4.63 V | 4.45 V | 🟢 **6.00 V** | 9.82 V |
+| Stress pump (≈ 10 mA) | 5.0 V | 4.39 V | 🟢 **5.79 V** | 6.80 V (R9 470 Ω) |
+| Stress pump, under-voltage | 4.63 V | 🟡 4.09 V | 🟢 **5.23 V** | 6.80 V |
+| Strong supply, normal pump | 5.25 V | 5.04 V | 🟢 7.11 V | 9.82 V |
+
+| Other cases | Result |
+|---|---|
+| PWM low | 🟢 0.02 V (Q7 pulls the terminal down) |
+| Rise / fall time at the terminal | 🟢 about 0.07 / 0.13 µs: far below the 2 µs the 1000 Hz limit needs |
+| Short circuit at the terminal, PWM 100 %, 5.25 V | 🟢 +V_DRV drops to 5.1 V; R9 takes 0.24 W (½ W part), Q6 10 mW, the Pi supplies 107 mA. Nothing overheats |
+| Oscillator dead (a transistor open) | 🟢 +V_DRV ≈ 3.8 V, pump terminal 3.66 V: a solar pump stops or runs weakly; the readback (R31 12 kΩ / R32 8.2 kΩ) sees only 1.5 V and reports "output low while commanded" → alarm |
+| Start-up, supply ramp 1 µs / 1 ms / 50 ms / 500 ms | 🟢 oscillates every time, +V_DRV 6.97 V (a two-transistor oscillator can lock up on a slow ramp; checked again at bring-up) |
+| Supply current, oscillator and doubler | 🟡 ≈ 10 mA more than without; irrelevant for the Pi's supply |
+
+### 9.3 What changes on the board
+
+| | Normal build until now | 1-Wire Lite until now | **One build (D25)** |
+|---|---|---|---|
+| Driver supply | 🟡 B0512S 5 V → 12 V, isolated, fee part | 🟡 Pi's 5 V through R26 (0 Ω) | 🟢 doubler from basic parts, ≈ 7 V |
+| Pump signal (normal pump) | 🟢 9.8 V | 🟡 4.8 V | 🟢 6.7 V |
+| R9 / D4 / R31 | 470 Ω / SMBJ13A / 27 kΩ | 100 Ω / SMBJ6.0A / 6.8 kΩ | 🟢 one set: 100 Ω ½ W / SMBJ13A / 12 kΩ |
+| 0 Ω selection R25/R26 ("never both") | 🔴 needed | 🔴 needed | 🟢 gone |
+| REL1 | 🟢 | 🔴 not fitted | 🟢 fitted |
+| Heating-profile pumps | 🟢 with REL1 | 🔴 refused by the setup wizard | 🟢 with REL1 |
+| Fee parts | MAX31865, B0512S | MAX31865 | 🟢 **MAX31865 only** |
+| Price for one | ≈ €69 | ≈ €62.50 | 🟢 **≈ €63** |
+| Group of 5, per board | ≈ €19.70 | ≈ €17.50 | 🟢 **≈ €18** |
+| Parts on the driver supply | 6 (U2, C3, C4, R2, R25, R26) | 1 (R26) | 🟡 13 small parts |
+
+Dropped: U2 (B0512S), C3, C4, R2, R25, R26. Added: Q15–Q18, R54–R57,
+C20–C23, D21, D22. The PT edition uses the same doubler and drops its
+B0512S too.
+
+**Decision:** adopted. The 1-Wire edition has one build; the name
+"1-Wire Lite" is retired. Rev A keeps a footprint for the B0512S (U2,
+not fitted, with a 0 Ω link to +V_DRV) so bring-up can compare the
+doubler with the 12 V supply on the same board.
+
