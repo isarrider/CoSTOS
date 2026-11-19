@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the bottom side of the OSCoST HAT (1-Wire edition) with its silkscreen
+"""Draws the bottom side of the CoSTOS HAT (1-Wire edition) with its silkscreen
 wiring cheat sheet, to the same scale as hat_mockup.py (1 mm = 8 px).
 
   python3 tools/hw/hat_bottom_svg.py > docs/img/hat-bottom.svg
@@ -9,7 +9,7 @@ terminals appear on the right. Needs `segno` for the QR code
 (pip install segno)."""
 import segno
 
-URL = "https://github.com/isarrider/OSCoST"
+URL = "https://github.com/isarrider/CoSTOS"
 W, H = 680, 560
 SILK = "#ffffff"
 out = []
@@ -32,7 +32,7 @@ def hole(x, y, r=4):
 
 out.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
            'font-family="Helvetica, Arial, sans-serif">')
-out.append('<title>OSCoST HAT, bottom side with the silkscreen wiring cheat sheet</title>')
+out.append('<title>CoSTOS HAT, bottom side with the silkscreen wiring cheat sheet</title>')
 out.append('<desc>Bottom side of the 1-Wire edition seen from below: pin names at every terminal, '
            'a table of all terminals, the safety notes, the R25/R26 rule, the LED meanings, a box to '
            'tick the build, and a QR code to the repository.</desc>')
@@ -72,8 +72,8 @@ for name, x0, pins in FRONT:
 
 # cheat sheet
 X0, XP, XD = 112, 160, 248
-t(X0, 116, "OSCoST HAT · 1-Wire edition · rev A", 14, 700)
-t(X0, 131, "Open Source Controller for Solar Thermal · MIT licence", 9.5)
+t(X0, 116, "CoSTOS HAT · 1-Wire edition · rev A", 14, 700)
+t(X0, 131, "Controller for Solar Thermal – Open Source · MIT licence", 9.5)
 out.append(f'<line x1="{X0}" y1="139" x2="{X0 + 330}" y2="139" stroke="{SILK}" stroke-width="1"/>')
 ROWS = [("PT1", "+  −", "Pt1000, collector, 2-wire"),
         ("1W-A", "3V3 DQ GND", "DS18x20, daisy chain, powered"),
@@ -110,7 +110,7 @@ for r, row in enumerate(mat):
     for c, v in enumerate(row):
         if v:
             out.append(f'<rect x="{QX + c * m:.2f}" y="{QY + r * m:.2f}" width="{m:.2f}" height="{m:.2f}" fill="#1E5631"/>')
-t(X0, 384, "github.com/isarrider/OSCoST", 11, 600)
+t(X0, 384, "github.com/isarrider/CoSTOS", 11, 600)
 t(X0, 400, "docs/installation.md · docs/HAT.md", 10)
 t(X0, 416, "scan for docs and wiring ▸", 10)
 

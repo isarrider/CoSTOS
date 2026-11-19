@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the to-scale top view of the OSCoST HAT (1 mm = 8 px).
+"""Draws the to-scale top view of the CoSTOS HAT (1 mm = 8 px).
 
   python3 tools/hw/hat_mockup.py file    > docs/img/hat-mockup.svg      (1-Wire edition)
   python3 tools/hw/hat_mockup.py file pt > docs/img/hat-pt-mockup.svg   (PT edition)
@@ -27,10 +27,10 @@ head = (f'<svg width="100%" viewBox="0 0 680 {H}" role="img">' if widget else
         f'<svg xmlns="http://www.w3.org/2000/svg" width="680" height="{H}" viewBox="0 0 680 {H}" font-family="Helvetica, Arial, sans-serif">')
 out.append(head)
 if pt:
-    out.append('<title>OSCoST HAT PT edition mockup, top view</title>')
+    out.append('<title>CoSTOS HAT PT edition mockup, top view</title>')
     out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, PT edition with one LTC2983: a two-level terminal block with eight Pt1000 inputs and a 1-Wire terminal on the left edge, the LTC2983 with its shared sense resistor and input protection, and the same power, relay, pump and watchdog section as the 1-Wire edition.</desc>')
 else:
-    out.append('<title>OSCoST HAT mockup, top view</title>')
+    out.append('<title>CoSTOS HAT mockup, top view</title>')
     out.append('<desc>Raspberry Pi HAT, 65 by 56.5 millimetres, with the 40-pin header along the top, Pt1000 and 1-Wire terminals on the left edge, power, relay and pump terminals on the bottom edge, and the chips placed next to their connectors.</desc>')
 if not widget:
     out.append(f'<rect width="680" height="{H}" fill="white"/>')
@@ -152,10 +152,10 @@ for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD",
     t(x, 284, lab, 10, "#E8F5E9", 400, "middle")
 # logo
 if pt:
-    t(480, 200, "OSCoST HAT PT", 14, "#ffffff", 500, "middle")
+    t(480, 200, "CoSTOS HAT PT", 14, "#ffffff", 500, "middle")
     t(480, 220, "rev A · 8 × Pt1000 + 1-Wire", 11, "#C8E6C9", 400, "middle")
 else:
-    t(470, 190, "OSCoST HAT", 14, "#ffffff", 500, "middle")
+    t(470, 190, "CoSTOS HAT", 14, "#ffffff", 500, "middle")
     t(470, 210, "Lite build · same board, fewer parts" if lite else "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
 t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
   + ("; S1–S8 and PUMP1 on the left, 1W-A at the front." if pt else

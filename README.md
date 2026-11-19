@@ -1,8 +1,8 @@
-# OSCoST
+# CoSTOS
 
-**Open Source Controller for Solar Thermal Systems**
+**Controller for Solar Thermal – Open Source**
 
-OSCoST is an open-source controller for solar thermal systems: the box that
+CoSTOS is an open-source controller for solar thermal systems: the box that
 decides when the solar pump runs, how fast, and when it has to stop to
 protect the store and the collector. It runs on a Linux single-board
 computer (Raspberry Pi 3, 4 or 5), is written in Rust, and is
@@ -16,7 +16,7 @@ configured completely through a web interface.
 
 Commercial solar controllers work, but they are closed: you can't see why
 they decided something, you can't add a function, and getting data out of
-them needs reverse-engineered protocols. OSCoST is meant to be a controller
+them needs reverse-engineered protocols. CoSTOS is meant to be a controller
 you can read, test and extend, with its data available everywhere you need
 it.
 
@@ -50,7 +50,7 @@ installation, so that's the reference for which functions come first.
 - Raspberry Pi 4 or Raspberry Pi 5 with its own USB-C power supply, or a
   Raspberry Pi 3 B / B+ with its micro-USB supply (should work, untested;
   [details](docs/HAT.md#raspberry-pi-3))
-- The [OSCoST HAT](docs/HAT.md) (1-Wire edition, its Lite build, or the PT
+- The [CoSTOS HAT](docs/HAT.md) (1-Wire edition, its Lite build, or the PT
   edition; [which one?](docs/HAT.md#which-hat-all-editions-compared)), or for a bench setup: an LTC2983 or MAX31865 for Pt1000
   sensors, a 4.7 kΩ pull-up for DS18x20 sensors
 - **A high-efficiency pump with a PWM input in the solar profile** (Wilo
@@ -62,7 +62,7 @@ installation, so that's the reference for which functions come first.
   a heating profile or without PWM need a cut-off relay on the HAT's
   optional relay output. Details:
   [Pump requirement](docs/ARCHITECTURE.md#pump-requirement-safety)
-- An independent overtemperature cut-out on the store. OSCoST does not
+- An independent overtemperature cut-out on the store. CoSTOS does not
   replace that.
 
 Mains wiring belongs in the hands of a qualified electrician.
@@ -78,14 +78,14 @@ Mains wiring belongs in the hands of a qualified electrician.
   combines all of it, in two editions: 1 Pt1000 + two 1-Wire buses (also
   as a cheaper Lite build), or 8 Pt1000 + one 1-Wire bus for installations
   that keep their existing sensors.
-- [Reference installation](docs/installation.md): the system OSCoST is
+- [Reference installation](docs/installation.md): the system CoSTOS is
   built to control first.
 
 ## Related
 
 - [vbus2influx](https://github.com/isarrider/vbus2influx): reads a RESOL
   controller over VBus and pushes the data to InfluxDB/VictoriaMetrics.
-  OSCoST uses the same metric names (with the prefix `oscost`), so
+  CoSTOS uses the same metric names (with the prefix `costos`), so
   dashboards carry over.
 
 ## License

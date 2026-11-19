@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1030" height="520" viewBox="0 0 1030 520" font-family="Helvetica, Arial, sans-serif">
-  <title>OSCoST PWM pump driver, circuit diagram</title>
+  <title>CoSTOS PWM pump driver, circuit diagram</title>
   <defs>
     <!-- ground symbol, anchor at its top -->
     <g id="gnd">

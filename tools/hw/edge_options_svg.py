@@ -118,7 +118,7 @@ for c in ("c0392b", "555"):
     a(f'<defs><marker id="a{c}" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">'
       f'<path d="M0,0 L6,3 L0,6 z" fill="#{c}"/></marker></defs>')
 a(f'<rect width="{W}" height="{H}" fill="white"/>')
-txt(GAP, 34, "OSCoST HAT (1-Wire edition) on a Pi 5 — where the field terminals go (top view, 1 mm = 5 px)", "big")
+txt(GAP, 34, "CoSTOS HAT (1-Wire edition) on a Pi 5 — where the field terminals go (top view, 1 mm = 5 px)", "big")
 panel(GAP, 50, "A", "current: power and pump at the front", "±0", "A",
       [(True, "short traces: PUMP1 next to driver and 12 V"),
        (False, "field wiring leaves on two sides"),

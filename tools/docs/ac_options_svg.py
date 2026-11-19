@@ -122,7 +122,7 @@ a('<style>.t{font-size:12px;font-weight:bold}.s{font-size:10.5px;fill:#333}.o{fo
   '.h{font-size:15px;font-weight:bold}.c{font-size:15px;font-weight:bold;fill:#2b6e2b}.n{font-size:11px;fill:#333}'
   '.big{font-size:17px;font-weight:bold}</style>')
 a(f'<rect width="{W}" height="{H}" fill="white"/>')
-txt(GAP, 34, "OSCoST — three slim options for the 230 V side (pump: Wilo iPWM2, solar profile)", "big", "start")
+txt(GAP, 34, "CoSTOS — three slim options for the 230 V side (pump: Wilo iPWM2, solar profile)", "big", "start")
 panel(GAP, 55, "A", "no mains work", "≈ €20–25", "A")
 panel(2 * GAP + PW, 55, "B", "minimal DIN", "≈ €35–45", "B")
 panel(3 * GAP + 2 * PW, 55, "C", "B + cut-off relay", "≈ €50–60", "C")

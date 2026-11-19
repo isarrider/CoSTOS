@@ -1,16 +1,16 @@
-# OSCoST architecture
+# CoSTOS architecture
 
 Status: **draft for discussion**. Nothing here is implemented yet.
 
-OSCoST is an open-source controller for solar thermal systems. It runs on a
+CoSTOS is an open-source controller for solar thermal systems. It runs on a
 Raspberry Pi 4 or 5 (a Pi 3 B / B+ should work too), is written in
 Rust, and is meant to **replace** a commercial controller. The reference
 system is the one it replaces: a RESOL DeltaSol BX Plus that is read today by
 [vbus2influx](https://github.com/isarrider/vbus2influx).
 
-This document covers what OSCoST has to do, how the hardware and software are
+This document covers what CoSTOS has to do, how the hardware and software are
 split up, how safety works, and how to move from the RESOL controller to
-OSCoST without risking the system.
+CoSTOS without risking the system.
 
 ---
 
@@ -37,14 +37,14 @@ OSCoST without risking the system.
 ### Non-goals (for now)
 
 - Space-heating circuits, mixers, heat pump or boiler demand. The BX Plus
-  can do these. OSCoST starts with the solar side only.
+  can do these. CoSTOS starts with the solar side only.
 - A display and buttons on the device (general rule). The UI is a web
   page, plus (optional) Home Assistant over MQTT; the device itself only
   has status LEDs: power, watchdog, pump and relay, all hardware-driven
   (HAT 4.8).
-- Wi-Fi (general rule). OSCoST connects over **wired Ethernet**; whatever
+- Wi-Fi (general rule). CoSTOS connects over **wired Ethernet**; whatever
   platform it runs on must have an Ethernet port.
-- Certification. OSCoST is a hobby project. Mains wiring is done by a
+- Certification. CoSTOS is a hobby project. Mains wiring is done by a
   qualified electrician, and the hardware safety devices described in
   section 4 are not optional.
 
@@ -62,7 +62,7 @@ implementation starts, that list has to be written down in
 [`docs/installation.md`](installation.md) (started, still incomplete): sensor
 positions (collector, store bottom, store top, return, …), which relay
 drives which pump or valve, and the pump models and their PWM profiles.
-This is the **acceptance spec**. OSCoST is done when it reproduces the BX
+This is the **acceptance spec**. CoSTOS is done when it reproduces the BX
 Plus behaviour for this installation.
 
 ---
@@ -103,8 +103,8 @@ Safety comes in layers. Each layer assumes the one above it can fail.
 | **Outputs default to OFF**: relay/SSR boards that switch off when the GPIO floats, plus pull-downs; PWM outputs pulled low (= stop for solar-profile pumps) | A booting, crashed or unpowered SBC must not switch pumps on. With a permanently powered solar pump (5.6 option A) the PWM line is the only stop path, so it is gated by the external watchdog too. |
 | **Output enable via an external watchdog**: a charge-pump or retriggerable monostable that only enables the output stage while the SBC toggles a heartbeat GPIO | Covers a hung kernel or a GPIO stuck high, which the internal watchdog can miss. |
 | **SoC hardware watchdog** (`/dev/watchdog`) | Reboots a hung system. |
-| **Independent overtemperature cut-out** on the store (capillary thermostat in series with the solar pump) | Last line of defence that does not depend on OSCoST at all. Many systems already have one. Check. |
-| **Manual changeover switch** RESOL ↔ OSCoST per output (during migration) | Lets you fall back to the RESOL controller in seconds. See section 9. |
+| **Independent overtemperature cut-out** on the store (capillary thermostat in series with the solar pump) | Last line of defence that does not depend on CoSTOS at all. Many systems already have one. Check. |
+| **Manual changeover switch** RESOL ↔ CoSTOS per output (during migration) | Lets you fall back to the RESOL controller in seconds. See section 9. |
 
 ### 4.2 Software layer
 
@@ -208,10 +208,10 @@ are reused as they are.
   in the ROM ID tells the driver which chip it is talking to.
 - **Bus master**, choose one per bus:
   - **Kernel `w1-gpio`** on a GPIO pin with a 4.7 kΩ pull-up
-    (`dtoverlay=w1-gpio`). Simple, no extra chip. OSCoST reads `/sys/bus/w1/devices/<id>/temperature`.
+    (`dtoverlay=w1-gpio`). Simple, no extra chip. CoSTOS reads `/sys/bus/w1/devices/<id>/temperature`.
   - **DS2482-100/-800** I²C-to-1-Wire bridge (1 or 8 buses). Active pull-up
     and proper timing in hardware, so it copes much better with long cables
-    and many sensors. Recommended for anything beyond a few metres. OSCoST
+    and many sensors. Recommended for anything beyond a few metres. CoSTOS
     talks to it directly over `/dev/i2c-N`.
 - **Powered mode only** (VDD connected). Parasite power is not supported:
   it is unreliable at high temperatures and with several sensors converting
@@ -227,14 +227,14 @@ are reused as they are.
   - CRC error on the scratchpad (one retry, then fault).
   - Sensor missing from the bus (cable, connector).
   - **85.0 °C power-on value**: the DS18x20 reports exactly 85 °C if it was
-    reset and never converted (typically a power glitch). OSCoST checks the
+    reset and never converted (typically a power glitch). CoSTOS checks the
     scratchpad state and treats this reading as a fault instead of a real
     85 °C. This matters, because 85 °C is a realistic store temperature.
   - −127 °C / all bits set: bus read failure.
   - Implausible jump between two readings (faster than the water can
     change temperature): treated like a CRC error.
 - **Every glitch is counted**, per sensor and kind
-  (`oscost_sensor_errors_total{sensor="…",kind="crc|missing|power_on|read|jump"}`
+  (`costos_sensor_errors_total{sensor="…",kind="crc|missing|power_on|read|jump"}`
   in VictoriaMetrics, and a counter per sensor on the Hardware page). A
   retried glitch is invisible to the control loop, but a rising counter
   shows a marginal cable or connector long before the sensor fails.
@@ -320,7 +320,7 @@ Rules:
   whose preset limits it further.
 - A value outside the range is **refused when the config is saved or
   loaded** (plausibility rule, 6.1), with the allowed range in the message;
-  OSCoST never runs an output at a frequency it has not checked.
+  CoSTOS never runs an output at a frequency it has not checked.
 - At 4 kHz the edge rule (rise/fall ≤ T/500 = 0.5 µs) is still met: the
   470 Ω series resistor with about 300 pF of 3 m cable gives about 0.3 µs.
 - The frequency only sets the period; the duty cycle (the speed) is
@@ -329,17 +329,17 @@ Rules:
 
 #### Pump requirement (safety)
 
-OSCoST's standard setup keeps the pump permanently on 230 V and stops it
+CoSTOS's standard setup keeps the pump permanently on 230 V and stops it
 over PWM only (5.6). That is only safe with a pump that **stops by itself
 when the signal is missing**, so the requirement is:
 
 - **A high-efficiency pump with a PWM input in the solar profile**: Wilo
   PWM2 / iPWM2 (e.g. the reference installation's Wilo Yonos PARA
   ST 15/7-50/iPWM2), Grundfos profile C. Low duty, no signal or a broken
-  cable = stop. With this profile every failure on the OSCoST side (Pi
+  cable = stop. With this profile every failure on the CoSTOS side (Pi
   off, crash, hang, HAT missing, cable cut) ends with the pump stopped.
 - **Recommended: a feedback output** (Wilo iPWM, Grundfos PWM feedback),
-  so OSCoST sees whether the pump really runs, stops or has lost power.
+  so CoSTOS sees whether the pump really runs, stops or has lost power.
 - **Not allowed in the standard setup:** a heating-profile pump (Wilo
   PWM1, Grundfos profile A), where no signal means full speed, and an old
   on/off pump without PWM. Both need their mains switched by a relay on
@@ -390,13 +390,13 @@ Pi's 5 V, or a ready-made optocoupler module) are in
 - Decoded per pump type. For the Grundfos UPM3: 95 % = standby (stopped by
   the PWM signal), 90 % = alarm, blocked, 85 % = alarm, electrical error,
   75 % = warning, 0–70 % = power consumption (1 W per %).
-- This is how OSCoST detects a **stuck or failed pump** (alarm, or no power
+- This is how CoSTOS detects a **stuck or failed pump** (alarm, or no power
   draw while it should run) and confirms that a commanded stop really
   stopped the pump.
 - The feedback input is **optional per output** in the config (none /
   Wilo iPWM / Grundfos). With nothing connected, the board's pull-up holds
   the GPIO high, which would read as a constant 100 %; with feedback set
-  to *none*, OSCoST ignores the input.
+  to *none*, CoSTOS ignores the input.
 - **Pumps without feedback** (for example the Wilo Yonos PARA PWM with
   the 2-wire cable: only PWM in and ground) need another way to check
   the pump: a plausibility check on the temperatures (the collector should
@@ -420,7 +420,7 @@ Pi's 5 V, or a ready-made optocoupler module) are in
   it is the enable and the safety cut-off, switched rarely: high-efficiency pumps have a high
   inrush current and limited mains switching cycles (Wilo for example
   specifies a relay rated ≥ 8 A and at most 100 mains switchings per day for
-  its Stratos PARA). OSCoST rate-limits mains switching per output.
+  its Stratos PARA). CoSTOS rate-limits mains switching per output.
 - With a solar profile, a broken signal cable stops the pump, which is the
   safe direction for the collector circuit. With a heating profile, it runs
   at full speed; the relay is what stops it.
@@ -463,7 +463,7 @@ Pin and bus assignments live in a per-board config section, not in code.
 
 What the controller needs from the mains: 5 V for the Pi and the HAT, and
 230 V for the pump. DiSoCon2 builds its own mains board (fuse, varistor,
-EMI filter, HLK-PM01, TRIACs); OSCoST keeps mains off its boards entirely
+EMI filter, HLK-PM01, TRIACs); CoSTOS keeps mains off its boards entirely
 and uses only off-the-shelf, certified parts. A fully equipped DIN-rail
 version (separate breaker and fuse terminal, SSR, surge protector, a
 coupling relay to sense pump mains, 18 TE enclosure) came to about
@@ -510,7 +510,7 @@ suits a PWM pump.
   most 100 a day for the Stratos PARA). Starting and stopping over PWM is
   how they are meant to be run, as in boilers and heat pumps.
 - **Monitoring always works:** the iPWM feedback output only works while
-  the pump is powered. Permanently powered, OSCoST always sees stand-by,
+  the pump is powered. Permanently powered, CoSTOS always sees stand-by,
   running, warnings, blocked, and "no power" (lost supply, tripped breaker),
   also while the pump should be stopped. With a relay cutting the mains,
   the pump would go silent whenever it is off. This also replaces the
@@ -530,7 +530,7 @@ suits a PWM pump.
 - **One way to stop the pump instead of two** (the accepted risk below).
 
 **Accepted risk:** if the HAT's PWM driver fails with its output stuck
-high, the pump runs at full speed and OSCoST can only raise an alarm
+high, the pump runs at full speed and CoSTOS can only raise an alarm
 (feedback shows "running" while it should stop). The worst case is a full
 store on a hot day; in the reference installation the store margin and
 covering the collector during holidays make this acceptable. Anyone who
@@ -548,21 +548,21 @@ bare TRIACs, and mains strictly separate from low voltage.
 ### 6.1 Workspace layout
 
 ```
-oscost/
+costos/
 ├─ crates/
-│  ├─ oscost-core/       # control logic: pure, no I/O, no async, no clock (time is an input)
-│  ├─ oscost-safety/     # safety supervisor: pure, can only reduce outputs
-│  ├─ oscost-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
-│  ├─ oscost-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; LTC2983, MAX31865, DS18x20, DS2482 drivers
-│  ├─ oscost-sim/        # thermal model of collector + store, used for tests and dry runs
-│  ├─ oscost-config/     # config schema, validation, migrations between schema versions, revision store
-│  ├─ oscost-web/        # web interface: server-rendered pages (maud), htmx handlers, SSE streams
-│  └─ oscostd/           # daemon: scheduler, tasks, HTTP API, MQTT, VictoriaMetrics push + buffer, systemd
+│  ├─ costos-core/       # control logic: pure, no I/O, no async, no clock (time is an input)
+│  ├─ costos-safety/     # safety supervisor: pure, can only reduce outputs
+│  ├─ costos-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
+│  ├─ costos-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; LTC2983, MAX31865, DS18x20, DS2482 drivers
+│  ├─ costos-sim/        # thermal model of collector + store, used for tests and dry runs
+│  ├─ costos-config/     # config schema, validation, migrations between schema versions, revision store
+│  ├─ costos-web/        # web interface: server-rendered pages (maud), htmx handlers, SSE streams
+│  └─ costosd/           # daemon: scheduler, tasks, HTTP API, MQTT, VictoriaMetrics push + buffer, systemd
 ├─ assets/               # vendored htmx, htmx SSE extension, uPlot, CSS, icons (embedded in the binary)
 └─ docs/
 ```
 
-`oscost-core` and `oscost-safety` contain everything that decides what the
+`costos-core` and `costos-safety` contain everything that decides what the
 pumps do. Because they are pure functions of `(config, inputs, time,
 previous state) → (outputs, new state, events)`, they can be:
 
@@ -570,13 +570,13 @@ previous state) → (outputs, new state, events)`, they can be:
   anything on", "the collector emergency shutdown always wins"),
 - replayed against **recorded vbus2influx data** to compare decisions with
   the real RESOL relay states,
-- run against `oscost-sim` in CI, including faults (sensor open circuit,
+- run against `costos-sim` in CI, including faults (sensor open circuit,
   stuck pump, overheating store).
 
-#### Rules for `oscost-core` and `oscost-safety` (decided)
+#### Rules for `costos-core` and `costos-safety` (decided)
 
 These two crates decide what the pumps do, so they follow stricter rules
-than the rest of the code. They pay off even if OSCoST never leaves the
+than the rest of the code. They pay off even if CoSTOS never leaves the
 Pi; a later microcontroller port (13.5) comes for free. 🟢 low, 🟡 some,
 🔴 high.
 
@@ -596,14 +596,14 @@ Pi; a later microcontroller port (13.5) comes for free. 🟢 low, 🟡 some,
 | 12 | **CI job** builds both crates for a bare-metal target (`riscv32imafc-unknown-none-elf`) | 🔴 `std` creeps back in unnoticed | 🟢 the build fails the moment it does | 🟢 one CI job |
 | 13 | **Tests for the edge cases**: sensor NaN or missing, counters near their maximum, 10 years of simulated runtime, a winter with the collector at −30 °C, ΔT of −60 K, negative heat flow | 🟡 these bugs only show after years in the field | 🟢 found in CI in seconds | 🟡 written once |
 | 14 | **Temperatures and ΔT are signed** (`f32`), never an unsigned type; ΔT may be negative (cold collector −20 °C, store 45 °C → ΔT −65 K) | 🔴 an unsigned value underflows below 0 °C: −1 °C becomes a huge positive number, the pump starts on a frozen collector | 🟢 −40 °C is just a number | 🟢 |
-| 15 | **Sign extension in the drivers** (`oscost-hw-linux`): the LTC2983 returns a 24-bit two's-complement result, the DS18B20 a signed 16-bit value; both are converted to `i32` with the sign kept | 🔴 the classic driver bug: −0.5 °C reads as about +16,000 °C (LTC2983) or +4,000 °C (DS18B20) | 🟢 tested with fixed negative raw values from the datasheets | 🟢 a unit test per driver |
-| 16 | **Negative heat flow** (return warmer than flow, e.g. the daily pump kick with a cold collector) is not subtracted from the `u64` heat counter: positive heat goes into `oscost_heat_wh`, negative into a separate `oscost_heat_loss_wh` | 🔴 adding a negative value to an unsigned counter underflows, or the counter drops | 🟢 both counters only grow; losses stay visible | 🟢 |
+| 15 | **Sign extension in the drivers** (`costos-hw-linux`): the LTC2983 returns a 24-bit two's-complement result, the DS18B20 a signed 16-bit value; both are converted to `i32` with the sign kept | 🔴 the classic driver bug: −0.5 °C reads as about +16,000 °C (LTC2983) or +4,000 °C (DS18B20) | 🟢 tested with fixed negative raw values from the datasheets | 🟢 a unit test per driver |
+| 16 | **Negative heat flow** (return warmer than flow, e.g. the daily pump kick with a cold collector) is not subtracted from the `u64` heat counter: positive heat goes into `costos_heat_wh`, negative into a separate `costos_heat_loss_wh` | 🔴 adding a negative value to an unsigned counter underflows, or the counter drops | 🟢 both counters only grow; losses stay visible | 🟢 |
 | 17 | **Time differences with `saturating_sub`** (e.g. "seconds since pump start") | 🟡 `now - start` underflows if the order is ever wrong (restart, restored state) | 🟢 0 instead of a wrap or a panic | 🟢 |
 | 18 | **Plausibility ranges per sensor role** (5.1), negative values included: collector −40 … +250 °C, store 0 … +110 °C; outside = fault (rule 5) | 🟡 a broken sensor could still look plausible | 🟢 in winter −25 °C on the collector is normal, −60 °C is a fault | 🟢 config with defaults |
 | 19 | **Speed controller clamps its output and integrator** (0–100 %, anti-windup) | 🟡 after a long cold phase the integrator keeps growing, and the pump runs at full speed for minutes after the sun comes out | 🟢 the PI controller restarts cleanly | 🟢 |
 
-Not under these rules: `oscost-sim`, `oscost-config`, `oscost-hw-linux`,
-`oscost-web` and `oscostd` stay normal Rust with `std`. Finer timing exists
+Not under these rules: `costos-sim`, `costos-config`, `costos-hw-linux`,
+`costos-web` and `costosd` stay normal Rust with `std`. Finer timing exists
 only at the edges and never reaches the core: the hardware layer measures
 the pump feedback duty from edge timestamps (75 Hz signal) and hands the
 core a percentage, and the VictoriaMetrics protocol takes millisecond
@@ -628,20 +628,20 @@ config:
 | **Statistics** | Per pump: operating hours, starts, last run time and **electrical energy**: measured from the pump's PWM feedback where it reports power (Grundfos: 1 W per %), otherwise estimated from rated power × duty. From that, a **solar yield ratio** (heat delivered ÷ pump electricity) per day and month. Collector time above a threshold (for example 80 °C) per day and month, a stagnation indicator. Persisted with the heat quantity counters. |
 | **Standby mode** | A global *automatic / standby* switch in the web interface (DiSoCon2 "Centralina in Automatico"): standby stops all control functions and keeps the outputs off, for filling, flushing and maintenance. The safety supervisor and logging keep running; it shows prominently on every page and is logged as an event. |
 | **Multi-store priority** | Later, if the installation uses it (BX Plus supports 2–3 stores). |
-| **Back-up heating suppression** | Optional, later. Publishes "solar is charging" and a forecast of the store top temperature, so an external heat source can hold back its hot-water run while solar will do the job. The BX Plus switches a relay for this; OSCoST offers it through the HTTP API and, when enabled, MQTT. In the reference installation, Home Assistant would use it to delay the heat pump's hot-water heating. |
+| **Back-up heating suppression** | Optional, later. Publishes "solar is charging" and a forecast of the store top temperature, so an external heat source can hold back its hot-water run while solar will do the job. The BX Plus switches a relay for this; CoSTOS offers it through the HTTP API and, when enabled, MQTT. In the reference installation, Home Assistant would use it to delay the heat pump's hot-water heating. |
 
 #### Function checks and alarms
 
 Software plausibility checks, modelled on the BX Plus "function control"
 installer menu, with one addition. They cost no hardware. Each one raises
-an alarm on the web page, as a metric (`oscost_alarm{kind}`) and, when
+an alarm on the web page, as a metric (`costos_alarm{kind}`) and, when
 enabled, over MQTT. Thresholds and delays are configurable, and each check
 can be switched off.
 
 | Check | Detects | Typical cause | Action |
 |---|---|---|---|
 | **ΔT too high** | Pump running, ΔT stays far above the setpoint for a long time, and the store bottom doesn't warm | Air in the loop, seized pump, closed valve, scaled heat exchanger | Alarm |
-| **No circulation** (OSCoST addition) | After a pump start the collector doesn't cool within a set time (no flow sensor needed) | Dead or unpowered pump, air lock, broken PWM signal | Alarm; the pump is stopped after repeated failures so it doesn't run dry. If a solar flow sensor is configured, a second criterion as in DiSoCon2: after a grace time (the time the loop volume takes to pass, there 9 min for a 270 m loop) the flow line must be warmer than the store bottom, checked over several consecutive cycles before it counts |
+| **No circulation** (CoSTOS addition) | After a pump start the collector doesn't cool within a set time (no flow sensor needed) | Dead or unpowered pump, air lock, broken PWM signal | Alarm; the pump is stopped after repeated failures so it doesn't run dry. If a solar flow sensor is configured, a second criterion as in DiSoCon2: after a grace time (the time the loop volume takes to pass, there 9 min for a 270 m loop) the flow line must be warmer than the store bottom, checked over several consecutive cycles before it counts |
 | **Night circulation** | At night, with the pump off, the collector warms while the store bottom cools | Faulty non-return valve (gravity circulation) | Alarm |
 | **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) |
 | **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
@@ -674,10 +674,10 @@ From its ESPHome configuration (`Software/hardware/interval.yaml` and friends):
 
 | DiSoCon2 behaviour | Why not |
 |---|---|
-| **Collector above T_max → pump to 100 %** to cool it | The opposite of the BX Plus and OSCoST collector emergency shutdown. Pumping glycol through a collector at stagnation temperature (208 °C here) puts steam into the loop and stresses the pump, the expansion vessel and the fluid. OSCoST stops the pump above the emergency limit and restarts only once the collector has cooled (4.2); collector cooling (above) acts earlier, while the temperature is still safe |
-| **Collector sensor fault between 12:00 and 16:00 → precautionary pump run** (up to 5 min) | Running blind can just as well move heat the wrong way or start the pump into steam. With a failed collector sensor OSCoST goes to its safe state (pump off) and raises an alarm; evacuated tube collectors are designed to stagnate |
+| **Collector above T_max → pump to 100 %** to cool it | The opposite of the BX Plus and CoSTOS collector emergency shutdown. Pumping glycol through a collector at stagnation temperature (208 °C here) puts steam into the loop and stresses the pump, the expansion vessel and the fluid. CoSTOS stops the pump above the emergency limit and restarts only once the collector has cooled (4.2); collector cooling (above) acts earlier, while the temperature is still safe |
+| **Collector sensor fault between 12:00 and 16:00 → precautionary pump run** (up to 5 min) | Running blind can just as well move heat the wrong way or start the pump into steam. With a failed collector sensor CoSTOS goes to its safe state (pump off) and raises an alarm; evacuated tube collectors are designed to stagnate |
 | Fixed speed steps (30 / 50 / 75 / 100 %) with hysteresis | Covered by the PI controller and the BX-compatible mode |
-| Heat output from a fixed 5 l/min with water properties | OSCoST uses a configured or measured flow and the real fluid properties (glycol) |
+| Heat output from a fixed 5 l/min with water properties | CoSTOS uses a configured or measured flow and the real fluid properties (glycol) |
 | Two-tank switching with a 3-way valve | Multi-store, later (see multi-store priority) |
 | LCD menu, buttons, temperature trend arrows, Wi-Fi | No local display (general rule), wired Ethernet only; trend arrows are a web-page detail |
 
@@ -690,7 +690,7 @@ From its ESPHome configuration (`Software/hardware/interval.yaml` and friends):
   sensor fault.
 - **Configuration** is owned by the daemon and edited only through the web
   interface or its API (section 7). It is stored as a versioned document in
-  `/var/lib/oscost/` (readable for backups, not meant for hand editing),
+  `/var/lib/costos/` (readable for backups, not meant for hand editing),
   fully validated before it is applied, and applied **live** at a control
   cycle boundary, without a restart. An invalid or missing config at start-up
   means outputs stay OFF and the web interface opens the setup wizard.
@@ -724,49 +724,49 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
   (`/api/v1/import/prometheus`), text format with explicit millisecond
   timestamps, optional basic auth or bearer token. One request per second in
   normal operation.
-- **Metric names follow the vbus2influx scheme with the prefix `oscost`.**
+- **Metric names follow the vbus2influx scheme with the prefix `costos`.**
   vbus2influx writes Influx line protocol with measurement `vbus2influx`
   and fields like `temperature_01`, without tags, which VictoriaMetrics
   stores as series named `vbus2influx_temperature_01` with no labels.
-  OSCoST writes the same field names, without labels, under its own
-  prefix: `oscost_temperature_01`.
+  CoSTOS writes the same field names, without labels, under its own
+  prefix: `costos_temperature_01`.
   - Every sensor gets a **VBus channel number** in the web interface, so
     the collector sensor that was `S1` on the RESOL becomes
-    `oscost_temperature_01`. Same for `relay_01` … `relay_05` (speed in %),
+    `costos_temperature_01`. Same for `relay_01` … `relay_05` (speed in %),
     `PWM_0_10V_A`/`_B`, `flow_rate_*`, `irradiation_10`, `pressure_*`.
     Units stay the same (°C, %).
   - Values the RESOL never had (ΔT, heat output, active function, fault and
     safety flags, buffer state) get new names under the same prefix, for
-    example `oscost_delta_t`, `oscost_sensor_fault_01`.
+    example `costos_delta_t`, `costos_sensor_fault_01`.
   - **Pump feedback** (iPWM / Grundfos PWM feedback, 5.3) is logged per
     pump output, numbered like the relays, whenever a feedback input is
     configured:
-    - `oscost_pump_feedback_01`: the raw feedback duty in %, averaged over
+    - `costos_pump_feedback_01`: the raw feedback duty in %, averaged over
       the second (the input is sampled continuously at 75 Hz). Raw, so
       that values Wilo describes only as "flow or power information" are
       kept and can be interpreted later.
-    - `oscost_pump_status_01`: the decoded state as a number: 0 stand-by,
+    - `costos_pump_status_01`: the decoded state as a number: 0 stand-by,
       1 running, 2 warning, 3 temporary error, 4 permanent failure, 5 no
       power, 6 feedback interface damaged.
-    - `oscost_pump_power_01`: electrical power in W, only for pumps whose
+    - `costos_pump_power_01`: electrical power in W, only for pumps whose
       feedback encodes power (Grundfos: 1 W per %); feeds the statistics
       (6.2).
     - A mismatch between commanded and reported state (stop commanded but
       running, run commanded but stand-by or no power) also raises an
-      alarm (`oscost_alarm{kind}`, 6.2).
+      alarm (`costos_alarm{kind}`, 6.2).
   - A sensor with a fault is **not written** for that second (a gap in the
     chart), instead of writing a fake value.
-  - The prefix is fixed at `oscost`, also after OSCoST has replaced the
-    RESOL controller. That way vbus2influx and OSCoST never write to the
+  - The prefix is fixed at `costos`, also after CoSTOS has replaced the
+    RESOL controller. That way vbus2influx and CoSTOS never write to the
     same series, shadow mode needs no special setup, and the RESOL history
     stays under `vbus2influx_*`. Existing dashboards only need the prefix
     in their queries changed. To show old and new data in one chart, query
-    both, for example `oscost_temperature_01 or vbus2influx_temperature_01`.
+    both, for example `costos_temperature_01 or vbus2influx_temperature_01`.
 - **Buffering**: a sender task reads from a queue, so a slow or unreachable
   database never affects the control loop.
   - Samples go into an in-memory queue first. If a push fails, the queue
     keeps growing, and its content is written to disk in compressed (zstd)
-    segments of about one minute in `/var/lib/oscost/buffer/`. This keeps SD
+    segments of about one minute in `/var/lib/costos/buffer/`. This keeps SD
     card or eMMC writes low and survives a restart or power loss (at most the
     last minute is lost).
   - Size limit is configurable (for example 500 MB). At 1 Hz with about 30
@@ -812,7 +812,7 @@ Optional, off by default, set up under Settings → Integrations.
   - safety interventions: collector emergency shutdown, store hard limit,
     watchdog trip seen after a restart;
   - VictoriaMetrics unreachable for longer than a set time, buffer full;
-  - OSCoST started after an unclean stop or a power cut;
+  - CoSTOS started after an unclean stop or a power cut;
   - **cleared:** a second mail when the alarm is gone.
 - **No mail floods:** one mail per alarm kind until it clears, a minimum
   gap between mails (for example 15 min), and alarms that arrive close
@@ -826,7 +826,7 @@ Optional, off by default, set up under Settings → Integrations.
   while, then dropped with a log entry.
 - **Limit:** a controller that is dead, unpowered or offline can't send a
   mail about it. For that case the documentation recommends a "no data"
-  alert in VictoriaMetrics or Grafana (series `oscost_*` stops updating),
+  alert in VictoriaMetrics or Grafana (series `costos_*` stops updating),
   which runs on another machine.
 
 ---
@@ -836,7 +836,7 @@ Optional, off by default, set up under Settings → Integrations.
 The web interface is the only user interface. It shows the live state of the
 system and is where **everything** is configured: from first setup (which
 sensor is on which input) to control parameters and integrations. Nobody
-should ever need to edit a file or open a shell to run OSCoST.
+should ever need to edit a file or open a shell to run CoSTOS.
 
 ### 7.1 Pages
 
@@ -875,7 +875,7 @@ outputs stay OFF and the interface opens a wizard:
 
 Config changes can switch pumps, so they are applied carefully:
 
-- **Validation** happens in `oscost-config`, the same code the daemon uses.
+- **Validation** happens in `costos-config`, the same code the daemon uses.
   The API returns errors per field, and the interface shows them next to the
   field. Cross-field rules are validated too (ΔT_off < ΔT_on, every function
   has its sensors assigned, no output used twice).
@@ -903,7 +903,7 @@ program, web interface included.
 - **Rendering**: pages and page fragments are rendered in Rust with
   [maud](https://maud.lambda.xyz/) (HTML as a Rust macro, checked at compile
   time, so a broken template is a compile error, not a runtime error). They
-  live in `oscost-web` and are served by axum.
+  live in `costos-web` and are served by axum.
 - **htmx** turns forms and buttons into partial page updates: a changed
   field is validated by the server as you type, and only the affected part of
   the page is replaced. Every page also works as a plain HTML form without
@@ -918,9 +918,9 @@ program, web interface included.
   time-series library, and the only real piece of JavaScript. The history
   page gives it data from VictoriaMetrics, fetched through the daemon.
 - **Forms built from the config definitions**: parameter names, units,
-  ranges, defaults and help texts are defined once in Rust (`oscost-config`).
-  `oscost-web` builds the settings forms from these definitions and shows
-  the validation errors that `oscost-config` returns, next to the field.
+  ranges, defaults and help texts are defined once in Rust (`costos-config`).
+  `costos-web` builds the settings forms from these definitions and shows
+  the validation errors that `costos-config` returns, next to the field.
   Interface and controller can't disagree about valid values, because it's
   the same code. A new parameter appears in the interface without
   hand-written form code.
@@ -961,12 +961,12 @@ The interface can switch pumps, so changes need login:
 
 ## 8. Testing strategy
 
-1. **Unit and property tests** on `oscost-core` and `oscost-safety`.
+1. **Unit and property tests** on `costos-core` and `costos-safety`.
 2. **Replay tests**: feed recorded VBus data (temperatures plus RESOL relay
-   states) through the core, and report where OSCoST would have decided
+   states) through the core, and report where CoSTOS would have decided
    differently. This is the main tool for checking the behaviour against the
    reference controller.
-3. **Simulation tests** with `oscost-sim`: sunny day, cloudy day, store
+3. **Simulation tests** with `costos-sim`: sunny day, cloudy day, store
    overheating, stagnation, sensor faults, stuck pump.
 4. **Hardware-in-the-loop on the bench**: SBC plus sensor boards with
    resistors (or a decade box) in place of the Pt1000 sensors, LEDs or lamps
@@ -979,22 +979,22 @@ The interface can switch pumps, so changes need login:
 
 | Phase | What runs | Exit criteria |
 |---|---|---|
-| **0. Bench** | OSCoST on the bench with simulated or resistor sensors | All tests green, watchdog and output-default-OFF verified |
-| **1. Shadow mode** | RESOL controls the system. OSCoST takes the **RESOL's sensor values over VBus** (the same data vbus2influx reads) and computes decisions **without outputs connected**. Its own sensors (HAT, DS18B20 in the free sleeves) are added once the hardware exists. | Weeks of data across sunny/cloudy/hot days. Temperature readings match RESOL within tolerance. Decisions match, or every difference is understood. |
-| **2. Switchable** | Changeover switch on the pump's PWM line: RESOL or OSCoST. On OSCoST days the RESOL pump relay is set to manual ON, so the pump is permanently powered as in the final setup (5.6 option A) and OSCoST starts and stops it over PWM; RESOL is one switch flip (and the relay back to Auto) away. | Runs through hot periods (store max, collector shutdown actually triggered) without intervention |
-| **3. Replacement** | OSCoST only. RESOL kept as a spare. | — |
+| **0. Bench** | CoSTOS on the bench with simulated or resistor sensors | All tests green, watchdog and output-default-OFF verified |
+| **1. Shadow mode** | RESOL controls the system. CoSTOS takes the **RESOL's sensor values over VBus** (the same data vbus2influx reads) and computes decisions **without outputs connected**. Its own sensors (HAT, DS18B20 in the free sleeves) are added once the hardware exists. | Weeks of data across sunny/cloudy/hot days. Temperature readings match RESOL within tolerance. Decisions match, or every difference is understood. |
+| **2. Switchable** | Changeover switch on the pump's PWM line: RESOL or CoSTOS. On CoSTOS days the RESOL pump relay is set to manual ON, so the pump is permanently powered as in the final setup (5.6 option A) and CoSTOS starts and stops it over PWM; RESOL is one switch flip (and the relay back to Auto) away. | Runs through hot periods (store max, collector shutdown actually triggered) without intervention |
+| **3. Replacement** | CoSTOS only. RESOL kept as a spare. | — |
 
 Shadow mode starts with the RESOL values over VBus (decided): it tests the
-control logic and the software right away, without hardware. OSCoST doesn't
+control logic and the software right away, without hardware. CoSTOS doesn't
 open the VBus UART itself (only one program can): it polls the latest
 values once per second from vbus2influx's JSON endpoint
 (`http://localhost:11110/`) through a `vbus2influx` sensor source, so
 vbus2influx keeps running unchanged. A Pt1000 can't
 be connected to two measuring devices at once without affecting both
-readings, so OSCoST's own measurement comes in as extra sensors (the store
+readings, so CoSTOS's own measurement comes in as extra sensors (the store
 has two free ½" sleeves) once the HAT exists.
 
-**If the BX Plus fails before OSCoST is ready:** with the Wilo PWM2 profile
+**If the BX Plus fails before CoSTOS is ready:** with the Wilo PWM2 profile
 a missing PWM signal means *stop*, so the pump stands still and the
 heat-pipe collector goes into stagnation. That costs solar yield but
 doesn't damage anything short term. The fastest way back to a running
@@ -1011,12 +1011,12 @@ come first.
 
 ## 10. Milestones
 
-1. `oscost-core` + `oscost-safety` with ΔT control, speed control, store max
+1. `costos-core` + `costos-safety` with ΔT control, speed control, store max
    and collector emergency shutdown. Tests and a replay tool for vbus2influx
    data.
-2. `oscost-sim` and simulation tests in CI.
+2. `costos-sim` and simulation tests in CI.
 3. HAL + Linux backend: LTC2983, MAX31865, 1-Wire, GPIO outputs, PWM, watchdog. Bench setup.
-4. `oscostd` + `oscost-config`: scheduler, systemd, config store with
+4. `costosd` + `costos-config`: scheduler, systemd, config store with
    revisions, JSON API, VictoriaMetrics push with buffering.
 5. Web interface: overview, setup wizard, all settings pages, users/login,
    manual mode.
@@ -1067,31 +1067,31 @@ fuses), so ≈ €40 plus display and case. It has no PWM output for a
 high-efficiency pump.
 
 It is licensed **CC BY-NC-SA 4.0**, so nothing from it is copied into
-OSCoST (MIT). What we take from it as ideas:
+CoSTOS (MIT). What we take from it as ideas:
 
 - **Wired Ethernet with a W5500 and an RJ45 jack on the board** works
   for a controller in a boiler room. Any microcontroller version of
-  OSCoST should have wired Ethernet, not only Wi-Fi. The most likely
+  CoSTOS should have wired Ethernet, not only Wi-Fi. The most likely
   candidate is the ESP32-P4, which has a built-in Ethernet MAC. For now
-  OSCoST stays on the Pi (HAT D14, pin check in HAT 2.1).
+  CoSTOS stays on the Pi (HAT D14, pin check in HAT 2.1).
 - **Standalone first:** it keeps controlling with no network at all and
-  has a local display and buttons. OSCoST's control loop is local too; its
+  has a local display and buttons. CoSTOS's control loop is local too; its
   local indication is the HAT's hardware-driven status LEDs (HAT 4.8). A
   display is ruled out by the general rules (section 1).
 - **Low voltage and mains on separate boards,** joined by a ribbon cable.
-  OSCoST keeps mains off its board entirely (the Pi's own USB-C supply,
+  CoSTOS keeps mains off its board entirely (the Pi's own USB-C supply,
   the pump on its existing circuit, 5.6); if
   an all-in-one option is ever wanted, a separate power board is the
   pattern to follow (EMI filter, varistor, fuses, zero-cross detection).
 - **A cheap Pt1000 front-end:** a 0.1 % divider, an op-amp buffer and an
   ADS1115 per 4 sensors is accurate enough for solar control. It has no
-  built-in fault detection or protection, which is why OSCoST prefers the
+  built-in fault detection or protection, which is why CoSTOS prefers the
   LTC2983 / MAX31865.
 - **Valve outputs for tank switching:** two relays for 3-way valves
-  (multi-store systems). OSCoST's REL2 position could serve the same
+  (multi-store systems). CoSTOS's REL2 position could serve the same
   purpose later.
 - **Protection on every external line:** TVS diodes on sensor inputs,
-  ESD arrays, polyfuses on sensor supplies, as on the OSCoST HAT.
+  ESD arrays, polyfuses on sensor supplies, as on the CoSTOS HAT.
 - **Firmware behaviours** (from its ESPHome configuration), reviewed in
   6.2: taken over are ΔT smoothing, a soft-start ramp as a start profile,
   the grace-time flow check, a stale-reading watchdog for the sensor
@@ -1137,7 +1137,7 @@ real saving is the Pi itself.
 
 ### 13.3 What each platform can do
 
-| What OSCoST has to do | Pi (Linux) | ESP32-S3 | RP2350 (Pico 2 W) |
+| What CoSTOS has to do | Pi (Linux) | ESP32-S3 | RP2350 (Pico 2 W) |
 |---|---|---|---|
 | Control loop, outputs, PWM, feedback | via kernel drivers | 🟢 direct hardware, real-time | 🟢 direct hardware (PIO) |
 | Pt1000 (LTC2983 / MAX31865), 1-Wire | 🟢 kernel drivers | 🟢 own drivers, 1-Wire via RMT | 🟢 own drivers, 1-Wire via PIO |
@@ -1190,18 +1190,18 @@ flexibility decided it (D14).
 | Waveshare ESP32-P4-ETH | $12.99 ($16.99 with PoE) | 32 MB PSRAM, 32 MB flash, RJ45, microSD, 40-pin header compatible with some Pico HATs; would need its own carrier board |
 | Olimex ESP32-P4-DevKit | €16.00 | open hardware (OSHW certified), Ethernet with PoE option, all GPIOs exposed, 72 × 30 mm; needs a carrier board |
 | Waveshare ESP32-P4-NANO | €22.60 incl. VAT (Eckstein) | 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (Wi-Fi, unused), 28 GPIOs; header not Pi-shaped, needs a carrier board |
-| **Waveshare ESP32-P4-WIFI6-DEV-KIT** | €24.90 incl. VAT (Eckstein) | **Pi form factor** (85 × 56.5 mm) with a Pi-style 40-pin header, so the OSCoST HAT could plug on directly; 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (unused), PoE header. Pin map checked against the HAT in HAT 2.1: three signals would have to move |
+| **Waveshare ESP32-P4-WIFI6-DEV-KIT** | €24.90 incl. VAT (Eckstein) | **Pi form factor** (85 × 56.5 mm) with a Pi-style 40-pin header, so the CoSTOS HAT could plug on directly; 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (unused), PoE header. Pin map checked against the HAT in HAT 2.1: three signals would have to move |
 
 If the port is ever done, the WIFI6-DEV-KIT under the same HAT is the
-simplest route. That door is kept open by the rules for `oscost-core`
-and `oscost-safety` in 6.1 (`no_std`, decided), so they run unchanged on a
+simplest route. That door is kept open by the rules for `costos-core`
+and `costos-safety` in 6.1 (`no_std`, decided), so they run unchanged on a
 microcontroller:
 
 - **What it means:** these two crates only compute. They get temperatures,
   settings and the time as plain values and return output commands. They
   use only Rust's `core` and `alloc` libraries, not `std`, so no files,
   threads, network, system clock or printing. Everything that touches
-  Linux stays in `oscost-hw-linux` and `oscostd`. This is section 6.1's
+  Linux stays in `costos-hw-linux` and `costosd`. This is section 6.1's
   "pure, no I/O" rule, enforced by the compiler instead of by discipline.
 - **Advantages:** a later ESP32-P4 port rewrites only the hardware and
   daemon parts, not the control logic and its tests; the compiler refuses

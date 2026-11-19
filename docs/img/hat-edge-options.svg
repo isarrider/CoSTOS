@@ -3,7 +3,7 @@
 <defs><marker id="ac0392b" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#c0392b"/></marker></defs>
 <defs><marker id="a555" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#555"/></marker></defs>
 <rect width="1572" height="580" fill="white"/>
-<text x="18" y="34" class="big" text-anchor="start">OSCoST HAT (1-Wire edition) on a Pi 5 — where the field terminals go (top view, 1 mm = 5 px)</text>
+<text x="18" y="34" class="big" text-anchor="start">CoSTOS HAT (1-Wire edition) on a Pi 5 — where the field terminals go (top view, 1 mm = 5 px)</text>
 <g transform="translate(18,50)">
 <rect x="0" y="0" width="500" height="520" rx="10" fill="#fcfcfc" stroke="#bbb" stroke-width="1"/>
 <text x="14" y="26" class="h" text-anchor="start">A — current: power and pump at the front</text>

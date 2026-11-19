@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the OSCoST HAT circuit diagrams (rev A) as four SVG sheets:
+"""Draws the CoSTOS HAT circuit diagrams (rev A) as four SVG sheets:
 
   docs/img/hat-sch-power.svg    power input, ideal diode, 12 V DC/DC, header
   docs/img/hat-sch-pwm.svg      watchdog, PWM pump outputs, feedback inputs
@@ -276,7 +276,7 @@ class Sheet:
 
 # ======================================================================
 def sheet_power(path):
-    s = Sheet(1180, 650, "OSCoST HAT rev A: 5 V from the Pi and 12 V supply",
+    s = Sheet(1180, 650, "CoSTOS HAT rev A: 5 V from the Pi and 12 V supply",
               "The HAT takes 5 V from header pins 2 and 4 (the Pi runs from its own USB-C supply, no power input "
               "on the HAT); bulk capacitor and power LED; isolated 5 to 12 V DC/DC for the pump drivers; table of the 40-pin header connections.")
     s.heading(20, 30, "1 · 5 V from the Pi (header pins 2/4, no power input, D18)")
@@ -365,7 +365,7 @@ def sheet_power(path):
 
 # ======================================================================
 def sheet_pwm(path):
-    s = Sheet(1180, 800, "OSCoST HAT rev A: watchdog, PWM pump outputs and feedback inputs",
+    s = Sheet(1180, 800, "CoSTOS HAT rev A: watchdog, PWM pump outputs and feedback inputs",
               "Retriggerable monostable watchdog producing WD_OK; two PWM channels gated by WD_OK through AND gates "
               "into a TC4427 driver at 12 V with series resistor and TVS; pump feedback inputs with pull-up and RC filter.")
     s.heading(20, 30, "4 · Hardware watchdog")
@@ -404,7 +404,7 @@ def sheet_pwm(path):
     s.flag(590, 220, "WD_OK", "R")
     s.note(20, 430, [
         "Timeout ≈ R3 · C5 ≈ 3 s (tuned at bring-up). Only rising",
-        "edges on B retrigger U3: OSCoST toggles HEARTBEAT once per",
+        "edges on B retrigger U3: CoSTOS toggles HEARTBEAT once per",
         "control cycle (1 s), so an edge arrives every 2 s. A line",
         "stuck high or low lets WD_OK drop.",
         "Power-up: R4/C6 hold CLR low; Q then stays low until the",
@@ -506,7 +506,7 @@ def relay_block(s, x, y, n, gpio, pin):
 
 
 def sheet_relay(path):
-    s = Sheet(1180, 520, "OSCoST HAT rev A: relay supply and relay outputs",
+    s = Sheet(1180, 520, "CoSTOS HAT rev A: relay supply and relay outputs",
               "High-side load switch enabled by WD_OK creating the switched 5 V relay supply; two low-side MOSFET "
               "relay outputs with flyback diode, LED and gate pull-down.")
     s.heading(20, 30, "7 · Relay supply (switched by the watchdog)")
@@ -547,7 +547,7 @@ def sheet_relay(path):
 
 # ======================================================================
 def sheet_sensors(path):
-    s = Sheet(1180, 690, "OSCoST HAT rev A: Pt1000 and 1-Wire inputs",
+    s = Sheet(1180, 690, "CoSTOS HAT rev A: Pt1000 and 1-Wire inputs",
               "MAX31865 RTD-to-digital converter on SPI0 for the Pt1000 collector sensor in 2-wire connection with "
               "4.3 kilo-ohm reference; two 1-Wire buses on GPIO 4 and 17 with pull-ups, ESD protection and a fused "
               "3.3 V sensor supply.")
@@ -596,7 +596,7 @@ def sheet_sensors(path):
         "3-wire: open JP2, third wire to TP2, move JP4 to FORCE+. Not needed with the 2-wire roof cable.",
         "R21 (0.1 %) sets the Pt1000 range; C13 across the RTD as the datasheet gives for 1 kΩ RTDs.",
         "U9 with J7 (PT2): identical, CS = CE1 = GPIO7 (pin 26); not fitted.",
-        "DRDY is not used: OSCoST polls once per second.",
+        "DRDY is not used: CoSTOS polls once per second.",
     ])
     # ---- 1-Wire ----
     s.heading(840, 30, "10 · 1-Wire buses (DS18x20, powered)")

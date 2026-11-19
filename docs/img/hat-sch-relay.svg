@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1180" height="520" viewBox="0 0 1180 520" font-family="Helvetica, Arial, sans-serif">
-<title>OSCoST HAT rev A: relay supply and relay outputs</title>
+<title>CoSTOS HAT rev A: relay supply and relay outputs</title>
 <desc>High-side load switch enabled by WD_OK creating the switched 5 V relay supply; two low-side MOSFET relay outputs with flyback diode, LED and gate pull-down.</desc>
 <style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
 <rect width="1180" height="520" fill="white"/>

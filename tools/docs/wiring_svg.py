@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Draw docs/img/wiring-1wire-edition.svg: a complete installation with the
-Pi + OSCoST HAT (1-Wire edition): 1 Pt1000 on the collector, 7 DS18B20 on two
+Pi + CoSTOS HAT (1-Wire edition): 1 Pt1000 on the collector, 7 DS18B20 on two
 daisy-chained buses, and the PWM pump. Sensor names follow the reference
 installation (docs/installation.md). Usage: python3 tools/docs/wiring_svg.py docs/img"""
 import os, subprocess, sys
@@ -49,7 +49,7 @@ a('<style>text{paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:r
   '.b{font-size:13px;font-weight:bold;fill:#222}.w{font-size:12px;fill:#fff;stroke:none}.wb{font-size:13px;font-weight:bold;fill:#fff;stroke:none}'
   '.o{font-size:11.5px;font-style:italic;fill:#555}.th,.ts{stroke:none}</style>')
 a(f'<rect width="{W}" height="{H}" fill="white"/>')
-t(20, 30, "OSCoST 1-Wire edition: 1 × Pt1000 + 7 × DS18B20 + PWM pump (reference installation, alternative wiring)", "h")
+t(20, 30, "CoSTOS 1-Wire edition: 1 × Pt1000 + 7 × DS18B20 + PWM pump (reference installation, alternative wiring)", "h")
 
 # ---------------- collector
 a('<polygon points="70,160 280,82 300,120 90,198" fill="#cfd8dc" stroke="#455a64" stroke-width="1.5"/>')
@@ -109,7 +109,7 @@ inner = "\n".join(l for l in inner.split("\n")
                   if not l.startswith('<rect width="680"') and "Top view to scale" not in l
                   and not l.startswith("<title") and not l.startswith("<desc"))
 a(f'<g transform="translate({HX:.1f},{HY:.1f}) scale({SC})">{inner}</g>')
-t(HX + 340 * SC, HY + 535 * SC, "OSCoST HAT on the Raspberry Pi", "b", "middle")
+t(HX + 340 * SC, HY + 535 * SC, "CoSTOS HAT on the Raspberry Pi", "b", "middle")
 
 # ---------------- cables
 # PT1: 2-wire up to the roof

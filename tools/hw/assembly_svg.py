@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Draw the assembly mockup:
-  docs/img/pi-hat-assembly.svg  Pi 5 + OSCoST HAT (1-Wire edition): top and side view
+  docs/img/pi-hat-assembly.svg  Pi 5 + CoSTOS HAT (1-Wire edition): top and side view
 Usage: python3 tools/hw/assembly_svg.py docs/img
 Dimensions of the Pi 5 follow the Raspberry Pi mechanical drawing (board 85 x 56 mm,
 holes 3.5/61.5 x 3.5/52.5 mm); heights are approximate and get fixed in KiCad."""
@@ -33,7 +33,7 @@ def assembly():
     o.append(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" font-family="Helvetica, Arial, sans-serif">')
     o.append(STYLE)
     rect(o, 0, 0, W, H, "white")
-    txt(o, 20, 30, "Raspberry Pi 5 with the OSCoST HAT (1-Wire edition) — top and side view, to scale (1 mm = 6 px)", "h")
+    txt(o, 20, 30, "Raspberry Pi 5 with the CoSTOS HAT (1-Wire edition) — top and side view, to scale (1 mm = 6 px)", "h")
 
     # ---------- top view
     ox, oy = 160, 80
@@ -117,7 +117,7 @@ def assembly():
     # HAT PCB
     x, y = Q(0, HZ + 1.6)
     rect(o, x, y, 65 * S, 1.6 * S, GREEN, GREEN_D)
-    txt(o, x + 65 * S + 8, y + 9, "OSCoST HAT", "tb")
+    txt(o, x + 65 * S + 8, y + 9, "CoSTOS HAT", "tb")
     # terminals on the HAT, seen from the front
     for (xx, w_) in [(24, 7)]:
         x, y = Q(xx, HZ + 1.6 + 8.5)

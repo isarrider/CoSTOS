@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1180" height="650" viewBox="0 0 1180 650" font-family="Helvetica, Arial, sans-serif">
-<title>OSCoST HAT rev A: 5 V from the Pi and 12 V supply</title>
+<title>CoSTOS HAT rev A: 5 V from the Pi and 12 V supply</title>
 <desc>The HAT takes 5 V from header pins 2 and 4 (the Pi runs from its own USB-C supply, no power input on the HAT); bulk capacitor and power LED; isolated 5 to 12 V DC/DC for the pump drivers; table of the 40-pin header connections.</desc>
 <style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
 <rect width="1180" height="650" fill="white"/>

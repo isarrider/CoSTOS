@@ -1,4 +1,4 @@
-# OSCoST HAT: specification
+# CoSTOS HAT: specification
 
 Status: **specification agreed, rev A not yet designed**. This page
 defines what the HAT has to do before anything is drawn in KiCad. The
@@ -99,7 +99,7 @@ On a Pi 5, top and side view: the HAT covers the left 65 mm, Ethernet and
 USB stay free, sensors leave to the left and the pump cable to the front.
 Heights are approximate and get fixed in KiCad.
 
-![Pi 5 with the OSCoST HAT, top and side view](img/pi-hat-assembly.svg)
+![Pi 5 with the CoSTOS HAT, top and side view](img/pi-hat-assembly.svg)
 
 A complete installation with the 1-Wire edition: 1 Pt1000 on the
 collector, 7 DS18B20 on two daisy-chained buses and the PWM pump (sensor
@@ -139,7 +139,7 @@ There are two ways to fit the HAT to the P4:
 - **Remove R29/R33 on every P4 board.** This costs the board's RTC
   crystal, and PWM2 still has to move.
 
-**Decision D14: OSCoST stays on the Raspberry Pi.** More people already
+**Decision D14: CoSTOS stays on the Raspberry Pi.** More people already
 own one, and Linux gives more flexibility for the web interface,
 VictoriaMetrics buffering, updates and add-ons. The P4 stays a possible
 later port. If it is ever done, the "move the three signals" variant
@@ -159,13 +159,13 @@ way in: with the Lite build, the HAT is then the only purchase.
 |---|---|---|
 | 40-pin header, HAT size, mounting holes | 🟢 same | 🟢 |
 | PWM (GPIO 18/19), SPI, 1-Wire, GPIO edge events | 🟢 same as the Pi 4, same overlays (6) | 🟢 |
-| CPU and RAM for OSCoST (1 Hz loop, web UI, local buffer) | 🟢 1 GB is plenty | 🟢 |
+| CPU and RAM for CoSTOS (1 Hz loop, web UI, local buffer) | 🟢 1 GB is plenty | 🟢 |
 | Power | 🟡 **micro-USB**, 5.1 V 2.5 A supply, not USB-C | 🟢 USB-C |
 | Ethernet | 🟡 100 Mbit (B), ≈ 300 Mbit (B+): plenty for the metrics | 🟢 Gigabit |
 | Tall spacers (D16) | 🟢 fit, with more air than needed | 🟢 |
 | Software | 🟢 the same 64-bit build (aarch64) | 🟢 |
 
-Not the Pi 3 A+: it has no Ethernet, and OSCoST uses no Wi-Fi. Older
+Not the Pi 3 A+: it has no Ethernet, and CoSTOS uses no Wi-Fi. Older
 boards (Pi 2, Pi 1 B+) have the header but too little CPU and RAM, and are
 not considered.
 
@@ -266,7 +266,7 @@ the 13 V TVS standoff at light load.
 - 2-wire connection by default; solder jumpers for 3-wire sensors.
 - On SPI0, with the two hardware chip selects: CE0 (pin 24) for #1, CE1
   (pin 26) for #2.
-- The `DRDY` outputs are not connected; OSCoST polls once per second.
+- The `DRDY` outputs are not connected; CoSTOS polls once per second.
 
 ### 4.4 1-Wire bus
 
@@ -303,7 +303,7 @@ the 13 V TVS standoff at light load.
 
 ### 4.6 Hardware watchdog
 
-- OSCoST toggles a **heartbeat GPIO** once per successful control cycle
+- CoSTOS toggles a **heartbeat GPIO** once per successful control cycle
   (sensors read, decision made, outputs written).
 - A **retriggerable monostable** (e.g. 74LVC1G123) keeps `WD_OK` high as
   long as edges keep arriving; about 2–3 s without an edge and `WD_OK`
@@ -318,7 +318,7 @@ the 13 V TVS standoff at light load.
 - LED "watchdog OK". A test point and a jumper to disable the gating for
   bench tests (clearly marked, open by default).
 - **Why it is worth the ~€3:** the Pi's own hardware watchdog and systemd
-  catch a hung kernel or a crashed OSCoST, but not a fault in the
+  catch a hung kernel or a crashed CoSTOS, but not a fault in the
   switching hardware. Where a cut-off relay or SSR is used (option C), an
   SSR that fails short-circuited would leave the pump powered; the
   watchdog-gated PWM is then a second, independent way to stop it (0 % =
@@ -353,7 +353,7 @@ only has a bulk capacitor and a power LED on its 5 V rail.
 
 ### 4.8 Status LEDs
 
-The LEDs are OSCoST's only local display (no screen, general rule). All
+The LEDs are CoSTOS's only local display (no screen, general rule). All
 of them are driven by hardware and show the real state even if the
 software is wrong; none needs an overlay or any software.
 
@@ -409,7 +409,7 @@ also [Testing the output](HARDWARE.md#testing-the-output).
 
 ## 6. Raspberry Pi configuration
 
-What has to be enabled on the Pi for the HAT. The OSCoST installer will
+What has to be enabled on the Pi for the HAT. The CoSTOS installer will
 set this up; listed here so it can be checked by hand.
 
 **`/boot/firmware/config.txt`**
@@ -454,7 +454,7 @@ dtoverlay=pwm-2chan
 
 **Also on the system side:**
 
-- The OSCoST service user needs access to `/dev/gpiochip*`, `/dev/spidev0.*`,
+- The CoSTOS service user needs access to `/dev/gpiochip*`, `/dev/spidev0.*`,
   `/sys/bus/w1` and `/sys/class/pwm` (groups `gpio` and `spi` on Raspberry
   Pi OS).
 - The SoC hardware watchdog is armed through systemd
@@ -628,9 +628,9 @@ here; it gets quoted with the BOM.
 
 The estimates in 8.2 use JLCPCB. Other services, as published in
 November 2026 (fees and promotions change often; real quotes with the
-BOM decide, D7). 🟢 good for one OSCoST board, 🟡 possible, 🔴 weak.
+BOM decide, D7). 🟢 good for one CoSTOS board, 🟡 possible, 🔴 weak.
 
-| Service | Smallest assembled order | Fixed costs for a small order | Where | Fit for one OSCoST board |
+| Service | Smallest assembled order | Fixed costs for a small order | Where | Fit for one CoSTOS board |
 |---|---|---|---|---|
 | **JLCPCB** (Economic PCBA) | 🟡 2 boards | setup $8.18, **$3.07 per extended part type** (basic and "preferred extended" parts: none) | China | 🟢 cheapest per board today (8.2); one-sided only, which suits the HAT; LTC2983 usually consigned |
 | **PCBWay** | 🟢 1 board | assembly from about $29 plus parts; passives bought with overage (min. 50 pieces) | China | 🟡 true single board; the overage on cheap passives costs little |
@@ -726,7 +726,7 @@ Status: **planned as the second board**, after the 1-Wire edition. The
 reference installation plans to use it (see
 [installation.md](installation.md#sensors-and-outputs-in-use)).
 
-![OSCoST HAT PT edition mockup](img/hat-pt-mockup.svg)
+![CoSTOS HAT PT edition mockup](img/hat-pt-mockup.svg)
 
 ### 11.1 What differs from the 1-Wire edition
 
@@ -778,7 +778,7 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 - The board edition is chosen in the setup wizard (Settings → Hardware);
   sensor S*n* is LTC2983 channel pair *n*, the 1-Wire probes are assigned
   by their ROM ID as on the 1-Wire edition.
-- At start OSCoST writes the channel assignment words (sensor type
+- At start CoSTOS writes the channel assignment words (sensor type
   PT-1000, 2-wire, shared sense resistor, excitation current) and the
   sense resistor value; nothing needs to be stored on the chip, so the
   LTC2984's EEPROM brings no benefit.
@@ -874,7 +874,7 @@ the smallest order of 2 (8.2). 🟢 good,
 Variant not shown as a column: the 1-Wire edition with PT2 fitted, so S4
 stays Pt1000 (2 Pt1000 + 6 DS18B20): about €5 more assembled, one probe
 less. The LTC2984 is the LTC2983 with an EEPROM for the channel setup; it
-costs more (≈ $71 at LCSC) and OSCoST doesn't need it.
+costs more (≈ $71 at LCSC) and CoSTOS doesn't need it.
 
 **Also considered: a DiSoCon2-style divider front-end** (each Pt1000 in a
 divider with a 0.1 % resistor, op-amp buffer, ADS1115; see
@@ -900,7 +900,7 @@ Solar control would cope with ±0.5–1 K, but for a controller meant to run
 
 ## 12. Lite build (decided, D19)
 
-The cheapest way to an OSCoST controller: **the same 1-Wire edition
+The cheapest way to an CoSTOS controller: **the same 1-Wire edition
 board with fewer parts fitted**, not a separate board. It saves about
 **€4.60 per board**, can be upgraded to the full build by soldering the
 missing parts on, and needs no second layout. A dedicated Lite board was
@@ -908,7 +908,7 @@ drawn first and dropped: it saved no more money (unfitted footprints cost
 nothing, and it would have had the same outline), but it needed its own
 layout, parts list, tests and documentation, and had no upgrade path.
 
-![OSCoST HAT, Lite build, top view](img/hat-lite-mockup.svg)
+![CoSTOS HAT, Lite build, top view](img/hat-lite-mockup.svg)
 
 **Why no dedicated Lite board:** the comparison that decided D19, both
 Lite variants against the normal build (single-quantity parts; 🟢 good,

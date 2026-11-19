@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stripboard layouts of the OSCoST PWM pump driver (TC4427 gate driver).
+"""Stripboard layouts of the CoSTOS PWM pump driver (TC4427 gate driver).
 
 Two variants: the 12 V board (option 1, with a 5 V -> 12 V DC/DC module)
 and the simplified 5 V board (option 1 simplified, driver runs from the
@@ -335,7 +335,7 @@ def legend(y0, items):
 def component_side_svg():
     w = 2 * M + (W - 1) * P + 60
     h = 2 * M + (H - 1) * P + 130
-    out = svg_header(w, h, "OSCoST PWM pump driver, stripboard, component side")
+    out = svg_header(w, h, "CoSTOS PWM pump driver, stripboard, component side")
     out += board(mirror=False, strips_opacity=0.35)
     out += draw_links()
     out += draw_components()
@@ -362,7 +362,7 @@ def component_side_svg():
 def copper_side_svg():
     w = 2 * M + (W - 1) * P + 60
     h = 2 * M + (H - 1) * P + 110
-    out = svg_header(w, h, "OSCoST PWM pump driver, stripboard, copper side")
+    out = svg_header(w, h, "CoSTOS PWM pump driver, stripboard, copper side")
     out += board(mirror=True, strips_opacity=1.0)
     out += cut_marks(True)
     solder = set()

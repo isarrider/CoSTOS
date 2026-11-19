@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1390 560" font-family="Helvetica, Arial, sans-serif">
 <style>.t{font-size:12px;fill:#222}.tb{font-size:12px;font-weight:bold;fill:#222}.w{font-size:12px;fill:#fff}.wb{font-size:12px;font-weight:bold;fill:#fff}.g{font-size:11px;fill:#C8E6C9}.n{font-size:11px;fill:#555}.h{font-size:16px;font-weight:bold;fill:#222}.o{font-size:11px;font-style:italic;fill:#777}</style>
 <rect x="0" y="0" width="1390" height="560" rx="0" fill="white" stroke="none" stroke-width="1" fill-opacity="1"/>
-<text x="20" y="30" class="h" text-anchor="start">Raspberry Pi 5 with the OSCoST HAT (1-Wire edition) — top and side view, to scale (1 mm = 6 px)</text>
+<text x="20" y="30" class="h" text-anchor="start">Raspberry Pi 5 with the CoSTOS HAT (1-Wire edition) — top and side view, to scale (1 mm = 6 px)</text>
 <rect x="160.0" y="80.0" width="510.0" height="336.0" rx="18.0" fill="#2f7d3a" stroke="#1b4d23" stroke-width="2" fill-opacity="1"/>
 <rect x="568.0" y="92.0" width="120.0" height="96.0" rx="2" fill="#b8bcc0" stroke="#6b7075" stroke-width="1" fill-opacity="1"/>
 <text x="628.0" y="144.0" class="t" text-anchor="middle">Ethernet</text>
@@ -55,7 +55,7 @@
 <rect x="883.8" y="268.0" width="14.399999999999999" height="102.0" rx="0" fill="#d4af37" stroke="#8a6d1f" stroke-width="1" fill-opacity="1"/>
 <rect x="1231.8" y="268.0" width="14.399999999999999" height="102.0" rx="0" fill="#d4af37" stroke="#8a6d1f" stroke-width="1" fill-opacity="1"/>
 <rect x="870.0" y="258.4" width="390.0" height="9.600000000000001" rx="0" fill="#1E5631" stroke="#0F3A20" stroke-width="1" fill-opacity="1"/>
-<text x="1268.0" y="267.4" class="tb" text-anchor="start">OSCoST HAT</text>
+<text x="1268.0" y="267.4" class="tb" text-anchor="start">CoSTOS HAT</text>
 <rect x="1014.0" y="207.39999999999998" width="42.0" height="51.0" rx="2" fill="#E9E2CC" stroke="#8A7F5F" stroke-width="1" fill-opacity="1"/>
 <text x="1035.0" y="196.0" class="n" text-anchor="middle">REL1</text>
 <line x1="834.0" y1="370.0" x2="834.0" y2="268.0" stroke="#333" marker-end="url(#a)" marker-start="url(#a)"/>

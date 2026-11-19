@@ -1,7 +1,7 @@
 # Reference installation
 
-This is the system OSCoST is built to control first. It is the **acceptance
-spec**: OSCoST is ready to replace the existing controller when it
+This is the system CoSTOS is built to control first. It is the **acceptance
+spec**: CoSTOS is ready to replace the existing controller when it
 reproduces its behaviour for this installation (see
 [Migration](ARCHITECTURE.md#9-migration-from-the-deltasol-bx-plus)).
 
@@ -14,7 +14,7 @@ Status: **incomplete**. Open points are listed at the end.
 - A **Raspberry Pi 5** already sits next to it and runs vbus2influx.
   It has a **passive heatsink**, so the HAT's tall spacers (HAT D16)
   clear it.
-  OSCoST runs on this Pi (with the HAT), powered by the Pi's existing
+  CoSTOS runs on this Pi (with the HAT), powered by the Pi's existing
   USB-C supply, which the HAT draws from through the header (HAT D15,
   [ARCHITECTURE 5.6](ARCHITECTURE.md#56-230-v-side) option A).
 - **VBus connection today:** a self-built level shifter (voltage divider
@@ -41,7 +41,7 @@ be BX Plus inputs S1–S8.
 | S8 | nach Haus / vor Heizung | Heating circuit: after the house, back to the heat generator | Measurement only |
 
 - **All eight sensors are Pt1000, each on its own 2-wire cable.**
-- **Plan for OSCoST: keep all eight Pt1000 sensors** with the HAT's
+- **Plan for CoSTOS: keep all eight Pt1000 sensors** with the HAT's
   [PT edition](HAT.md#11-pt-edition-8--pt1000) (8 × Pt1000 on an
   LTC2983, plus one 1-Wire bus). S1–S8 connect as they are: no new
   sensors, nothing changes at the store or the pipes, and the readings
@@ -63,7 +63,7 @@ be BX Plus inputs S1–S8.
   - **S4 (solar flow) can briefly exceed a DS18B20's 125 °C** after a
     stagnation day; fitting the HAT's PT2 position and keeping S4 as
     Pt1000 (2 Pt1000 + 6 DS18B20) avoids that for about €9. And a short in
-    one probe or its cable takes down its whole bus: OSCoST then treats
+    one probe or its cable takes down its whole bus: CoSTOS then treats
     those sensors as unknown, never as cold.
   - Cost comparison of both options:
     [HAT.md 11.6](HAT.md#116-choice-of-measuring-chip).
@@ -78,7 +78,7 @@ be BX Plus inputs S1–S8.
 | Relay 1 | `relay_01` | Solar pump, mains |
 | PWM A | `PWM_0_10V_A` | Solar pump, speed (PWM2) |
 
-No other relays or outputs are in use. With OSCoST the solar pump is
+No other relays or outputs are in use. With CoSTOS the solar pump is
 **permanently powered and stopped over PWM only** (option A, HAT D15), so
 only PUMP1 is used; REL1 stays free for an optional cut-off relay.
 
@@ -129,18 +129,18 @@ Source: Wilo, *Wilo-Para iPWM Communication Protocol*, technical guide V1.01.
 Dry running and the deblocking routine show up as 5 % while running. Wilo
 documents this table for its Para series; the Yonos PARA iPWM uses the same
 VDMA 24224 interface, but **verify the values on the real pump** (2 % when
-stopped, 5–75 % when running) before OSCoST relies on them.
+stopped, 5–75 % when running) before CoSTOS relies on them.
 
-### Consequences for OSCoST
+### Consequences for CoSTOS
 
-- OSCoST preset **"Wilo PWM2"**: stop = 0 %, start at ≥ 20 %, regulate
+- CoSTOS preset **"Wilo PWM2"**: stop = 0 %, start at ≥ 20 %, regulate
   between 15 % (minimum) and 100 % (maximum). The 7–15 % band, where
   start/stop depends on the previous state, is never used.
 - Output stage: the driver board or optocoupler module from
   [Hardware needed](HARDWARE.md#pwm-pump-output). 12 V is inside the input
   range (max. 15 V).
 - Frequency: 500 Hz (the RESOL controller uses 512 Hz).
-- **The feedback output gives OSCoST real pump monitoring**: confirmation
+- **The feedback output gives CoSTOS real pump monitoring**: confirmation
   that a stop really stopped the pump (2 %), that it runs when commanded
   (5–75 %), warnings (80 %), and errors (85–95 %), plus "no power" (100 %),
   which detects a lost supply (tripped breaker, unplugged pump). The driver board has the input
@@ -171,7 +171,7 @@ store on its overview page from the same data (see
 | Store-water connections | 1½" at 1560, 970, 660, 170 mm (right) and 905 mm (left) |
 | ½" sleeves | 1280, 455 mm (right); 1270, 560 mm (left) |
 
-- The store's 95 °C limit bounds OSCoST's store maximum and its emergency
+- The store's 95 °C limit bounds CoSTOS's store maximum and its emergency
   store shutdown: both have to stay below 95 °C.
 - **Lower coil: solar circuit**, in at 810 mm (top connection), out at
   300 mm (bottom), so S4 (solar flow) and S5 (solar return) measure the
@@ -205,10 +205,10 @@ tubes are in place.
   function" (short pump runs to bring heat to the sensor) is **off** in the
   BX Plus, as expected.
 - **Daily pump kick:** the BX Plus runs the pump once a day for a short
-  pulse so it doesn't seize. OSCoST does the same (anti-seize run,
+  pulse so it doesn't seize. CoSTOS does the same (anti-seize run,
   configurable time and duration).
 - **208 °C stagnation:** far above a DS18x20's range, so S1 stays Pt1000
-  (as planned), and OSCoST's collector emergency shutdown and cooling
+  (as planned), and CoSTOS's collector emergency shutdown and cooling
   functions matter on hot summer days with a full store.
 - A broken tube just lowers the output; a heat pipe has no fluid
   connection to the solar circuit, so there is no leak.
@@ -226,7 +226,7 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
 | Dynamic viscosity | 6.2 mPa·s |
 | Boiling point at 1013 mbar | > 102 °C (higher under system pressure) |
 
-- OSCoST's heat quantity uses this fluid (propylene glycol, −32 °C mix);
+- CoSTOS's heat quantity uses this fluid (propylene glycol, −32 °C mix);
   its density and specific heat change with temperature, so the fluid
   type is a setting and the calculation uses temperature-dependent values.
 - Frost protection to −32 °C: no pump runs for frost protection are
@@ -238,7 +238,7 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
 
 - **No pulse flowmeter** in the solar circuit, so the HAT needs no flow
   input.
-- OSCoST estimates the flow from the pump speed (PWM duty) with a
+- CoSTOS estimates the flow from the pump speed (PWM duty) with a
   calibration table (flow at a few duty values, read once from a flow
   indicator or worked out from a measured heat output), and calculates
   the heat output from S4/S5 with it. The web interface marks these
@@ -254,7 +254,7 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
 - **No independent overtemperature cut-out**, and none planned. In
   practice the store doesn't reach its 95 °C limit: the household uses
   enough hot water, and during holidays part of the collector is covered.
-- Protection therefore rests on OSCoST's own layers: store maximum and
+- Protection therefore rests on CoSTOS's own layers: store maximum and
   emergency store shutdown below 95 °C, collector emergency shutdown, and
   the hardware watchdog that forces the PWM low (HAT D8). With the pump
   permanently powered (HAT D15) that is the only hardware stop path; a
@@ -268,7 +268,7 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
 ## Integrations
 
 - VictoriaMetrics: yes (the existing instance vbus2influx writes to).
-- MQTT / Home Assistant: **not used**. It stays an option in OSCoST,
+- MQTT / Home Assistant: **not used**. It stays an option in CoSTOS,
   disabled by default.
 
 ## Open points

@@ -1,6 +1,6 @@
 # Hardware needed
 
-This page lists the electronics OSCoST needs between the single-board
+This page lists the electronics CoSTOS needs between the single-board
 computer and the system, and how to build them. It grows as the hardware is
 designed. Right now it covers:
 
@@ -9,7 +9,7 @@ designed. Right now it covers:
 
 > **Safety.** Everything on this page is low voltage (5 V and 12 V). While
 > the RESOL controller is still in place, the pump keeps its 230 V from the
-> RESOL relay. Once OSCoST controls the pump, the pump stays permanently on
+> RESOL relay. Once CoSTOS controls the pump, the pump stays permanently on
 > 230 V and is stopped **only over PWM** (low signal = stop with a
 > solar-profile pump; see [230 V side](ARCHITECTURE.md#56-230-v-side)). So
 > the PWM stage must never output a high signal on its own: use only
@@ -118,7 +118,7 @@ What each part does:
   75 Hz feedback signal.
 
 Without a pump connected to J2 FB, R4 simply holds the GPIO at 3.3 V. That
-is harmless; OSCoST is told per pump whether there is a feedback signal to
+is harmless; CoSTOS is told per pump whether there is a feedback signal to
 read and ignores the input otherwise.
 
 #### Parts list
@@ -336,7 +336,7 @@ averages the PWM):
    - back to `0`: pump stops.
 5. Check the feedback (iPWM pumps), see below.
 6. Finally plug the signal cable back into the RESOL controller and set its
-   relay back to Auto, until OSCoST takes over.
+   relay back to Auto, until CoSTOS takes over.
 
 #### Checking the feedback signal
 
@@ -345,7 +345,7 @@ Wilo documents the meaning of the feedback duty cycle for its Para series
 2 % = stopped and ready, 5–75 % = running, 80 % = warning, 85–95 % =
 stopped by an error, 100 % = no power. The Yonos PARA iPWM uses the same
 interface standard, but its own manual doesn't list the table. This check
-confirms the values before OSCoST relies on them, and also tells which way
+confirms the values before CoSTOS relies on them, and also tells which way
 round the signal is counted.
 
 The direction follows from the hardware: an unpowered pump can't switch
@@ -365,11 +365,11 @@ the 75 Hz signal, which is enough to check this:
 
 If the readings follow this pattern, the table applies to this pump; note
 the result in [Reference installation](installation.md). If they don't,
-OSCoST uses the feedback only as "signal present / absent" until the
+CoSTOS uses the feedback only as "signal present / absent" until the
 correct table is known.
 
 Exact duty-cycle values (to tell 85 % from 90 % from 95 %) need the
-software: OSCoST measures the time between edges on the GPIO.
+software: CoSTOS measures the time between edges on the GPIO.
 
 ---
 
@@ -543,7 +543,7 @@ isolation is gone.
 3. **Check whether it inverts.** Measure OUT against V− with IN+ **open**
    and with IN+ on **3.3 V**:
    - 0 V when open, about 12 V on 3.3 V: **non-inverting**. Good.
-   - About 12 V when open, 0 V on 3.3 V: **inverting**. OSCoST can invert
+   - About 12 V when open, 0 V on 3.3 V: **inverting**. CoSTOS can invert
      its output in the settings, but with an inverting module the pump
      gets **100 %** whenever the Pi is off or booting. With the PWM2
      profile that means full speed instead of stop, and with the pump

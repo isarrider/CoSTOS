@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1180" height="800" viewBox="0 0 1180 800" font-family="Helvetica, Arial, sans-serif">
-<title>OSCoST HAT rev A: watchdog, PWM pump outputs and feedback inputs</title>
+<title>CoSTOS HAT rev A: watchdog, PWM pump outputs and feedback inputs</title>
 <desc>Retriggerable monostable watchdog producing WD_OK; two PWM channels gated by WD_OK through AND gates into a TC4427 driver at 12 V with series resistor and TVS; pump feedback inputs with pull-up and RC filter.</desc>
 <style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
 <rect width="1180" height="800" fill="white"/>
@@ -85,7 +85,7 @@
 <polygon points="590,220 598,211 641,211 641,229 598,229" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="619.5" y="224" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
 <text x="20" y="430" class="n" text-anchor="start">Timeout ≈ R3 · C5 ≈ 3 s (tuned at bring-up). Only rising</text>
-<text x="20" y="445" class="n" text-anchor="start">edges on B retrigger U3: OSCoST toggles HEARTBEAT once per</text>
+<text x="20" y="445" class="n" text-anchor="start">edges on B retrigger U3: CoSTOS toggles HEARTBEAT once per</text>
 <text x="20" y="460" class="n" text-anchor="start">control cycle (1 s), so an edge arrives every 2 s. A line</text>
 <text x="20" y="475" class="n" text-anchor="start">stuck high or low lets WD_OK drop.</text>
 <text x="20" y="490" class="n" text-anchor="start">Power-up: R4/C6 hold CLR low; Q then stays low until the</text>

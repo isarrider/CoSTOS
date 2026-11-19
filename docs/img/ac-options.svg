@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 640" font-family="Helvetica, Arial, sans-serif">
 <style>.t{font-size:12px;font-weight:bold}.s{font-size:10.5px;fill:#333}.o{font-size:10px;font-style:italic;fill:#888}.h{font-size:15px;font-weight:bold}.c{font-size:15px;font-weight:bold;fill:#2b6e2b}.n{font-size:11px;fill:#333}.big{font-size:17px;font-weight:bold}</style>
 <rect width="1520" height="640" fill="white"/>
-<text x="20" y="34" class="big" text-anchor="start">OSCoST — three slim options for the 230 V side (pump: Wilo iPWM2, solar profile)</text>
+<text x="20" y="34" class="big" text-anchor="start">CoSTOS — three slim options for the 230 V side (pump: Wilo iPWM2, solar profile)</text>
 <g transform="translate(20,55)">
 <rect x="0" y="0" width="480" height="570" rx="10" fill="#fcfcfc" stroke="#bbb"/>
 <text x="14" y="26" class="h" text-anchor="start">A — no mains work</text>
