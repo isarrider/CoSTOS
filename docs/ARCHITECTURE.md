@@ -454,7 +454,7 @@ runs on both:
 | I²C (DS2482) | `/dev/i2c-N` |
 | 1-Wire (kernel master) | `/sys/bus/w1/` (`w1-gpio` + `w1_therm`) |
 | PWM | sysfs PWM (`/sys/class/pwm`) |
-| Supply under-voltage | hwmon sensor `rpi_volt` from the firmware driver `raspberrypi-hwmon`: `/sys/class/hwmon/hwmonN/in0_lcrit_alarm` (find N by its `name` file), read once per second; the flag is sticky, so short dips are seen too (Pi 3/4; checked on the Pi 5 during bring-up, fallback `vcgencmd get_throttled`) |
+| Supply under-voltage | hwmon sensor `rpi_volt` from the firmware driver `raspberrypi-hwmon`: `/sys/class/hwmon/hwmonN/in0_lcrit_alarm` (find N by its `name` file), read once per second (the driver polls the firmware every few seconds). Short dips in between are caught by the firmware's "under-voltage has occurred" bit (bit 16 of `vcgencmd get_throttled` / the mailbox call behind it), checked as well. Pi 3/4; checked on the Pi 5 during bring-up |
 | PWM feedback | GPIO edge events with kernel timestamps |
 | Watchdog | `/dev/watchdog` |
 
