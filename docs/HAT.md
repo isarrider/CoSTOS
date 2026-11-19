@@ -39,7 +39,7 @@ which is a safety requirement: [ARCHITECTURE 5.3](ARCHITECTURE.md#pump-requireme
 ## Which HAT? All editions compared
 
 Prices are estimates until a real BOM exists (cost model:
-[HAT-1wire.md 8.2](HAT-1wire.md#82-fully-assembled-rough-estimate)).
+[HAT-1wire.md 8.2](HAT-1wire.md#82-what-one-controller-costs)).
 🟢 good, 🟡 medium, 🔴 weak or missing.
 
 | | **1-Wire edition** | **1-Wire Lite** | **PT edition** |
@@ -57,11 +57,11 @@ Prices are estimates until a real BOM exists (cost model:
 | ***The same on all*** | | | |
 | Transistor pump driver with watchdog gating and output readback, field-line protection, power from the Pi, PWR / WD / PUMP1 LEDs, silkscreen cheat sheet, size and tall header | 🟢 | 🟢 | 🟢 |
 | ***Cost*** (incl. 19 % VAT unless noted) | | | |
-| **Price for one** (smallest assembled order: 2 boards) | ≈ €81 | 🟢 **≈ €64** | 🔴 ≈ €149 |
-| Assembled, per board in a group order of 5 | ≈ €24 | 🟢 ≈ €17.50 | 🔴 ≈ €58 |
-| Build it yourself (parts + 3 bare PCBs) | ≈ €49 | 🟢 ≈ €43 | 🔴 ≈ €90 |
-| Parts for one board (excl. VAT) | ≈ €28.60 | ≈ €24.10 | ≈ €63.60 (LTC2983 ≈ €39 of it) |
-| **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €17** | 🔴 **≈ €68 more** |
+| **Price for one** (smallest assembled order: 2 boards) | ≈ €78 | 🟢 **≈ €68** | 🔴 ≈ €165 |
+| Assembled, per board in a group order of 5 | ≈ €22.50 | 🟢 ≈ €19.50 | 🔴 ≈ €66 |
+| Build it yourself (parts from LCSC + 3 bare PCBs, LCSC shipping extra) | ≈ €33 | 🟢 ≈ €31 | 🔴 ≈ €76 |
+| Parts for one board (LCSC prices, excl. VAT) | ≈ €15.30 | ≈ €13.90 | ≈ €51.50 (LTC2983 ≈ €39 of it) |
+| **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €10** | 🔴 **≈ €87 more** |
 | ***Building and status*** | | | |
 | Hardest part to solder (only when building it yourself) | 🟡 MAX31865, SSOP-20 at 0.65 mm pitch | 🟡 same as the 1-Wire edition | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
 | Upgrade later | — | 🟢 to the normal build: fit the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9, D4 and R31, fit the REL1 parts | — |

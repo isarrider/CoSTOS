@@ -577,36 +577,41 @@ The PT edition gets the same layout with its own terminal table (S1–S8 as
   assembly services compared:
   [HAT-development.md 5](HAT-development.md#5-assembly-services-compared-d7-d20).
 
-### 8.1 Cost estimate (rev A as fitted, per board)
+### 8.1 Parts list with prices (rev A as fitted, per board)
 
-Single-quantity distributor prices without VAT, at the time of writing.
-Only the MAX31865 price is checked (DigiKey, €8.76 for one); the rest are
-estimates until the BOM exists. Unfitted positions are not counted, nor
-are the Pi, its USB-C supply, an optional relay and the sensors.
+Single-quantity prices without VAT at **LCSC**, the parts store behind
+JLCPCB, November 2026, at $1 ≈ €0.87. "Checked" prices were looked up;
+the others are typical LCSC prices for basic parts and get checked when
+the BOM exists. Unfitted positions are not counted, nor are the Pi, its
+USB-C supply, an optional relay and the sensors. (Earlier versions used
+single prices from EU distributors such as DigiKey, which are two to
+eight times higher for these parts.)
 
-| Part | Qty | ≈ € |
-|---|---|---|
-| MAX31865AAP+ (Pt1000 converter) | 1 | 8.80 |
-| PCB, ⅓ of an AISLER set of 3 (≈ €19) | — | 6.50 |
-| B0512S-1WR3 DC/DC | 1 | 3.00 |
-| 40-pin stacking header and 4 spacers | 1 | 3.00 |
-| 3.5 mm fixed screw terminals (PT1, 1W-A, 1W-B, PUMP1, REL1) | 5 | 2.50 |
-| Resistors and capacitors, about 25 (the 0.1 % 4.3 kΩ is about €0.80 of it) | — | 2.50 |
-| TPS22918 | 1 | 0.60 |
-| LEDs (PWR, WD, PUMP1, R1) | 4 | 0.65 |
-| 74LVC1G123 | 1 | 0.40 |
-| SMBJ13A | 1 | 0.20 |
-| PESD5V0 ESD diodes (PT1 × 2, 1W-A, 1W-B, FB1) | 5 | 0.50 |
-| Pump driver transistors: MMBT3904 × 3, MMBT3906 × 1 (D22) | 4 | 0.08 |
-| 100 mA polyfuse | 1 | 0.20 |
-| AO3400A, 1N4148W | 2 | 0.20 |
-| **Total** | | **≈ 28.60** |
+| Part | Qty | LCSC | ≈ € | Source |
+|---|---|---|---|---|
+| MAX31865AAP+ (Pt1000 converter) | 1 | $4.45 ($3.94 when JLCPCB fits it) | 3.87 | checked |
+| PCB, ⅓ of an AISLER set of 3 (≈ €19), for building it yourself | — | — | 6.50 | AISLER |
+| 74LVC1G123 (watchdog) | 1 | $1.48 | 1.29 | checked |
+| 40-pin tall female header and 4 M2.5 spacers (D16) | 1 | ≈ $1.40 | 1.25 | estimate |
+| B0512S-1WR3 DC/DC | 1 | $1.05–1.46 by maker | 1.10 | checked |
+| Resistors and capacitors, about 30 (incl. the 4.3 kΩ 0.1 % reference) | — | ≈ $0.60 | 0.50 | estimate |
+| 3.5 mm fixed screw terminals (PT1, 1W-A, 1W-B, PUMP1, REL1), e.g. Kefa KF350 | 5 | $0.06 (2-pole) – $0.08 (3-pole) | 0.30 | checked (2-pole) |
+| PESD5V0 ESD diodes (PT1 × 2, 1W-A, 1W-B, FB1) | 5 | ≈ $0.03 | 0.13 | estimate |
+| TPS22918 (relay supply switch) | 1 | $0.14 | 0.12 | checked |
+| LEDs (PWR, WD, PUMP1, R1) | 4 | ≈ $0.01 | 0.04 | estimate |
+| SMBJ13A | 1 | ≈ $0.05 | 0.04 | estimate |
+| Pump driver transistors: MMBT3904 × 3, MMBT3906 × 1 (D22) | 4 | ≈ $0.01 | 0.04 | estimate |
+| 100 mA polyfuse | 1 | ≈ $0.03 | 0.03 | estimate |
+| AO3400A, 1N4148W | 2 | ≈ $0.02 | 0.03 | estimate |
+| **Total, with ⅓ of an AISLER PCB set** | | | **≈ 15.30** | |
+| Total without PCB (the parts JLCPCB fits) | | | ≈ 8.80 | |
 
-Earlier figures (before D18 and D22) are in the decisions. The watchdog (with its switch in the pump driver chain) and the relay supply switch are about €1.50–2 of
-this (D8). Pluggable terminals would add about €4 (D10). The PT edition's
-list is in [HAT-PT.md 5](HAT-PT.md#5-space-and-cost).
+The MAX31865 and the watchdog chip are the two most expensive parts. The
+terminal brand is a choice still to make: Kefa KF350 is the cheap common
+one; brand-name blocks (Phoenix, Dinkle) cost several times more. The PT
+edition's list is in [HAT-PT.md 5](HAT-PT.md#5-space-and-cost).
 
-### 8.2 Fully assembled: rough estimate
+### 8.2 What one controller costs
 
 Factory assembly has fixed costs per order, so the price depends mostly
 on how many boards are ordered. **Most people want one controller**, but
@@ -614,33 +619,39 @@ JLCPCB's smallest economic assembly order is 2 boards, so "price for one"
 below means the total of that smallest order; the second board is a spare
 (or for a friend).
 
-Rough JLCPCB estimates, incl. shipping and 19 % import VAT, built from
-their published fees (setup fee, per-joint fees for SMD and through-hole,
-a feeder fee of about €2.80 per non-basic part type, a hand-soldering fee
-per order) plus the parts at LCSC prices. Model: a **fixed part per
-order** (≈ €54.40 for the normal build, ≈ €48.40 for the 1-Wire Lite with
-two non-basic part types fewer) plus a **variable part per board**
-(≈ €13.30 normal, ≈ €7.80 1-Wire Lite, ≈ €47.30 PT edition with the consigned
-LTC2983). Without the power input (D18) and with the transistor driver
-chain (D22), which each removed two non-basic part types.
+**The model** (JLCPCB, incl. shipping and 19 % import VAT; estimates until
+a real quote exists):
 
-**What one controller costs**, by how you get the board (estimates, all
-incl. 19 % VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
+- **Fixed part per order:** setup and stencil, a loading fee of about
+  €2.80 for each part type that is not a JLCPCB basic part, the
+  through-hole soldering setup and shipping: ≈ €54.40 for the 1-Wire
+  edition and the PT edition (four such part types: MAX31865 or LTC2983
+  handling, 74LVC1G123, B0512S, TPS22918), ≈ €48.40 for the 1-Wire Lite
+  (two fewer).
+- **Variable part per board:**
+
+  | | 1-Wire edition | 1-Wire Lite | PT edition |
+  |---|---|---|---|
+  | Parts at JLCPCB/LCSC prices (8.1, without PCB) | €8.30 | €6.95 | €45.00 (LTC2983 ≈ €39, bought at DigiKey and consigned) |
+  | PCB share (JLCPCB makes 5 bare boards) | €0.40 | €0.40 | €0.40 |
+  | Soldering per joint (SMD and through-hole) | €1.00 | €0.95 | €1.20 |
+  | **Per board, incl. 19 % VAT** | **≈ €11.55** | **≈ €9.90** | **≈ €55.45** |
+
+**What one controller costs**, by how you get the board (all incl. 19 %
+VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
 
 | How you get it | What you pay for | **1-Wire edition** | **1-Wire Lite** | **1-Wire Lite saves** | **PT edition** |
 |---|---|---|---|---|---|
-| **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €81** | 🔴 **≈ €64** | ≈ €17 | 🔴 **≈ €149** |
-| **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €24** | 🟢 **≈ €17.50** | ≈ €6.50 | 🟢 **≈ €58** |
-| **Build it yourself** | parts for one board plus a set of 3 bare PCBs (AISLER, ≈ €19); needs SMD soldering (fine-pitch MAX31865 / LTC2983); parts shipping not included | 🟡 **≈ €49** | 🟡 **≈ €43** | ≈ €5.50 | 🟡 **≈ €90** |
+| **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €78** | 🔴 **≈ €68** | ≈ €10 | 🔴 **≈ €165** |
+| **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €22.50** | 🟢 **≈ €19.50** | ≈ €3 | 🟢 **≈ €66** |
+| **Build it yourself** | parts for one board from LCSC plus a set of 3 bare PCBs (AISLER, ≈ €19 + VAT); needs SMD soldering (fine-pitch MAX31865 / LTC2983); LCSC shipping (≈ €10–20) not included | 🟡 **≈ €33** | 🟡 **≈ €31** | ≈ €2 | 🟡 **≈ €76** |
 
-The parts lists (8.1, [HAT-PT.md 5](HAT-PT.md#5-space-and-cost), 11.2) show **≈ €28.60 / €24.10 / €63.60**: that is
-the parts for one board excluding VAT, with one third of the PCB set, so
-it fits a group build, not someone building a single board.
-
-For one controller, the fixed costs dominate: that is why the 1-Wire Lite, with two non-basic
-part types fewer, saves more per order (≈ €17) than its parts suggest
-(≈ €4.50). AISLER's assembly price is not estimated
-here; it gets quoted with the BOM.
+For one controller, the fixed costs dominate: the 1-Wire Lite saves about
+€10 per order, mostly because it needs two loading fees fewer, while its
+parts are only about €1.40 cheaper (the DC/DC costs about €1.10 at LCSC).
+AISLER's assembly price is not estimated here; it gets quoted with the
+BOM. Earlier estimates (with EU distributor prices, before D18 and D22)
+are in the decisions.
 
 ## 9. Bring-up and testing
 
@@ -661,7 +672,7 @@ the result; the decision number in brackets leads to the reason.
 
 The cheapest way to a CoSTOS controller: **the same 1-Wire edition
 board with fewer parts fitted**, not a separate board. It saves about
-**€4.50 per board** in parts (≈ €17 for one controller), can be upgraded to the full build by soldering the
+**≈ €1.40 per board** in parts and **≈ €10 for one controller** (two loading fees fewer), can be upgraded to the full build by soldering the
 missing parts on, and needs no second layout (why not a dedicated Lite
 board: [HAT-development.md 3](HAT-development.md#3-1-wire-lite-why-no-dedicated-board-d19)).
 
@@ -732,8 +743,8 @@ Single-quantity parts; "saved" is what the 1-Wire Lite saves on that row.
 | | **Normal build** | **1-Wire Lite** | **Saved** |
 |---|---|---|---|
 | ***Left out in the 1-Wire Lite*** | | | |
-| 12 V DC/DC block: U2 with its input and output capacitors C3, C4, minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.7 V at the pump | **€3.08** |
-| Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€1.55** |
+| 12 V DC/DC block: U2 with its input and output capacitors C3, C4, minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.55 V at the pump | **€1.15** |
+| Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€0.21** |
 | R26 (0 Ω) | not fitted | fitted | **−€0.01** |
 | R9 series resistor, D4 TVS (4.1) | 470 Ω, SMBJ13A | **100 Ω, SMBJ6.0A** | — |
 | R31 readback divider (4.1) | 27 kΩ | **6.8 kΩ** | — |
@@ -741,9 +752,9 @@ Single-quantity parts; "saved" is what the 1-Wire Lite saves on that row.
 | MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
 | Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
 | ***Totals*** | | | |
-| Parts, single quantity | ≈ €28.60 | ≈ €24.10 | **≈ €4.50** |
-| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €81 | ≈ €64 | **≈ €17** |
-| Assembled, per board in a batch of 5 | ≈ €24 | ≈ €17.50 | **≈ €6.50** |
+| Parts, single quantity (LCSC, with ⅓ AISLER PCB set) | ≈ €15.30 | ≈ €13.90 | **≈ €1.40** |
+| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €78 | ≈ €68 | **≈ €10** |
+| Assembled, per board in a batch of 5 | ≈ €22.50 | ≈ €19.50 | **≈ €3** |
 | Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9 to 470 Ω, D4 to SMBJ13A and R31 to 27 kΩ, and fit the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that

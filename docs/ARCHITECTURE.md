@@ -1142,7 +1142,12 @@ port (pin check in [HAT-development 7](HAT-development.md#7-considered-waveshare
 
 ### 13.1 Cost per controller, including the computer
 
-The Pi rows include an SD card (≈ €10).
+The Pi rows include an SD card (≈ €10). The HAT figures in this section
+use the earlier single prices from EU distributors; with LCSC prices the
+HAT parts cost ≈ €15 (1-Wire edition) and ≈ €52 (PT edition), see
+[HAT-1wire 8.1](HAT-1wire.md#81-parts-list-with-prices-rev-a-as-fitted-per-board).
+The comparison between the platforms still holds, since every row
+carries the same HAT parts.
 
 | Base | Compute part | 1-Wire edition | PT edition | 5 V supply |
 |---|---|---|---|---|

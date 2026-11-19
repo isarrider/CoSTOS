@@ -85,32 +85,32 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
   resistors and ESD diodes fit comfortably where the 1-Wire edition has
   PT1, PT2, the DS2482 footprint and the second 1-Wire bus (see the
   mockup).
-- **Cost** (estimates, comparison in [HAT-development.md 4](HAT-development.md#4-pt-edition-choice-of-measuring-chip-d13), assembly model in [HAT-1wire.md 8.2](HAT-1wire.md#82-fully-assembled-rough-estimate)):
-  **≈ €149 for one** (smallest assembled order, 2 boards), about €58 per
-  board in a batch of 5, about **€63.60 in single-quantity parts** (without
-  the power input, D18, with the transistor driver chain, D22):
+- **Cost** (estimates, comparison in [HAT-development.md 4](HAT-development.md#4-pt-edition-choice-of-measuring-chip-d13), assembly model in [HAT-1wire.md 8.2](HAT-1wire.md#82-what-one-controller-costs)):
+  **≈ €165 for one** (smallest assembled order, 2 boards), about €66 per
+  board in a batch of 5, about **€51.50 in single-quantity parts** (LCSC
+  prices as in HAT-1wire 8.1, the LTC2983 from DigiKey):
 
 | Part | Qty | ≈ € |
 |---|---|---|
-| LTC2983 (8 × Pt1000; DigiKey $39.06 for one) | 1 | 39.00 |
-| PCB, ⅓ of an AISLER set of 3 (≈ €19) | — | 6.50 |
-| 3.5 mm fixed screw terminals: two-level 8-position block, REL1, PUMP1, 1W-A | 4 | 4.00 |
-| Resistors and capacitors, about 45 (incl. the 2 kΩ 0.1 % sense resistor and 16 protection resistors) | — | 3.80 |
-| B0512S-1WR3 DC/DC | 1 | 3.00 |
-| 40-pin stacking header and 4 spacers | 1 | 3.00 |
-| PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire, FB1) | 18 | 1.80 |
-| TPS22918 | 1 | 0.60 |
-| LEDs (PWR, WD, PUMP1, R1) | 4 | 0.65 |
-| 74LVC1G123 | 1 | 0.40 |
-| SMBJ13A | 1 | 0.20 |
-| Pump driver transistors: MMBT3904 × 3, MMBT3906 × 1 (D22) | 4 | 0.08 |
-| 100 mA polyfuse | 1 | 0.20 |
-| AO3400A, 1N4148W | 2 | 0.20 |
-| **Total** | | **≈ 63.60** |
+| LTC2983 (8 × Pt1000; DigiKey $39.06 for one; LCSC rarely stocks it) | 1 | 39.00 |
+| PCB, ⅓ of an AISLER set of 3 (≈ €19), for building it yourself | — | 6.50 |
+| 74LVC1G123 (watchdog) | 1 | 1.29 |
+| 40-pin tall female header and 4 M2.5 spacers | 1 | 1.25 |
+| B0512S-1WR3 DC/DC | 1 | 1.10 |
+| Resistors and capacitors, about 45 (incl. the 2 kΩ 0.1 % sense resistor and 16 protection resistors) | — | 0.80 |
+| 3.5 mm fixed screw terminals: two-level 8-position block, REL1, PUMP1, 1W-A | 4 | 0.80 |
+| PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire, FB1) | 18 | 0.47 |
+| TPS22918 | 1 | 0.12 |
+| LEDs (PWR, WD, PUMP1, R1) | 4 | 0.04 |
+| SMBJ13A | 1 | 0.04 |
+| Pump driver transistors: MMBT3904 × 3, MMBT3906 × 1 (D22) | 4 | 0.04 |
+| 100 mA polyfuse | 1 | 0.03 |
+| AO3400A, 1N4148W | 2 | 0.03 |
+| **Total** | | **≈ 51.50** |
 
-  The LTC2983 is more than half of it; everything apart from the
-  converter chip costs about €5 more than on the 1-Wire edition
-  ([HAT-1wire.md 8.1](HAT-1wire.md#81-cost-estimate-rev-a-as-fitted-per-board)), for the bigger terminal block and the protection of the
+  The LTC2983 is three quarters of it; everything apart from the
+  converter chip costs about €1 more than on the 1-Wire edition
+  ([HAT-1wire.md 8.1](HAT-1wire.md#81-parts-list-with-prices-rev-a-as-fitted-per-board)), for the bigger terminal block and the protection of the
   16 sensor wires.
 - **Sourcing:** LCSC rarely has the LTC2983 in stock. For JLCPCB assembly
   the chips are bought at DigiKey (≈ €39) and consigned to JLCPCB, or
