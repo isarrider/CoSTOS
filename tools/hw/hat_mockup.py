@@ -44,11 +44,11 @@ for i in range(20):
     x = 137 + 10 + i * 20.32
     for y in (48, 68):
         out.append(f'<rect x="{x-3:.1f}" y="{y-3}" width="6" height="6" fill="#C9A227"/>')
-t(340, 98, "40-pin header to the Pi (stacking header for the Pi 5 cooler)", 11, "#E8F5E9", 400, "middle")
+t(330, 96, "40-pin header to the Pi", 10, "#E8F5E9")
 # EEPROM footprint
-ex = 420 if pt else 320
+ex = 430
 out.append(f'<rect x="{ex}" y="108" width="56" height="24" rx="2" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
-t(ex + 64, 124, "ID EEPROM, not fitted", 11, "#C8E6C9")
+t(ex + 62, 124, "ID EEPROM (n.f.)", 10, "#C8E6C9")
 # left terminals
 def term_v(y0, n, name, sub, pins, fitted=True):
     h = 28 * n
@@ -100,14 +100,28 @@ def term_h(x0, n, name, pins, fitted=True):
             out.append(f'<circle cx="{cx}" cy="466" r="4" fill="#C9A227"/>')
         t(cx, 512, pins[k], 11, None, 400, "middle", on_board=False)
     t(x0 + w/2, 440, name + ("" if fitted else " (n.f.)"), 12, "#ffffff" if fitted else "#E8F5E9", 500, "middle")
-term_h(216, 2, "REL1", ["+5V", "OUT"], fitted=not lite)
-term_h(284, 2, "REL2", ["+5V", "OUT"], fitted=False)
+term_h(216, 3, "PUMP2", ["PWM", "GND", "FB"], fitted=False)
 if pt:
-    term_h(352, 3, "1W-A", ["3V3", "DQ", "GND"])
+    term_h(316, 3, "1W-A", ["3V3", "DQ", "GND"])
+    term_h(410, 2, "REL2", ["+5V", "OUT"], fitted=False)
 else:
-    term_h(352, 2, "PT2", ["A", "B"], fitted=False)
-term_h(448 if pt else 420, 3, "PUMP2", ["PWM", "GND", "FB"], fitted=False)
-# chips, left column
+    term_h(316, 2, "PT2", ["A", "B"], fitted=False)
+    term_h(390, 2, "REL2", ["+5V", "OUT"], fitted=False)
+term_h(500, 2, "REL1", ["+5V", "OUT"], fitted=not lite)
+# ---- signal paths on the silkscreen (D21): thin white lines, arrows, small text ----
+out.append('<defs><marker id="fa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" '
+           'orient="auto-start-reverse"><path d="M1 1L9 5L1 9Z" fill="#ffffff"/></marker></defs>')
+def flow(*pts, dash=False):
+    d = " ".join(f"{x},{y}" for x, y in pts)
+    da = ' stroke-dasharray="4 3"' if dash else ""
+    out.append(f'<polyline points="{d}" fill="none" stroke="#ffffff" stroke-width="1.3" opacity="0.9"{da} marker-end="url(#fa)"/>')
+def ft(x, y, s_, anchor="start"):
+    t(x, y, s_, 9, "#FFFFFF", 400, anchor)
+def nf_chip(x, y, w, h, title, sub):
+    out.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
+    t(x + w/2, y + h/2 - 2, title, 11, "#E8F5E9", 500, "middle")
+    t(x + w/2, y + h/2 + 10, sub, 9, "#C8E6C9", 400, "middle")
+# sensors
 if pt:
     chip(170, 118, 120, 96, "LTC2983", "8 × Pt1000, 20 inputs")
     chip(170, 226, 120, 34, "R sense 2 kΩ", "0.1 %, shared")
@@ -115,36 +129,46 @@ if pt:
     for k in range(8):
         out.append(f'<rect x="306" y="{124 + k*17}" width="12" height="6" fill="#C9A227"/><rect x="322" y="{124 + k*17}" width="12" height="6" fill="#C9A227"/>')
     t(320, 276, "input protection", 11, "#C8E6C9", 400, "middle")
-    chip(170, 272, 96, 30, "1-Wire", "pull-up, ESD, fuse")
+    flow((148, 166), (168, 166))
+    flow((230, 118), (230, 81)); ft(235, 100, "SPI")
+    chip(170, 270, 96, 26, "1-Wire", "pull-up, ESD")
 else:
-    chip(205, 110, 100, 46, "MAX31865", "Pt1000 #1")
-    out.append('<rect x="205" y="178" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
-    t(255, 198, "MAX31865 #2", 12, "#E8F5E9", 500, "middle")
-    t(255, 213, "not fitted", 11, "#C8E6C9", 400, "middle")
-    out.append('<rect x="205" y="246" width="100" height="46" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
-    t(255, 266, "DS2482", 12, "#E8F5E9", 500, "middle")
-    t(255, 281, "not fitted", 11, "#C8E6C9", 400, "middle")
-# bottom rows
-chip(196, 368, 78, 46, "Pump driver", "Q4–Q7")
-chip(282, 368, 78, 46, "Bulk C", "5 V from the Pi")
-def nf_chip(x, y, w, h, title, sub):
-    out.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="3" fill="none" stroke="#E8F5E9" stroke-width="1" stroke-dasharray="3 3"/>')
-    t(x + w/2, y + h/2 - 3, title, 12, "#E8F5E9", 500, "middle")
-    t(x + w/2, y + h/2 + 12, sub, 11, "#C8E6C9", 400, "middle")
+    chip(205, 110, 80, 40, "MAX31865", "Pt1000 #1")
+    flow((176, 120), (204, 120))
+    flow((245, 110), (245, 81)); ft(250, 100, "SPI")
+    nf_chip(318, 112, 90, 30, "MAX31865 #2", "not fitted")
+    nf_chip(318, 152, 90, 30, "DS2482", "not fitted")
+    flow((190, 200), (300, 200), (300, 81)); ft(196, 195, "1-Wire A → GPIO4")
+    flow((190, 290), (310, 290), (310, 81)); ft(196, 285, "1-Wire B → GPIO17")
+# pump chain (D22), row Q
+chip(205, 332, 78, 36, "Q6 · Q7", "push-pull")
+chip(300, 332, 78, 36, "Q4 · Q5", "PWM and WD")
+chip(400, 332, 78, 36, "Watchdog", "3 s timeout")
+flow((339, 296), (339, 330)); ft(343, 310, "PWM ← GPIO18")
+flow((439, 296), (439, 330)); ft(443, 310, "heartbeat ← GPIO24")
+flow((400, 350), (380, 350)); ft(389, 327, "WD_OK", "middle")
+flow((300, 350), (285, 350))
+flow((205, 358), (194, 358))
+# row L: supply and checks
+chip(300, 376, 78, 30, "Bulk C", "5 V from the Pi")
+chip(400, 376, 78, 30, "Checks", "FB, RB → Pi")
 if lite:
-    nf_chip(368, 368, 78, 46, "Relay", "not fitted")
-    nf_chip(454, 368, 78, 46, "DC/DC", "not fitted")
-    t(470, 228, "5 V driver: R26 0 Ω, R9 100 Ω, D4 SMBJ6.0A", 10, "#FFE082", 400, "middle")
+    nf_chip(205, 376, 78, 30, "DC/DC", "not fitted")
+    nf_chip(500, 332, 78, 36, "Relay", "not fitted")
+    t(500, 228, "5 V driver: R26, R9 100 Ω, D4 6.0A", 10, "#FFE082", 400, "middle")
+    flow((300, 381), (265, 381), (265, 370))
 else:
-    chip(368, 368, 78, 46, "Relay", "MOSFET")
-    chip(454, 368, 78, 46, "DC/DC", "5 V → 12 V")
-chip(282, 304, 78, 46, "Feedback", "input 1")
-chip(368, 304, 78, 46, "Watchdog", "heartbeat")
-chip(454, 304, 78, 46, "Readback", "PWM check")
+    chip(205, 376, 78, 30, "DC/DC", "5 V → 12 V")
+    chip(500, 332, 78, 36, "Relay", "MOSFET")
+    flow((300, 391), (285, 391))
+    flow((244, 376), (244, 370))
+    flow((478, 350), (499, 350), dash=True)
+    flow((510, 368), (510, 447))
+flow((192, 416), (198, 420), (439, 420), (439, 408)); ft(300, 416, "FB from the pump")
 # LEDs (row under the logo)
 for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD", False), ("#4CAF50", "PUMP", False),
                                      ("#FFB300", "R1", lite), ("#FFB300", "R2", True)]):
-    x = 440 + k * 28
+    x = 470 + k * 26
     if nf:
         out.append(f'<circle cx="{x}" cy="262" r="6" fill="none" stroke="#E8F5E9" stroke-dasharray="2 2"/>')
     else:
@@ -152,11 +176,11 @@ for k, (col, lab, nf) in enumerate([("#4CAF50", "PWR", False), ("#4CAF50", "WD",
     t(x, 284, lab, 10, "#E8F5E9", 400, "middle")
 # logo
 if pt:
-    t(480, 200, "CoSTOS HAT PT", 14, "#ffffff", 500, "middle")
-    t(480, 220, "rev A · 8 × Pt1000 + 1-Wire", 11, "#C8E6C9", 400, "middle")
+    t(500, 200, "CoSTOS HAT PT", 14, "#ffffff", 500, "middle")
+    t(500, 220, "rev A · 8 × Pt1000 + 1-Wire", 11, "#C8E6C9", 400, "middle")
 else:
-    t(470, 190, "CoSTOS HAT", 14, "#ffffff", 500, "middle")
-    t(470, 210, "1-Wire Lite · same board, fewer parts" if lite else "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
+    t(500, 190, "CoSTOS HAT", 14, "#ffffff", 500, "middle")
+    t(500, 210, "1-Wire Lite · same board, fewer parts" if lite else "rev A · 65 × 56.5 mm", 11, "#C8E6C9", 400, "middle")
 t(40, 538, "Top view to scale (1 mm = 8 px). Field connectors: fixed 3.5 mm screw terminals"
   + ("; S1–S8 and PUMP1 on the left, 1W-A at the front." if pt else
      ("; dashed = not fitted in the 1-Wire Lite." if lite else "; sensors and PUMP1 on the left (D17).")), 11, None, 400, "start", on_board=False)
