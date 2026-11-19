@@ -133,7 +133,7 @@ are footprints that are not fitted in rev A. Regenerate with
 ![Pt1000 and 1-Wire inputs](img/hat-sch-sensors.svg)
 
 Part choices the drawings add to the text below (all to be confirmed
-when the BOM is made): relay supply switch TPS22918; pump driver from MMBT3904/MMBT3906
+when the BOM is made): relay supply switch AO3401A P-MOSFET turned on by an MMBT3904 from `WD_OK` (D23); pump driver from MMBT3904/MMBT3906
 transistors (D22); relay
 MOSFETs AO3400A with 1N4148W flyback diodes; ESD diodes PESD5V0 on the
 sensor inputs; 100 mA polyfuse for the 1-Wire sensor supply; a 1.5 kΩ
@@ -308,7 +308,7 @@ the 13 V TVS standoff at light load.
   only edges retrigger it. The 74LVC1G123 retriggers on rising edges
   only: with one toggle per 1 s control cycle a rising edge arrives every
   2 s, so the timeout is set to about 3 s.
-- `WD_OK` switches the relay supply (high-side load switch) and gates the
+- `WD_OK` switches the relay supply (P-MOSFET high-side switch, D23) and gates the
   PWM signals (4.1).
 - After power-up `WD_OK` is low until the software starts sending
   heartbeats, so nothing runs while the Pi boots.
@@ -597,14 +597,14 @@ eight times higher for these parts.)
 | Resistors and capacitors, about 30 (incl. the 4.3 kΩ 0.1 % reference) | — | ≈ $0.60 | 0.50 | estimate |
 | 3.5 mm fixed screw terminals (PT1, 1W-A, 1W-B, PUMP1, REL1), e.g. Kefa KF350 | 5 | $0.06 (2-pole) – $0.08 (3-pole) | 0.30 | checked (2-pole) |
 | PESD5V0 ESD diodes (PT1 × 2, 1W-A, 1W-B, FB1) | 5 | ≈ $0.03 | 0.13 | estimate |
-| TPS22918 (relay supply switch) | 1 | $0.14 | 0.12 | checked |
 | LEDs (PWR, WD, PUMP1, R1) | 4 | ≈ $0.01 | 0.04 | estimate |
 | SMBJ13A | 1 | ≈ $0.05 | 0.04 | estimate |
 | Pump driver transistors: MMBT3904 × 3, MMBT3906 × 1 (D22) | 4 | ≈ $0.01 | 0.04 | estimate |
 | 100 mA polyfuse | 1 | ≈ $0.03 | 0.03 | estimate |
 | AO3400A, 1N4148W | 2 | ≈ $0.02 | 0.03 | estimate |
-| **Total, with ⅓ of an AISLER PCB set** | | | **≈ 15.30** | |
-| Total without PCB (the parts JLCPCB fits) | | | ≈ 8.80 | |
+| Relay supply switch: AO3401A, MMBT3904 (D23) | 2 | ≈ $0.02 | 0.03 | estimate |
+| **Total, with ⅓ of an AISLER PCB set** | | | **≈ 15.20** | |
+| Total without PCB (the parts JLCPCB fits) | | | ≈ 8.70 | |
 
 The MAX31865 and the watchdog chip are the two most expensive parts. The
 terminal brand is a choice still to make: Kefa KF350 is the cheap common
@@ -624,31 +624,31 @@ a real quote exists):
 
 - **Fixed part per order:** setup and stencil, a loading fee of about
   €2.80 for each part type that is not a JLCPCB basic part, the
-  through-hole soldering setup and shipping: ≈ €54.40 for the 1-Wire
-  edition and the PT edition (four such part types: MAX31865 or LTC2983
-  handling, 74LVC1G123, B0512S, TPS22918), ≈ €48.40 for the 1-Wire Lite
-  (two fewer).
+  through-hole soldering setup and shipping: ≈ €51.60 for the 1-Wire
+  edition and the PT edition (three such part types: MAX31865 or LTC2983
+  handling, 74LVC1G123, B0512S; the relay supply switch is built from
+  basic parts since D23), ≈ €48.40 for the 1-Wire Lite (no B0512S).
 - **Variable part per board:**
 
   | | 1-Wire edition | 1-Wire Lite | PT edition |
   |---|---|---|---|
-  | Parts at JLCPCB/LCSC prices (8.1, without PCB) | €8.30 | €6.95 | €45.00 (LTC2983 ≈ €39, bought at DigiKey and consigned) |
+  | Parts at JLCPCB/LCSC prices (8.1, without PCB) | €8.20 | €6.95 | €44.90 (LTC2983 ≈ €39, bought at DigiKey and consigned) |
   | PCB share (JLCPCB makes 5 bare boards) | €0.40 | €0.40 | €0.40 |
   | Soldering per joint (SMD and through-hole) | €1.00 | €0.95 | €1.20 |
-  | **Per board, incl. 19 % VAT** | **≈ €11.55** | **≈ €9.90** | **≈ €55.45** |
+  | **Per board, incl. 19 % VAT** | **≈ €11.45** | **≈ €9.90** | **≈ €55.35** |
 
 **What one controller costs**, by how you get the board (all incl. 19 %
 VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
 
 | How you get it | What you pay for | **1-Wire edition** | **1-Wire Lite** | **1-Wire Lite saves** | **PT edition** |
 |---|---|---|---|---|---|
-| **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €78** | 🔴 **≈ €68** | ≈ €10 | 🔴 **≈ €165** |
-| **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €22.50** | 🟢 **≈ €19.50** | ≈ €3 | 🟢 **≈ €66** |
+| **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €75** | 🔴 **≈ €68** | ≈ €6 | 🔴 **≈ €162** |
+| **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €22** | 🟢 **≈ €19.50** | ≈ €2 | 🟢 **≈ €65.50** |
 | **Build it yourself** | parts for one board from LCSC plus a set of 3 bare PCBs (AISLER, ≈ €19 + VAT); needs SMD soldering (fine-pitch MAX31865 / LTC2983); LCSC shipping (≈ €10–20) not included | 🟡 **≈ €33** | 🟡 **≈ €31** | ≈ €2 | 🟡 **≈ €76** |
 
 For one controller, the fixed costs dominate: the 1-Wire Lite saves about
-€10 per order, mostly because it needs two loading fees fewer, while its
-parts are only about €1.40 cheaper (the DC/DC costs about €1.10 at LCSC).
+€6 per order, mostly because it needs one loading fee fewer, while its
+parts are only about €1.30 cheaper (the DC/DC costs about €1.10 at LCSC).
 AISLER's assembly price is not estimated here; it gets quoted with the
 BOM. Earlier estimates (with EU distributor prices, before D18 and D22)
 are in the decisions.
@@ -744,7 +744,7 @@ Single-quantity parts; "saved" is what the 1-Wire Lite saves on that row.
 |---|---|---|---|
 | ***Left out in the 1-Wire Lite*** | | | |
 | 12 V DC/DC block: U2 with its input and output capacitors C3, C4, minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.55 V at the pump | **€1.15** |
-| Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€0.21** |
+| Relay output REL1: relay supply switch Q12/Q13 with R45–R47, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€0.12** |
 | R26 (0 Ω) | not fitted | fitted | **−€0.01** |
 | R9 series resistor, D4 TVS (4.1) | 470 Ω, SMBJ13A | **100 Ω, SMBJ6.0A** | — |
 | R31 readback divider (4.1) | 27 kΩ | **6.8 kΩ** | — |
@@ -752,9 +752,9 @@ Single-quantity parts; "saved" is what the 1-Wire Lite saves on that row.
 | MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
 | Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
 | ***Totals*** | | | |
-| Parts, single quantity (LCSC, with ⅓ AISLER PCB set) | ≈ €15.30 | ≈ €13.90 | **≈ €1.40** |
-| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €78 | ≈ €68 | **≈ €10** |
-| Assembled, per board in a batch of 5 | ≈ €22.50 | ≈ €19.50 | **≈ €3** |
+| Parts, single quantity (LCSC, with ⅓ AISLER PCB set) | ≈ €15.20 | ≈ €13.90 | **≈ €1.30** |
+| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €75 | ≈ €68 | **≈ €6** |
+| Assembled, per board in a batch of 5 | ≈ €22 | ≈ €19.50 | **≈ €2** |
 | Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9 to 470 Ω, D4 to SMBJ13A and R31 to 27 kΩ, and fit the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that

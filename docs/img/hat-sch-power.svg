@@ -22,7 +22,7 @@
 <path d="M560 230 V240 M548 240 H572 M552 245 H568 M556 250 H564" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <path d="M620 130 V118 M608 118 H632" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
 <text x="620" y="108" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
-<text x="632" y="150" class="n" text-anchor="start">→ U2, U7, LEDs</text>
+<text x="632" y="150" class="n" text-anchor="start">→ U2, Q12, LEDs</text>
 <text x="20" y="300" class="n" text-anchor="start">The Pi runs from its own USB-C supply (D15); the HAT draws</text>
 <text x="20" y="315" class="n" text-anchor="start">&lt; 200 mA from header pins 2/4, behind the Pi's own input</text>
 <text x="20" y="330" class="n" text-anchor="start">protection, so it needs no fuse, TVS or ideal diode (D18).</text>

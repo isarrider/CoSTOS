@@ -57,11 +57,11 @@ Prices are estimates until a real BOM exists (cost model:
 | ***The same on all*** | | | |
 | Transistor pump driver with watchdog gating and output readback, field-line protection, power from the Pi, PWR / WD / PUMP1 LEDs, silkscreen cheat sheet, size and tall header | 🟢 | 🟢 | 🟢 |
 | ***Cost*** (incl. 19 % VAT unless noted) | | | |
-| **Price for one** (smallest assembled order: 2 boards) | ≈ €78 | 🟢 **≈ €68** | 🔴 ≈ €165 |
-| Assembled, per board in a group order of 5 | ≈ €22.50 | 🟢 ≈ €19.50 | 🔴 ≈ €66 |
+| **Price for one** (smallest assembled order: 2 boards) | ≈ €75 | 🟢 **≈ €68** | 🔴 ≈ €162 |
+| Assembled, per board in a group order of 5 | ≈ €22 | 🟢 ≈ €19.50 | 🔴 ≈ €65.50 |
 | Build it yourself (parts from LCSC + 3 bare PCBs, LCSC shipping extra) | ≈ €33 | 🟢 ≈ €31 | 🔴 ≈ €76 |
-| Parts for one board (LCSC prices, excl. VAT) | ≈ €15.30 | ≈ €13.90 | ≈ €51.50 (LTC2983 ≈ €39 of it) |
-| **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €10** | 🔴 **≈ €87 more** |
+| Parts for one board (LCSC prices, excl. VAT) | ≈ €15.20 | ≈ €13.90 | ≈ €51.40 (LTC2983 ≈ €39 of it) |
+| **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €6** | 🔴 **≈ €87 more** |
 | ***Building and status*** | | | |
 | Hardest part to solder (only when building it yourself) | 🟡 MAX31865, SSOP-20 at 0.65 mm pitch | 🟡 same as the 1-Wire edition | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
 | Upgrade later | — | 🟢 to the normal build: fit the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9, D4 and R31, fit the REL1 parts | — |

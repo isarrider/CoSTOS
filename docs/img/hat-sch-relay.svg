@@ -1,63 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="520" viewBox="0 0 1180 520" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="600" viewBox="0 0 1180 600" font-family="Helvetica, Arial, sans-serif">
 <title>CoSTOS HAT rev A: relay supply and relay outputs</title>
-<desc>High-side load switch enabled by WD_OK creating the switched 5 V relay supply; two low-side MOSFET relay outputs with flyback diode, LED and gate pull-down.</desc>
+<desc>P-MOSFET high-side switch, turned on by an NPN transistor from WD_OK, creating the switched 5 V relay supply; two low-side MOSFET relay outputs with flyback diode, LED and gate pull-down.</desc>
 <style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
-<rect width="1180" height="520" fill="white"/>
+<rect width="1180" height="600" fill="white"/>
 <text x="20" y="30" class="h" text-anchor="start">7 · Relay supply (switched by the watchdog)</text>
-<rect x="150" y="110" width="130" height="130" rx="3" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
-<text x="215.0" y="173.0" class="r" text-anchor="middle">U7</text>
-<text x="215.0" y="188.0" class="v" text-anchor="middle">TPS22918</text>
-<text x="215.0" y="202.0" class="n" text-anchor="middle">load switch 2 A</text>
-<text x="155" y="134" class="pn" text-anchor="start">VIN</text>
-<text x="146" y="126" class="num" text-anchor="end">1</text>
-<path class="w" d="M150 130 L130 130"/>
-<text x="155" y="214" class="pn" text-anchor="start">ON</text>
-<text x="146" y="206" class="num" text-anchor="end">3</text>
-<path class="w" d="M150 210 L130 210"/>
-<text x="275" y="134" class="pn" text-anchor="end">VOUT</text>
-<text x="284" y="126" class="num" text-anchor="start">6</text>
-<path class="w" d="M280 130 L300 130"/>
-<text x="275" y="174" class="pn" text-anchor="end">QOD</text>
-<text x="284" y="166" class="num" text-anchor="start">5</text>
-<path class="w" d="M280 170 L300 170"/>
-<text x="275" y="214" class="pn" text-anchor="end">CT</text>
-<text x="284" y="206" class="num" text-anchor="start">4</text>
-<path class="w" d="M280 210 L300 210"/>
-<text x="215" y="234" class="pn" text-anchor="middle">GND</text>
-<text x="219" y="254" class="num" text-anchor="start">2</text>
-<path class="w" d="M215 240 L215 260"/>
-<path class="w" d="M130 130 L60 130"/>
-<path d="M60 130 V118 M48 118 H72" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
-<text x="60" y="108" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
-<circle cx="90" cy="130" r="3.5" fill="#222"/>
-<g transform="translate(90 130) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
-<text x="106.0" y="148.0" class="r" text-anchor="start">C11</text>
-<text x="106.0" y="162.0" class="v" text-anchor="start">1 µF</text>
-<path d="M90 170 V180 M78 180 H102 M82 185 H98 M86 190 H94" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path class="w" d="M130 210 L120 210"/>
-<polygon points="120,210 112,201 69,201 69,219 112,219" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
-<text x="90.5" y="214" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
-<path class="w" d="M300 130 L400 130"/>
-<path class="w" d="M300 170 L320 170 L320 130"/>
-<circle cx="320" cy="130" r="3.5" fill="#222"/>
-<path class="w" d="M295 205 L305 215 M295 215 L305 205"/>
-<circle cx="350" cy="130" r="3.5" fill="#222"/>
-<g transform="translate(350 130) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
-<text x="366.0" y="148.0" class="r" text-anchor="start">C12</text>
-<text x="366.0" y="162.0" class="v" text-anchor="start">1 µF</text>
-<path d="M350 170 V180 M338 180 H362 M342 185 H358 M346 190 H354" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path d="M400 130 V118 M388 118 H412" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
-<text x="400" y="108" class="r" text-anchor="middle" style="fill:#ef6c00">+5V_REL</text>
-<path class="w" d="M215 260 L215 270"/>
-<path d="M215 270 V280 M203 280 H227 M207 285 H223 M211 290 H219" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<text x="20" y="330" class="n" text-anchor="start">WD_OK low → VOUT off (QOD discharges it): every relay</text>
-<text x="20" y="345" class="n" text-anchor="start">output is off, whatever the GPIOs do.</text>
-<text x="20" y="360" class="n" text-anchor="start">CT open: fastest turn-on.</text>
-<text x="20" y="375" class="n" text-anchor="start"></text>
-<text x="20" y="390" class="n" text-anchor="start">Load per output: DIN-rail SSR with 3–32 V DC input</text>
-<text x="20" y="405" class="n" text-anchor="start">(typ. &lt; 20 mA) or a 5 V relay coil up to about 100 mA.</text>
-<text x="20" y="420" class="n" text-anchor="start">D6 catches a coil's turn-off spike; with an SSR it</text>
-<text x="20" y="435" class="n" text-anchor="start">does nothing.</text>
+<path d="M80 110 V98 M68 98 H92" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
+<text x="80" y="88" class="r" text-anchor="middle" style="fill:#ef6c00">+5V</text>
+<path class="w" d="M80 110 L300 110"/>
+<circle cx="110" cy="110" r="3.5" fill="#222"/>
+<g transform="translate(110 110) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="126.0" y="128.0" class="r" text-anchor="start">C11</text>
+<text x="126.0" y="142.0" class="v" text-anchor="start">1 µF</text>
+<path d="M110 150 V160 M98 160 H122 M102 165 H118 M106 170 H114" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<circle cx="240" cy="110" r="3.5" fill="#222"/>
+<g transform="translate(240 110) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="224.0" y="138.0" class="r" text-anchor="end">R45</text>
+<text x="224.0" y="152.0" class="v" text-anchor="end">100 kΩ</text>
+<g transform="translate(300 190)"><path class="w" d="M-30 0 H-14 M-14 -14 V14"/><path class="w" d="M-8 -17 V-7 M-8 -5 V5 M-8 7 V17" style="stroke-width:2.5"/><path class="w" d="M-8 -12 H0 V-30 M-8 12 H0 V30 M-8 0 H0 V-12"/><path d="M-1 0 L-8 -4 L-8 4 Z" fill="#222"/></g>
+<text x="310" y="188" class="r" text-anchor="start">Q12</text>
+<text x="310" y="202" class="v" text-anchor="start">AO3401A</text>
+<text x="310" y="215" class="n" text-anchor="start">relay supply switch</text>
+<path class="w" d="M300 110 L300 160"/>
+<path class="w" d="M240 170 L240 220"/>
+<path class="w" d="M270 190 L240 190"/>
+<circle cx="240" cy="190" r="3.5" fill="#222"/>
+<g transform="translate(240 250)"><circle cx="-4" cy="0" r="17" style="fill:white;stroke:#222;stroke-width:1.5"/><path class="w" d="M-30 0 H-10 M-10 -11 V11" style="stroke-width:2.5"/><path class="w" d="M-10 -5 L0 -13 V-30 M-10 5 L0 13 V30"/><path d="M0 13 L-7 12 L-3 7 Z" fill="#222"/></g>
+<text x="258" y="248" class="r" text-anchor="start">Q13</text>
+<text x="258" y="262" class="v" text-anchor="start">MMBT3904</text>
+<text x="258" y="275" class="n" text-anchor="start">on while WD_OK</text>
+<path class="w" d="M240 280 L240 290"/>
+<path d="M240 290 V300 M228 300 H252 M232 305 H248 M236 310 H244" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M210 250 L190 250"/>
+<circle cx="190" cy="250" r="3.5" fill="#222"/>
+<g transform="translate(190 250) rotate(180)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="160.0" y="236.0" class="v" text-anchor="middle"><tspan class="r">R46</tspan> 10 kΩ</text>
+<path class="w" d="M130 250 L110 250"/>
+<polygon points="110,250 102,241 59,241 59,259 102,259" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="80.5" y="254" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
+<g transform="translate(190 250) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="174.0" y="278.0" class="r" text-anchor="end">R47</text>
+<text x="174.0" y="292.0" class="v" text-anchor="end">100 kΩ</text>
+<path d="M190 310 V320 M178 320 H202 M182 325 H198 M186 330 H194" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M300 220 L300 230 L460 230"/>
+<circle cx="400" cy="230" r="3.5" fill="#222"/>
+<g transform="translate(400 230) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="416.0" y="248.0" class="r" text-anchor="start">C12</text>
+<text x="416.0" y="262.0" class="v" text-anchor="start">1 µF</text>
+<path d="M400 270 V280 M388 280 H412 M392 285 H408 M396 290 H404" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path d="M460 230 V218 M448 218 H472" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
+<text x="460" y="208" class="r" text-anchor="middle" style="fill:#ef6c00">+5V_REL</text>
+<text x="20" y="380" class="n" text-anchor="start">WD_OK high → Q13 pulls the gate of Q12 to 0 V → +5V_REL on.</text>
+<text x="20" y="395" class="n" text-anchor="start">WD_OK low or floating → R45 holds the gate at 5 V → every</text>
+<text x="20" y="410" class="n" text-anchor="start">relay output is off, whatever the GPIOs do (D23).</text>
+<text x="20" y="425" class="n" text-anchor="start"></text>
+<text x="20" y="440" class="n" text-anchor="start">Load per output: DIN-rail SSR with 3–32 V DC input</text>
+<text x="20" y="455" class="n" text-anchor="start">(typ. &lt; 20 mA) or a 5 V relay coil up to about 100 mA.</text>
+<text x="20" y="470" class="n" text-anchor="start">D6 catches a coil's turn-off spike; with an SSR it</text>
+<text x="20" y="485" class="n" text-anchor="start">does nothing.</text>
 <text x="520" y="30" class="h" text-anchor="start">8 · Relay / SSR outputs (low-side)</text>
 <path d="M700 70 V58 M688 58 H712" style="stroke:#ef6c00;stroke-width:2.5;fill:none"/>
 <text x="700" y="48" class="r" text-anchor="middle" style="fill:#ef6c00">+5V_REL</text>
@@ -119,6 +118,6 @@
 <text x="686.0" y="458.0" class="r" text-anchor="start">R19</text>
 <text x="686.0" y="472.0" class="v" text-anchor="start">100 kΩ</text>
 <path d="M670 490 V500 M658 500 H682 M662 505 H678 M666 510 H674" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<g opacity="0.42"><rect x="928" y="492" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
-<text x="962" y="504" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
+<g opacity="0.42"><rect x="928" y="572" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
+<text x="962" y="584" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
 </svg>

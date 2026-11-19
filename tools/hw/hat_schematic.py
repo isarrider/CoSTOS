@@ -232,6 +232,21 @@ class Sheet:
             self.add("</g>")
         return (x - 30, y), (x, y - 30), (x, y + 30)
 
+    def pmos(self, x, y, ref, val, lab="r", sub=None):
+        """P-MOSFET, vertical. Gate end (x-30, y), source end (x, y-30), drain end (x, y+30)."""
+        self.add(
+            f'<g transform="translate({x} {y})">'
+            '<path class="w" d="M-30 0 H-14 M-14 -14 V14"/>'
+            '<path class="w" d="M-8 -17 V-7 M-8 -5 V5 M-8 7 V17" style="stroke-width:2.5"/>'
+            '<path class="w" d="M-8 -12 H0 V-30 M-8 12 H0 V30 M-8 0 H0 V-12"/>'
+            f'<path d="M-1 0 L-8 -4 L-8 4 Z" fill="{INK}"/>'
+            "</g>"
+        )
+        if lab == "r":
+            self.text(x + 10, y - 2, ref, "r"); self.text(x + 10, y + 12, val)
+            if sub: self.text(x + 10, y + 25, sub, "n")
+        return (x - 30, y), (x, y - 30), (x, y + 30)
+
     def bjt(self, x, y, ref, val, pnp=False, lab="r", sub=None):
         """Bipolar transistor, vertical. Base end (x-30, y). NPN: collector
         (x, y-30), emitter (x, y+30). PNP: emitter (x, y-30), collector (x, y+30)."""
@@ -307,7 +322,7 @@ def sheet_power(path):
     s.dot(560, 130); s.part("R", 560, 130, "d", "R1", "1 kΩ", lab="r")
     s.part("LED", 560, 190, "d", "D2", "PWR green", lab="r"); s.gnd(560, 230)
     s.rail(620, 130, "+5V")
-    s.text(632, 150, "→ U2, U7, LEDs", "n")
+    s.text(632, 150, "→ U2, Q12, LEDs", "n")
     s.note(20, 300, [
         "The Pi runs from its own USB-C supply (D15); the HAT draws",
         "< 200 mA from header pins 2/4, behind the Pi's own input",
@@ -546,25 +561,29 @@ def relay_block(s, x, y, n, gpio, pin):
 
 
 def sheet_relay(path):
-    s = Sheet(1180, 520, "CoSTOS HAT rev A: relay supply and relay outputs",
-              "High-side load switch enabled by WD_OK creating the switched 5 V relay supply; two low-side MOSFET "
-              "relay outputs with flyback diode, LED and gate pull-down.")
+    s = Sheet(1180, 600, "CoSTOS HAT rev A: relay supply and relay outputs",
+              "P-MOSFET high-side switch, turned on by an NPN transistor from WD_OK, creating the switched 5 V relay "
+              "supply; two low-side MOSFET relay outputs with flyback diode, LED and gate pull-down.")
     s.heading(20, 30, "7 · Relay supply (switched by the watchdog)")
-    u7 = s.ic(150, 110, 130, 130, "U7", "TPS22918", [
-        ("l", 20, "VIN", "1"), ("l", 100, "ON", "3"), ("r", 20, "VOUT", "6"), ("r", 60, "QOD", "5"),
-        ("r", 100, "CT", "4"), ("b", 65, "GND", "2")], sub="load switch 2 A")
-    s.wire(u7["VIN"], (60, 130)); s.rail(60, 130, "+5V")
-    s.dot(90, 130); s.part("C", 90, 130, "d", "C11", "1 µF", lab="r"); s.gnd(90, 170)
-    s.wire(u7["ON"], (120, 210)); s.flag(120, 210, "WD_OK", "L")
-    s.wire(u7["VOUT"], (400, 130)); s.wire(u7["QOD"], (320, 170), (320, 130)); s.dot(320, 130)
-    s.nc(*u7["CT"])
-    s.dot(350, 130); s.part("C", 350, 130, "d", "C12", "1 µF", lab="r"); s.gnd(350, 170)
-    s.rail(400, 130, "+5V_REL")
-    s.wire(u7["GND"], (215, 270)); s.gnd(215, 270)
-    s.note(20, 330, [
-        "WD_OK low → VOUT off (QOD discharges it): every relay",
-        "output is off, whatever the GPIOs do.",
-        "CT open: fastest turn-on.",
+    s.rail(80, 110, "+5V"); s.wire((80, 110), (300, 110))
+    s.dot(110, 110); s.part("C", 110, 110, "d", "C11", "1 µF", lab="r"); s.gnd(110, 150)
+    s.dot(240, 110); s.part("R", 240, 110, "d", "R45", "100 kΩ", lab="l")
+    g, src, drn = s.pmos(300, 190, "Q12", "AO3401A", sub="relay supply switch")
+    s.wire((300, 110), src)
+    s.wire((240, 170), (240, 220)); s.wire(g, (240, 190)); s.dot(240, 190)
+    q = s.bjt(240, 250, "Q13", "MMBT3904", sub="on while WD_OK")
+    s.wire(q["E"], (240, 290)); s.gnd(240, 290)
+    s.wire(q["B"], (190, 250)); s.dot(190, 250)
+    s.part("R", 190, 250, "l", "R46", "10 kΩ", lab="a")
+    s.wire((130, 250), (110, 250)); s.flag(110, 250, "WD_OK", "L")
+    s.part("R", 190, 250, "d", "R47", "100 kΩ", lab="l"); s.gnd(190, 310)
+    s.wire(drn, (300, 230), (460, 230))
+    s.dot(400, 230); s.part("C", 400, 230, "d", "C12", "1 µF", lab="r"); s.gnd(400, 270)
+    s.rail(460, 230, "+5V_REL")
+    s.note(20, 380, [
+        "WD_OK high → Q13 pulls the gate of Q12 to 0 V → +5V_REL on.",
+        "WD_OK low or floating → R45 holds the gate at 5 V → every",
+        "relay output is off, whatever the GPIOs do (D23).",
         "",
         "Load per output: DIN-rail SSR with 3–32 V DC input",
         "(typ. < 20 mA) or a 5 V relay coil up to about 100 mA.",
