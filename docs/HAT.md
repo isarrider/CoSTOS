@@ -264,11 +264,35 @@ Lite build at 3 mA; "price for one" against today.
 |---|---|---|---|---|---|---|
 | **A: AND gate + TC4427** (rev A) | As in 12.3 | 🟢 ≈ 4.7 V | 🟢 AND gate forces 0 V; pull-down at boot | 🟢 TC4427 takes shorts and spikes | — | 🟢 **rev A** |
 | B: one 5 V gate (74AHCT1G08), Lite only | TTL inputs accept 3.3 V, 5 V output, does the AND itself | 🟡 ≈ 4.1 V (R9 ≥ 220 Ω for its 25 mA limit); ≈ 3.4 V at 7.5 mA, below the minimum | 🟢 as A | 🟡 a logic gate on the field cable | ≈ −€5.40 (Lite) | 🔴 no margin; the normal build still needs the TC4427, so two footprints |
-| **C: driver with enable input** (e.g. UCC27524) instead of AND gate + TC4427 | WD_OK to the enable pin; under-voltage lockout holds the outputs low on a weak supply | 🟢 ≈ 4.7 V | 🟢 plus a clean stop on a weak supply (12.1 point 5); enable pins pulled up internally, so an external pull-down is needed | 🟢 like the TC4427 | ≈ −€3.60 (both builds) | 🟡 **check in the KiCad step** |
+| C: driver with enable input (UCC27524) instead of AND gate + TC4427 | WD_OK to the enable pins; pin-compatible with the TC4427 (its NC pins 1/8 are ENA/ENB) | 🟢 ≈ 4.7 V | 🔴 enable pins pulled **up** internally (200 kΩ): open = enabled, so safety depends on an external pull-down; gating and driving in one chip. Under-voltage lockout only below ≈ 3.8 V (3.5–4.1 V), so no help between 4.5 and 4 V | 🟢 like the TC4427 | ≈ −€3.60 (≈ −€1.30 per board in a group of 5) | 🔴 reviewed and dropped (below) |
 | D: transistor + pull-up to 5 V | Transistor pulls down, resistor pulls up | 🔴 1 kΩ pull-up: ≈ 2 V at the pump | 🔴 inverts: Pi stopped or transistor open = **full speed** | 🟡 | ≈ −€5.50 | 🔴 unsafe fail direction |
 | E: discrete push-pull | Totem pole from basic transistors, no fees | 🟢 ≈ 4.5 V | 🟡 safety logic from transistors, needs careful checking | 🟡 | ≈ −€5.00 | 🔴 5–7 parts in the safety path instead of one proven chip |
 | F: Pi GPIO directly | Through a resistor | 🔴 3.3 V, below 3.6 V | 🔴 no gating | 🔴 Pi pin on the field cable | ≈ −€8.60 | 🔴 doesn't work |
 | G: level-shifter chip (TXS0101 etc.) | 3.3 V → 5 V translator | 🔴 made for logic inputs, not mA loads | 🟡 | 🔴 | ≈ −€2 | 🔴 |
+
+**Option C in detail, and why it was dropped.** Checked against TI's
+UCC27524 datasheet:
+
+| Benefit | Weight |
+|---|---|
+| One JLCPCB fee fewer: ≈ −€3.60 for one, ≈ −€1.30 per board in a group of 5 | 🟡 small |
+| One chip fewer in the chain | 🟢 small |
+| A later PUMP2 needs no second AND gate (ENB gates channel B) | 🟡 only if PUMP2 is fitted |
+| Outputs held low when the supply collapses below ≈ 3.8 V (TC4427: undefined below 4.5 V) | 🟡 between 4.5 and 3.8 V both behave the same |
+| Stronger, faster output (5 A peak) | ⚪ irrelevant at the pump's few mA |
+
+| Drawback | Weight |
+|---|---|
+| Enable pins default to **enabled** (internal pull-up): against the rule "anything missing = stop". Needs an external pull-down; one fault (pull-down missing or WD_OK broken) is still safe, both together are not | 🔴 |
+| Watchdog gating and driving in one chip: less easy to test and explain than a separate gate whose output can be measured on its own | 🟡 |
+| SMD only: the stripboard boards (HARDWARE.md) use the TC4427 in DIP-8, so HAT and stripboards would no longer share driver, tests and experience | 🟡 |
+| New, less proven part in this project; new bring-up tests and documentation | 🟡 |
+| Same 4.5 V minimum supply: no help for the Lite build's margin (12.1 point 5) | ⚪ |
+| A shared footprint for both options would double the variants (normal/Lite × A/C) and add another either/or rule (AND gate vs its 0 Ω bypass) | 🔴 |
+
+The benefit is almost only money, the drawbacks touch the safety concept.
+If the real JLCPCB quote shows the fees matter more, the better lever is a
+basic-part equivalent of the AND gate: same circuit, no fee.
 - **Watchdog gating:** each PWM signal passes an AND gate with `WD_OK`, so
   a stopped watchdog also forces the PWM to 0 %. With a solar (PWM2)
   pump that means "stop", in addition to the relay cutting its mains.
@@ -779,7 +803,7 @@ into 8.2.
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
-| D22 | How is the pump signal driven? | **AND gate + TC4427 for rev A** (4.1, alternatives table): proven, the same in both builds, fails to 0 V. A driver with an enable input and under-voltage lockout (option C) could replace both chips and save ≈ €3.60 for one; it is checked in the KiCad step. Single 5 V gate, transistor stages, the Pi pin directly and level shifters are out (too little voltage margin or unsafe fail direction) |
+| D22 | How is the pump signal driven? | **AND gate + TC4427, in both builds** (4.1, alternatives table). Proven, the same as on the stripboard boards, fails to 0 V, the watchdog gate measurable on its own. A driver with enable input (UCC27524) was reviewed in detail and dropped: it saves only ≈ €3.60 for one, its enable pins default to "enabled", it merges gating and driving, and its under-voltage lockout only acts below ≈ 3.8 V. If fees matter, a basic-part AND gate is the lever. Single 5 V gate, transistor stages, the Pi pin directly and level shifters are out (too little voltage margin or unsafe fail direction) |
 
 ---
 
