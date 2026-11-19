@@ -33,7 +33,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D5 | Power the Pi from the HAT? | ~~Yes~~, replaced by D18: **no**, the Pi uses its own USB-C supply |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
 | D7 | Hand assembly or factory assembly? | **Factory-assembled, delivered fully soldered**; AISLER or JLCPCB decided on quotes once the BOM exists (8.2) |
-| D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts. Since D15 (pump permanently powered) it is the main hardware stop path; with an optional cut-off relay it is the second, independent one, e.g. when an SSR fails short-circuited |
+| D8 | Keep the external watchdog and PWM gating? | **Yes**: about €3 in parts, a few cents since D24. Since D15 (pump permanently powered) it is the main hardware stop path; with an optional cut-off relay it is the second, independent one, e.g. when an SSR fails short-circuited |
 | D9 | Keep the MAX31865 or measure the Pt1000 more cheaply? | **Keep the MAX31865**: timing a capacitor charge with a GPIO is too inaccurate under Linux, and a small SPI ADC saves only about €6 but loses the ±45 V input protection on the roof cable and the sensor fault detection |
 | D10 | Pluggable or fixed screw terminals? | **Fixed**: about €4 per board cheaper; the HAT rarely comes off, and then the wires are unscrewed |
 | D11 | VBus receiver on the HAT? | **No**: VBus is only needed while the BX Plus is still connected (shadow mode, switchable phase). The existing loose adapter plugs onto pins 1, 6 and 10 on top of the stacking header until then; after the switch-over it goes away and the UART is free |
@@ -45,7 +45,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D17 | Where do the field terminals go? | **Option B** (section 7): sensors and PUMP1 on the left edge, the rarely used PWR/REL1 and the unfitted positions at the front. All normally used wiring leaves on one side and the USB-C plug (D15) has the front edge to itself. Costs nothing; the left edge is then full. PT edition: S1–S8 and PUMP1 left, 1W-A at the front |
 | D18 | Does the HAT need its own power input? | **No**: with option A (D15) the Pi runs from its own USB-C supply, so the PWR terminal, fuse, TVS and ideal diode were never used. Removed: about €4 and nine parts; the HAT's 5 V now sits behind the Pi's own input protection. DIN-rail builds feed the Pi through a USB-C lead (4.7). Replaces D5 |
 | D19 | A separate low-cost board? | **No: 1-Wire Lite, a lighter build of the 1-Wire edition** (section 11): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.50 in parts and ≈ €17 for one controller, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
-| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: about three fees per order (since D23) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
+| D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (section 5 of this page), so only the special chips pay a loading fee: about two fees per order (since D24) instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal and the signal paths (lines, arrows and small text from each terminal through its circuit to its GPIO) on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 | D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the 1-Wire Lite, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
 | D23 | Can the relay supply switch and the watchdog be built from basic parts? | **Relay supply switch: yes**, an AO3401A P-MOSFET switched by an MMBT3904 from WD_OK (both JLCPCB basic parts) replaces the TPS22918: one loading fee less, ≈ €3 less for one controller on the 1-Wire and PT editions; it fails safe the same way. Watchdog: see D24. Section 8 of this page |
@@ -216,7 +216,7 @@ A third transistor at the terminal does that job actively:
              R35 2.7 kΩ                      └── R38 10 kΩ to GND (keeps the line defined)
               │
  PWM1 ─R33 10 kΩ─► Q4 MMBT3904   "PWM switch"
- WD_OK ─R34 10 kΩ─► Q5 MMBT3904  "watchdog switch"
+ WD_OK ──────────► Q5 AO3400A    "watchdog switch"
               │
              GND
 ```
@@ -272,9 +272,9 @@ keeps one chain and no jumpers):
 1. Both chains on the same board, switched by jumper, measured with the
    same pump and cable: high level at J2 and at the pump (3 mA and with
    the pump's maximum current), rise and fall time at 1000 Hz.
-2. Watchdog: with H3, the output must go to 0 V within ≈ 3 s after the
-   heartbeat stops, measured at J2 and seen by the output readback.
-3. Fail behaviour by hand: lift R33, R34, R35, R37 one at a time (output
+2. Watchdog: with H3, the output must go to 0 V within ≈ 1–3 s after
+   the heartbeat stops, measured at J2 and seen by the output readback.
+3. Fail behaviour by hand: lift R33, R35, R37 one at a time (output
    must stay at 0 V); lift Q7 (output still stops, slower falling edge);
    short Q4, Q5, Q7 (document the effect; the readback must report Q4 and
    the self-test Q5).
@@ -426,10 +426,10 @@ current lists just before ordering.
 **Design rule (D20):** in KiCad, every ordinary part (resistors,
 capacitors, AO3400A, 1N4148W, LEDs, TVS and ESD diodes, terminals) is
 chosen from JLCPCB's basic or preferred extended parts. Only the special
-chips without such an equivalent pay the fee: MAX31865, 74LVC1G123 and
-B0512S (the LTC2983 of the PT edition is consigned; the pump driver and
-the relay supply switch are built from basic transistors, D22, D23).
-That is about three fees per
+chips without such an equivalent pay the fee: MAX31865 and B0512S (the
+LTC2983 of the PT edition is consigned; the pump driver, the relay
+supply switch and the watchdog are built from basic parts, D22–D24).
+That is about two fees per
 order instead of fifteen or more, roughly €25–30 less per order, which matters most for a single
 controller (8.2). The same rule helps at other services: fewer special
 part types means less setup everywhere.
@@ -450,8 +450,12 @@ into 8.2.
    builds),
    idle and under load; it must stay above 4.5 V. Check that the Pi
    reports no under-voltage (`vcgencmd get_throttled` returns `0x0`).
-4. Watchdog: `WD_OK` low after boot, high while a test script toggles the
-   heartbeat, low again 2–3 s after it stops.
+4. Watchdog (D24): `WD_OK` low after boot, high while a test script
+   toggles the heartbeat at 20 Hz, low again within 1–3 s after it stops
+   (scope on C18, and the readback on GPIO 7). Then the window: 0.5 Hz
+   and 2 kHz must not hold it on. Then each fault from the table in 8.2
+   by hand (lift R49, short C17, …). Last, the 74LVC1G123 (U3, R53)
+   against it on the same board.
 5. Relay output REL1 with an LED/resistor as dummy load, with and without
    heartbeat.
 6. PWM output PUMP1 into a 1 kΩ dummy load, then the real pump (as in
@@ -567,13 +571,13 @@ the capacitor empties and the MOSFETs switch off.
 
 ```
                     C17 470 nF  C19 470 nF
-GPIO24 ─R48 4.7 kΩ─●──┤├────────┤├──●──►|── D19 1N4148W ──●── WD_HOLD ──► gates of Q5, Q13, Q14 (AO3400A)
+GPIO24 ─R48 4.7 kΩ─●──┤├────────┤├──●──►|── D19 1N4148W ──●── WD_OK ──► gates of Q5, Q13, Q14 (AO3400A)
 (heartbeat 20 Hz)  │                │                     ├──────────┬──────────┐
                   ═══ C16           ▲ D20 1N4148W        ═══ C18    ▯ R49      ▯ R50
                    │ 100 nF         │                     │ 2.2 µF  │ 2.2 MΩ   │ 2.2 MΩ
                   GND              GND                   GND       GND        GND
 
- Q14 (gate on WD_HOLD) ── drain: WD LED D3 with R5 to +3V3, R51 10 kΩ to +3V3, readback to GPIO7 (pin 26)
+ Q14 (gate on WD_OK) ── drain: WD LED D3 with R5 to +3V3, R51 10 kΩ to +3V3, readback to GPIO7 (pin 26)
 ```
 
 - **R48 with C16** is a low-pass filter (about 340 Hz): a pin toggled
@@ -588,7 +592,7 @@ GPIO24 ─R48 4.7 kΩ─●──┤├────────┤├──●�
 - **C18 with R49 ∥ R50** sets the timeout (τ ≈ 2.4 s).
 - **Q5** (pump chain, in series with the PWM switch Q4), **Q13** (relay
   supply switch, D23) and **Q14** (WD LED and readback) are AO3400A whose
-  gates sit on `WD_HOLD`. Q5 and Q13 replace two MMBT3904 and their base
+  gates sit on `WD_OK`, the voltage on C18. Q5 and Q13 replace two MMBT3904 and their base
   resistors.
 - **Readback (GPIO7, pin 26, free since PT2 was dropped):** reads Q14's
   drain, low while the watchdog is on. Never the capacitor itself: GPIO7
@@ -601,13 +605,13 @@ GPIO24 ─R48 4.7 kΩ─●──┤├────────┤├──●�
   each start the self-test stops the heartbeat, measures how long the
   readback takes to go high (metric `costos_watchdog_timeout_seconds`)
   and raises an alarm outside about 0.8–5 s.
-- **Bench override:** JP1 ties `WD_HOLD` to +3V3 through R52 10 kΩ (open
+- **Bench override:** JP1 ties `WD_OK` to +3V3 through R52 10 kΩ (open
   by default).
 
 **Simulated** (time-step simulation, 1N4148 diode model, AO3400A gate
 threshold 0.65–1.45 V by the datasheet):
 
-| Heartbeat | `WD_HOLD` | Result |
+| Heartbeat | `WD_OK` | Result |
 |---|---|---|
 | 20 Hz (normal) | 2.31–2.35 V | 🟢 on, MOSFETs fully switched |
 | 5 Hz / 200 Hz | 1.59–1.70 / 2.36 V | 🟢 on: the exact rate does not matter much |
@@ -639,7 +643,7 @@ threshold 0.65–1.45 V by the datasheet):
 | One part fails, watchdog stays on | 🔴 output stuck high | 🔴 output stuck high | 🟢 none (only Q5/Q13 themselves, as with any switch) |
 | Software sees its state | 🔴 only through the pump output | 🔴 same | 🟢 readback on GPIO7, timeout measured at every start |
 | Parts on the board | 🟢 1 chip + RC | 🔴 chip, PNP, 3–4 R/C | 🟡 12 small parts; Q5 and Q13 replace transistors already there |
-| Layout | 🟢 ordinary | 🟢 ordinary | 🟡 `WD_HOLD` is a high-impedance node: short, kept clean, no flux residue |
+| Layout | 🟢 ordinary | 🟢 ordinary | 🟡 `WD_OK` is a high-impedance node: short, kept clean, no flux residue |
 
 **Failure of a single part:**
 
@@ -669,6 +673,6 @@ pump, and it is harder to explain), and a shorter time constant to
 narrow the window at the slow end (Linux stalls would trip it).
 
 **Decision:** adopted. Rev A carries the 74LVC1G123 (U3) as well, not
-fitted, with a 0 Ω link R53 from its output to `WD_HOLD`; bring-up can
+fitted, with a 0 Ω link R53 from its output to `WD_OK`; bring-up can
 compare both. Designators: R48–R53, C16–C19, D19, D20, Q14; Q5 and Q13
 become AO3400A (R34, R46 and R47 go).

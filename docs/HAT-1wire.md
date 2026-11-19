@@ -106,7 +106,7 @@ not considered.
  │          ▲                                                              │
  │  FB1, FB2 ◄── R/C filter ◄── pull-up 3.3 V ◄─────────────────── Pumps   │
  │          │                                                              │
- │  HEARTBEAT ─► watchdog (retriggerable monostable) ─► WD_OK ─┐           │
+ │  HEARTBEAT ─► capacitor watchdog (charge pump) ────► WD_OK ─┐           │
  │                                                            ▼           │
  │  REL1..2 ─────────────────────────────► low-side MOSFETs ◄─ relay supply ├──► external SSR / relay
  │                                                                         │
@@ -133,8 +133,9 @@ are footprints that are not fitted in rev A. Regenerate with
 ![Pt1000 and 1-Wire inputs](img/hat-sch-sensors.svg)
 
 Part choices the drawings add to the text below (all to be confirmed
-when the BOM is made): relay supply switch AO3401A P-MOSFET turned on by an MMBT3904 from `WD_OK` (D23); pump driver from MMBT3904/MMBT3906
-transistors (D22); relay
+when the BOM is made): relay supply switch AO3401A P-MOSFET turned on by an AO3400A from `WD_OK` (D23); capacitor watchdog from 1N4148W
+diodes, capacitors and AO3400A (D24); pump driver from MMBT3904/MMBT3906
+transistors and an AO3400A as watchdog switch (D22, D24); relay
 MOSFETs AO3400A with 1N4148W flyback diodes; ESD diodes PESD5V0 on the
 sensor inputs; 100 mA polyfuse for the 1-Wire sensor supply; a 1.5 kΩ
 minimum load on the 12 V output, which keeps the unregulated DC/DC below
@@ -159,7 +160,7 @@ the 13 V TVS standoff at light load.
              R35 2.7 kΩ                                    │     base from PWM_OFF via R37 10 kΩ
               │                                            ├── R38 10 kΩ to GND
  PWM1 ─R33 10 kΩ─► Q4 MMBT3904  "PWM switch"               └── R31/R32 readback → GPIO 6
- WD_OK ─R34 10 kΩ─► Q5 MMBT3904 "watchdog switch"
+ WD_OK ──────────► Q5 AO3400A   "watchdog switch"
               │
              GND
   ```
@@ -210,10 +211,11 @@ the 13 V TVS standoff at light load.
   continuously, the line must be low when 0 % is commanded and its duty
   (measured from edge timestamps, like the feedback input) must match the
   command; and at every start, a **watchdog self-test**: PWM set high,
-  heartbeat stopped, the line must drop to 0 V within about 3 s. That
-  catches a shorted transistor in the chain (or, on the prototype's
-  fallback chain, a stuck driver or AND gate) directly, and a silently lost watchdog layer before it matters. The
-  pump runs for at most those 3 s.
+  heartbeat stopped, the line must drop to 0 V within about 5 s, and the
+  watchdog readback (4.6) gives the exact timeout. That catches a
+  shorted transistor in the chain (or, on the prototype's fallback chain,
+  a stuck driver or AND gate) directly, and a silently lost watchdog
+  layer before it matters. The pump runs for at most those few seconds.
 - **R9 package: at least 0.5 W** (e.g. 1210 or 2010). With a shorted pump
   cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (1-Wire Lite) for as long as
   the short lasts, more than an 0805 resistor takes.
@@ -298,21 +300,33 @@ the 13 V TVS standoff at light load.
 
 ### 4.6 Hardware watchdog
 
-- CoSTOS toggles a **heartbeat GPIO** once per successful control cycle
-  (sensors read, decision made, outputs written).
-- A **retriggerable monostable** (e.g. 74LVC1G123) keeps `WD_OK` high as
-  long as edges keep arriving; about 2–3 s without an edge and `WD_OK`
-  drops. A GPIO stuck high or stuck low counts as "no heartbeat", because
-  only edges retrigger it. The 74LVC1G123 retriggers on rising edges
-  only: with one toggle per 1 s control cycle a rising edge arrives every
-  2 s, so the timeout is set to about 3 s.
-- `WD_OK` switches the relay supply (P-MOSFET high-side switch, D23) and gates the
-  PWM signals (4.1).
-- After power-up `WD_OK` is low until the software starts sending
-  heartbeats, so nothing runs while the Pi boots.
-- LED "watchdog OK". A test point and a jumper to disable the gating for
-  bench tests (clearly marked, open by default).
-- **Why it is worth the ~€3:** the Pi's own hardware watchdog and systemd
+**A capacitor that the software must keep charged** (D24; the full
+reasoning, simulation and failure analysis are in
+[HAT-development.md 8.2](HAT-development.md#82-watchdog-a-capacitor-that-the-software-must-keep-charged-d24)):
+
+- CoSTOS toggles the **heartbeat GPIO 24** about 20 times a second, from
+  a small task that only runs while the last control cycle (sensors read,
+  decision made, outputs written) succeeded less than about 1 s ago.
+- Each edge pumps a little charge through two small capacitors (C17,
+  C19) and a diode (D19) into C18; two resistors (R49 ∥ R50) drain it
+  all the time. The voltage on C18 **is** `WD_OK`. It holds the gates of
+  three AO3400A: Q5 gates the pump signal (4.1), Q13 switches the relay
+  supply (4.5, D23), Q14 drives the WD LED and the readback.
+- Heartbeat stopped, stuck high or low, slower than about 0.5 Hz, or
+  faster than about 1 kHz (filter R48/C16, a program stuck in a loop):
+  C18 empties and the MOSFETs switch off within about 1–3 s.
+- After power-up C18 is empty until the software starts the heartbeat,
+  so nothing runs while the Pi boots.
+- No single failed part keeps it on: the drain resistors are two in
+  parallel, the coupling capacitors two in series.
+- **Readback on GPIO 7** (through Q14, low = watchdog on): at every start
+  the self-test stops the heartbeat and measures the real timeout
+  (alarm outside about 0.8–5 s).
+- LED "WD", and jumper JP1 to force `WD_OK` for bench tests (clearly
+  marked, open by default).
+- Built only from JLCPCB basic parts for a few cents; the 74LVC1G123 it
+  replaces cost about €4 for one controller (part and loading fee).
+- **Why it is worth having:** the Pi's own hardware watchdog and systemd
   catch a hung kernel or a crashed CoSTOS, but not a fault in the
   switching hardware. Where a cut-off relay or SSR is used (option C), an
   SSR that fails short-circuited would leave the pump powered; the
@@ -354,7 +368,7 @@ software is wrong; none needs an overlay or any software.
 | LED | Colour | Driven by | Shows |
 |---|---|---|---|
 | PWR | green | 5 V rail | the HAT has power |
-| WD | green | watchdog output WD_OK | heartbeat seen, outputs enabled (4.6) |
+| WD | green | Q14, from the watchdog capacitor (`WD_OK`) | heartbeat seen, outputs enabled (4.6) |
 | **PUMP1** | green | driver output (Q6) via 2.2 kΩ | what really reaches the pump: off = stop, brighter = faster |
 | R1 | yellow | relay output 1 | relay or SSR switched on |
 | PUMP2, R2 | | | only with the unfitted second channels |
@@ -403,6 +417,7 @@ channel numbers behind GPIO 18/19 differ, which is software configuration.
 | PWM readback 1 | 31 | GPIO 6 | GPIO 6 |
 | PWM readback 2 (only if fitted) | 37 | GPIO 26 | GPIO 26 |
 | Heartbeat | 18 | GPIO 24 | GPIO 24 |
+| Watchdog readback | 26 | GPIO 7 | GPIO 7 |
 | Relay 1 | 22 | GPIO 25 | GPIO 25 |
 | Relay 2 (only if fitted) | 29 | GPIO 5 | GPIO 5 |
 | ID EEPROM | 27 / 28 | ID_SD / ID_SC | ID_SD / ID_SC |
@@ -423,8 +438,9 @@ set this up; listed here so it can be checked by hand.
 **`/boot/firmware/config.txt`**
 
 ```ini
-# SPI0 for the MAX31865 (CE0)
+# SPI0 for the MAX31865 (CE0 only, so GPIO 7 is free for the watchdog readback)
 dtparam=spi=on
+dtoverlay=spi0-1cs
 # Two 1-Wire buses for the DS18x20 sensors (external pull-ups on the HAT;
 # no "pullup" parameter, which would mean parasite power)
 dtoverlay=w1-gpio,gpiopin=4
@@ -434,6 +450,8 @@ dtoverlay=w1-gpio,gpiopin=17
 gpio=24,25,5=op,dl
 # PWM output readback: inputs with pull-down
 gpio=6,26=ip,pd
+# Watchdog readback (pulled up on the HAT, low = watchdog on)
+gpio=7=ip,np
 
 [pi3]
 # Same as the Pi 4 (untested on the Pi 3)
@@ -587,7 +605,6 @@ eight times higher for these parts.)
 |---|---|---|---|---|
 | MAX31865AAP+ (Pt1000 converter) | 1 | $4.45 ($3.94 when JLCPCB fits it) | 3.87 | checked |
 | PCB, ⅓ of an AISLER set of 3 (≈ €19), for building it yourself | — | — | 6.50 | AISLER |
-| 74LVC1G123 (watchdog) | 1 | $1.48 | 1.29 | checked |
 | 40-pin tall female header and 4 M2.5 spacers (D16) | 1 | ≈ $1.40 | 1.25 | estimate |
 | B0512S-1WR3 DC/DC | 1 | $1.05–1.46 by maker | 1.10 | checked |
 | Resistors and capacitors, about 30 (incl. the 4.3 kΩ 0.1 % reference) | — | ≈ $0.60 | 0.50 | estimate |
@@ -595,14 +612,15 @@ eight times higher for these parts.)
 | PESD5V0 ESD diodes (PT1 × 2, 1W-A, 1W-B, FB1) | 5 | ≈ $0.03 | 0.13 | estimate |
 | LEDs (PWR, WD, PUMP1, R1) | 4 | ≈ $0.01 | 0.04 | estimate |
 | SMBJ13A | 1 | ≈ $0.05 | 0.04 | estimate |
-| Pump driver transistors: MMBT3904 × 3, MMBT3906 × 1 (D22) | 4 | ≈ $0.01 | 0.04 | estimate |
+| Pump driver transistors: MMBT3904 × 2, MMBT3906, AO3400A (D22, D24) | 4 | ≈ $0.01 | 0.04 | estimate |
+| Capacitor watchdog: AO3400A (Q14), 1N4148W × 2, 6 resistors and capacitors (D24) | 9 | ≈ $0.06 | 0.05 | estimate |
 | 100 mA polyfuse | 1 | ≈ $0.03 | 0.03 | estimate |
 | AO3400A, 1N4148W | 2 | ≈ $0.02 | 0.03 | estimate |
-| Relay supply switch: AO3401A, MMBT3904 (D23) | 2 | ≈ $0.02 | 0.03 | estimate |
-| **Total, with ⅓ of an AISLER PCB set** | | | **≈ 15.20** | |
-| Total without PCB (the parts JLCPCB fits) | | | ≈ 8.70 | |
+| Relay supply switch: AO3401A, AO3400A (D23) | 2 | ≈ $0.02 | 0.03 | estimate |
+| **Total, with ⅓ of an AISLER PCB set** | | | **≈ 13.95** | |
+| Total without PCB (the parts JLCPCB fits) | | | ≈ 7.45 | |
 
-The MAX31865 and the watchdog chip are the two most expensive parts. The
+The MAX31865 is by far the most expensive part. The
 terminal brand is a choice still to make: Kefa KF350 is the cheap common
 one; brand-name blocks (Phoenix, Dinkle) cost several times more. The PT
 edition's list is in [HAT-PT.md 5](HAT-PT.md#5-space-and-cost).
@@ -620,30 +638,31 @@ a real quote exists):
 
 - **Fixed part per order:** setup and stencil, a loading fee of about
   €2.80 for each part type that is not a JLCPCB basic part, the
-  through-hole soldering setup and shipping: ≈ €51.60 for the 1-Wire
-  edition and the PT edition (three such part types: MAX31865 or LTC2983
-  handling, 74LVC1G123, B0512S; the relay supply switch is built from
-  basic parts since D23), ≈ €48.40 for the 1-Wire Lite (no B0512S).
+  through-hole soldering setup and shipping: ≈ €48.80 for the 1-Wire
+  edition and the PT edition (two such part types: MAX31865 or LTC2983
+  handling, B0512S; the relay supply switch and the watchdog are built
+  from basic parts since D23 and D24), ≈ €45.60 for the 1-Wire Lite
+  (only the MAX31865).
 - **Variable part per board:**
 
   | | 1-Wire edition | 1-Wire Lite | PT edition |
   |---|---|---|---|
-  | Parts at JLCPCB/LCSC prices (8.1, without PCB) | €8.20 | €6.95 | €44.90 (LTC2983 ≈ €39, bought at DigiKey and consigned) |
+  | Parts at JLCPCB/LCSC prices (8.1, without PCB) | €6.95 | €5.70 | €43.65 (LTC2983 ≈ €39, bought at DigiKey and consigned) |
   | PCB share (JLCPCB makes 5 bare boards) | €0.40 | €0.40 | €0.40 |
   | Soldering per joint (SMD and through-hole) | €1.00 | €0.95 | €1.20 |
-  | **Per board, incl. 19 % VAT** | **≈ €11.45** | **≈ €9.90** | **≈ €55.35** |
+  | **Per board, incl. 19 % VAT** | **≈ €9.95** | **≈ €8.40** | **≈ €53.85** |
 
 **What one controller costs**, by how you get the board (all incl. 19 %
 VAT; 🟢 cheapest way, 🟡 middle, 🔴 most expensive):
 
 | How you get it | What you pay for | **1-Wire edition** | **1-Wire Lite** | **1-Wire Lite saves** | **PT edition** |
 |---|---|---|---|---|---|
-| **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €75** | 🔴 **≈ €68** | ≈ €6 | 🔴 **≈ €162** |
-| **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €22** | 🟢 **≈ €19.50** | ≈ €2 | 🟢 **≈ €65.50** |
-| **Build it yourself** | parts for one board from LCSC plus a set of 3 bare PCBs (AISLER, ≈ €19 + VAT); needs SMD soldering (fine-pitch MAX31865 / LTC2983); LCSC shipping (≈ €10–20) not included | 🟡 **≈ €33** | 🟡 **≈ €31** | ≈ €2 | 🟡 **≈ €76** |
+| **Order it ready-made, just for you** | JLCPCB's smallest order: 2 assembled boards (the second is a spare), shipping included | 🔴 **≈ €69** | 🔴 **≈ €62.50** | ≈ €6.50 | 🔴 **≈ €157** |
+| **Order it ready-made with others** | a group order of 5 assembled boards, your share | 🟢 **≈ €19.70** | 🟢 **≈ €17.50** | ≈ €2 | 🟢 **≈ €63.50** |
+| **Build it yourself** | parts for one board from LCSC plus a set of 3 bare PCBs (AISLER, ≈ €19 + VAT); needs SMD soldering (fine-pitch MAX31865 / LTC2983); LCSC shipping (≈ €10–20) not included | 🟡 **≈ €31.50** | 🟡 **≈ €29.50** | ≈ €2 | 🟡 **≈ €74.50** |
 
 For one controller, the fixed costs dominate: the 1-Wire Lite saves about
-€6 per order, mostly because it needs one loading fee fewer, while its
+€6.50 per order, mostly because it needs one loading fee fewer, while its
 parts are only about €1.30 cheaper (the DC/DC costs about €1.10 at LCSC).
 AISLER's assembly price is not estimated here; it gets quoted with the
 BOM. Earlier estimates (with EU distributor prices, before D18 and D22)
@@ -748,9 +767,9 @@ Single-quantity parts; "saved" is what the 1-Wire Lite saves on that row.
 | MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
 | Unfitted spots for PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
 | ***Totals*** | | | |
-| Parts, single quantity (LCSC, with ⅓ AISLER PCB set) | ≈ €15.20 | ≈ €13.90 | **≈ €1.30** |
-| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €75 | ≈ €68 | **≈ €6** |
-| Assembled, per board in a batch of 5 | ≈ €22 | ≈ €19.50 | **≈ €2** |
+| Parts, single quantity (LCSC, with ⅓ AISLER PCB set) | ≈ €13.95 | ≈ €12.65 | **≈ €1.30** |
+| **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €69 | ≈ €62.50 | **≈ €6.50** |
+| Assembled, per board in a batch of 5 | ≈ €19.70 | ≈ €17.50 | **≈ €2** |
 | Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9 to 470 Ω, D4 to SMBJ13A and R31 to 27 kΩ, and fit the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that
@@ -772,7 +791,7 @@ Regenerate with `python3 tools/hw/pwm_chain_svg.py > docs/img/hat-lite-pwm-chain
    before GPIO 18 is configured. 0 V means "pump stopped".
 3. **Two switches in a row:** Q4 (the PWM switch) and Q5 (the watchdog
    switch, driven by WD_OK, 4.6). Only when both are on is the output
-   switched on. If CoSTOS hangs, the watchdog opens Q5 after about 3 s.
+   switched on. If CoSTOS hangs, the watchdog opens Q5 within about 1–3 s.
 4. **Q6, the switch to the supply** (a PNP transistor), connects the
    output to the Pi's 5 V (through R26): ≈ 4.85 V.
 5. **Q7, the switch to ground**, pulls the terminal actively to 0 V

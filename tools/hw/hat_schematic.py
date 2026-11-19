@@ -403,52 +403,57 @@ def sheet_power(path):
 # ======================================================================
 def sheet_pwm(path):
     s = Sheet(1500, 800, "CoSTOS HAT rev A: watchdog, PWM pump output, feedback and readback",
-              "Retriggerable monostable watchdog producing WD_OK; the PWM pump output as a transistor chain: two NPN "
+              "Capacitor watchdog: a heartbeat charge pump keeps WD_OK charged; the PWM pump output as a transistor chain: two NPN "
               "switches in series (PWM and watchdog) drive a PNP to the supply, an NPN pulls the terminal low; series "
               "resistor and TVS; pump feedback inputs with pull-up and RC filter; output readback divider.")
-    s.heading(20, 30, "4 · Hardware watchdog")
-    u3 = s.ic(170, 150, 160, 140, "U3", "74LVC1G123", [
-        ("l", 30, "A", None), ("l", 70, "B", None), ("t", 30, "VCC", None), ("t", 80, "REXT/CEXT", None),
-        ("t", 135, "CEXT", None), ("r", 70, "Q", None), ("r", 110, "Q̄", None), ("b", 40, "CLR", None),
-        ("b", 110, "GND", None)], sub="retriggerable monostable")
-    s.wire(u3["B"], (130, 220)); s.flag(130, 220, "HEARTBEAT", "L")
-    s.text(51, 246, "GPIO24 (pin 18)", "n")
-    s.wire(u3["A"], (135, 180), (135, 185)); s.gnd(135, 185)
-    s.nc(*u3["Q̄"])
-    s.wire(u3["VCC"], (200, 110)); s.rail(200, 110, "+3V3")
-    s.rail(250, 50, "+3V3")
-    s.part("R", 250, 50, "d", "R3", "300 kΩ", lab="r")
-    s.wire((250, 110), u3["REXT/CEXT"]); s.dot(250, 120)
-    s.wire((250, 120), (262, 120))
-    s.part("C", 262, 120, "r", "C5", "10 µF")
-    s.wire((302, 120), (305, 120), u3["CEXT"])
-    s.wire(u3["GND"], (280, 320)); s.gnd(280, 320)
-    s.wire(u3["CLR"], (210, 340)); s.dot(210, 340)
-    s.wire((210, 340), (190, 340))
-    s.part("R", 190, 340, "l", "R4", "100 kΩ", lab="b")
-    s.rail(130, 340, "+3V3")
-    s.part("C", 210, 340, "d", "C6", "1 µF", lab="r"); s.gnd(210, 380)
-    s.wire(u3["Q"], (400, 220)); s.dot(400, 220)
-    s.part("R", 400, 220, "d", "R5", "1 kΩ", lab="r")
-    s.part("LED", 400, 280, "d", "D3", "WD OK green", lab="r"); s.gnd(400, 320)
-    s.wire((400, 220), (420, 220))
-    s.part("R", 420, 220, "r", "R6", "1 kΩ")
-    s.wire((480, 220), (590, 220)); s.dot(500, 220)
-    s.part("JP", 500, 220, "u", "JP1", "open", lab="r")
-    s.rail(500, 180, "+3V3")
-    s.wire((500, 220), (500, 234))
-    s.add(f'<circle cx="500" cy="239" r="5" style="fill:white;stroke:{INK};stroke-width:2"/>')
-    s.text(510, 252, "TP1", "r")
-    s.flag(590, 220, "WD_OK", "R")
-    s.note(20, 430, [
-        "Timeout ≈ R3 · C5 ≈ 3 s (tuned at bring-up). Only rising",
-        "edges on B retrigger U3: CoSTOS toggles HEARTBEAT once per",
-        "control cycle (1 s), so an edge arrives every 2 s. A line",
-        "stuck high or low lets WD_OK drop.",
-        "Power-up: R4/C6 hold CLR low; Q then stays low until the",
-        "first heartbeat, so nothing runs while the Pi boots.",
-        "JP1 forces WD_OK high for bench tests (open by default).",
-        "D3 shows U3's state, not the JP1 override.",
+    s.heading(20, 30, "4 · Hardware watchdog (capacitor watchdog, D24)")
+    s.flag(130, 150, "HEARTBEAT", "L"); s.text(51, 176, "GPIO24 (pin 18)", "n")
+    s.wire((130, 150), (140, 150))
+    s.part("R", 140, 150, "r", "R48", "4.7 kΩ", lab="a")
+    s.wire((200, 150), (230, 150)); s.dot(210, 150)
+    s.part("C", 210, 150, "d", "C16", "100 nF", lab="r"); s.gnd(210, 190)
+    s.part("C", 230, 150, "r", "C17", "470 nF", lab="a")
+    s.wire((270, 150), (290, 150))
+    s.part("C", 290, 150, "r", "C19", "470 nF", lab="b")
+    s.wire((330, 150), (370, 150)); s.dot(350, 150)
+    s.part("D", 350, 200, "u", "D20", "1N4148W", lab="r"); s.gnd(350, 200)
+    s.wire((350, 160), (350, 150))
+    s.part("D", 370, 150, "r", "D19", "1N4148W", lab="a")
+    s.wire((410, 150), (620, 150))
+    s.rail(440, 50, "+3V3")
+    s.part("JP", 440, 50, "d", "JP1", "open", lab="r")
+    s.part("R", 440, 90, "d", "R52", "10 kΩ", lab="r"); s.dot(440, 150)
+    s.dot(480, 150); s.part("C", 480, 150, "d", "C18", "2.2 µF", lab="r"); s.gnd(480, 190)
+    for x, ref in ((560, "R49"), (590, "R50")):
+        s.dot(x, 150); s.part("R", x, 150, "d", ref, "", lab="-"); s.gnd(x, 210)
+    s.text(606, 176, "R49 ∥ R50", "r"); s.text(606, 190, "2.2 MΩ each")
+    s.flag(620, 150, "WD_OK", "R")
+    # LED driver and readback
+    s.rail(320, 230, "+3V3"); s.part("R", 320, 230, "d", "R5", "1 kΩ", lab="l")
+    s.part("LED", 320, 290, "d", "D3", "WD green", lab="l")
+    s.wire((320, 330), (320, 340)); s.dot(320, 340)
+    g, d, src = s.nmos(320, 370, "Q14", "AO3400A")
+    s.text(330, 397, "LED and readback", "n")
+    s.wire(src, (320, 410)); s.gnd(320, 410)
+    s.flag(250, 370, "WD_OK", "L"); s.wire((250, 370), g)
+    s.rail(420, 230, "+3V3"); s.part("R", 420, 230, "d", "R51", "10 kΩ", lab="r")
+    s.wire((420, 290), (420, 340), (320, 340)); s.dot(420, 340)
+    s.wire((420, 340), (480, 340)); s.flag(480, 340, "WD_RB", "R")
+    s.text(480, 366, "GPIO7 (pin 26), low = on", "n")
+    # rev A comparison: 74LVC1G123
+    s.begin_nf()
+    s.add(f'<rect x="440" y="392" width="230" height="44" rx="3" style="fill:white;stroke:{INK};stroke-width:2;stroke-dasharray:5 4"/>')
+    s.text(555, 411, "U3 74LVC1G123 (rev A only)", "v", "middle")
+    s.text(555, 427, "B = HEARTBEAT, Q → R53 0 Ω → WD_OK", "n", "middle")
+    s.end_nf()
+    s.note(20, 462, [
+        "Each heartbeat edge pumps charge through C17/C19 and D19 into C18; R49 ∥ R50 drain it",
+        "(τ ≈ 2.4 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about",
+        "1 kHz (R48/C16) → WD_OK below the MOSFET threshold within 1.1–3.1 s → pump and relays off.",
+        "No single failed part keeps WD_OK up (two R in parallel, two C in series).",
+        "WD_RB: never read C18 directly, GPIO7's boot pull-up would charge it.",
+        "JP1 forces WD_OK for bench tests (open by default).",
+        "Rev A: fit U3 and R53, remove R48 to compare with the 74LVC1G123.",
     ])
     # ---- PWM channel (H3, default; D22) ----
     s.heading(640, 30, "5 · PWM pump output PUMP1 (transistor chain H3, D22)")
@@ -460,16 +465,16 @@ def sheet_pwm(path):
     s.wire(q6["E"], (1020, 70))
     s.part("R", 860, 170, "d", "R35", "2.7 kΩ", lab="l")
     q4 = s.bjt(860, 260, "Q4", "MMBT3904", sub="PWM switch")
-    q5 = s.bjt(860, 350, "Q5", "MMBT3904", sub="watchdog switch")
-    s.wire(q4["E"], q5["C"])
-    s.wire(q5["E"], (860, 385)); s.gnd(860, 385)
+    g5, d5, s5 = s.nmos(860, 350, "Q5", "AO3400A")
+    s.text(870, 375, "watchdog switch", "n")
+    s.wire(q4["E"], d5)
+    s.wire(s5, (860, 385)); s.gnd(860, 385)
     s.flag(700, 260, "PWM1", "L"); s.text(700, 284, "GPIO18 (pin 12)", "n", "end")
     s.wire((700, 260), (770, 260)); s.dot(740, 260)
     s.part("R", 740, 260, "d", "R7", "100 kΩ", lab="l"); s.gnd(740, 320)
     s.part("R", 770, 260, "r", "R33", "10 kΩ", lab="a")
     s.flag(700, 350, "WD_OK", "L")
-    s.wire((700, 350), (770, 350))
-    s.part("R", 770, 350, "r", "R34", "10 kΩ", lab="a")
+    s.wire((700, 350), (830, 350))
     s.wire(q6["C"], (1020, 440), (1060, 440)); s.dot(1040, 440)
     s.part("R", 1040, 440, "d", "R22", "2.2 kΩ", lab="l")
     s.part("LED", 1040, 500, "d", "D12", "PUMP1", lab="l"); s.gnd(1040, 540)
@@ -561,7 +566,7 @@ def relay_block(s, x, y, n, gpio, pin):
 
 def sheet_relay(path):
     s = Sheet(1180, 600, "CoSTOS HAT rev A: relay supply and relay outputs",
-              "P-MOSFET high-side switch, turned on by an NPN transistor from WD_OK, creating the switched 5 V relay "
+              "P-MOSFET high-side switch, turned on by an N-MOSFET from WD_OK, creating the switched 5 V relay "
               "supply; two low-side MOSFET relay outputs with flyback diode, LED and gate pull-down.")
     s.heading(20, 30, "7 · Relay supply (switched by the watchdog)")
     s.rail(80, 110, "+5V"); s.wire((80, 110), (300, 110))
@@ -570,18 +575,16 @@ def sheet_relay(path):
     g, src, drn = s.pmos(300, 190, "Q12", "AO3401A", sub="relay supply switch")
     s.wire((300, 110), src)
     s.wire((240, 170), (240, 220)); s.wire(g, (240, 190)); s.dot(240, 190)
-    q = s.bjt(240, 250, "Q13", "MMBT3904", sub="on while WD_OK")
-    s.wire(q["E"], (240, 290)); s.gnd(240, 290)
-    s.wire(q["B"], (190, 250)); s.dot(190, 250)
-    s.part("R", 190, 250, "l", "R46", "10 kΩ", lab="a")
-    s.wire((130, 250), (110, 250)); s.flag(110, 250, "WD_OK", "L")
-    s.part("R", 190, 250, "d", "R47", "100 kΩ", lab="l"); s.gnd(190, 310)
+    g13, d13, s13 = s.nmos(240, 250, "Q13", "AO3400A")
+    s.text(250, 275, "on while WD_OK", "n")
+    s.wire(s13, (240, 290)); s.gnd(240, 290)
+    s.wire(g13, (130, 250)); s.flag(130, 250, "WD_OK", "L")
     s.wire(drn, (300, 230), (460, 230))
     s.dot(400, 230); s.part("C", 400, 230, "d", "C12", "1 µF", lab="r"); s.gnd(400, 270)
     s.rail(460, 230, "+5V_REL")
     s.note(20, 380, [
         "WD_OK high → Q13 pulls the gate of Q12 to 0 V → +5V_REL on.",
-        "WD_OK low or floating → R45 holds the gate at 5 V → every",
+        "WD_OK low (capacitor empty) → R45 holds the gate at 5 V → every",
         "relay output is off, whatever the GPIOs do (D23).",
         "",
         "Load per output: DIN-rail SSR with 3–32 V DC input",

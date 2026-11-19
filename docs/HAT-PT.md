@@ -86,15 +86,14 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
   PT1, the DS2482 footprint and the second 1-Wire bus (see the
   mockup).
 - **Cost** (estimates, comparison in [HAT-development.md 4](HAT-development.md#4-pt-edition-choice-of-measuring-chip-d13), assembly model in [HAT-1wire.md 8.2](HAT-1wire.md#82-what-one-controller-costs)):
-  **≈ €162 for one** (smallest assembled order, 2 boards), about €65.50 per
-  board in a batch of 5, about **€51.40 in single-quantity parts** (LCSC
+  **≈ €157 for one** (smallest assembled order, 2 boards), about €63.50 per
+  board in a batch of 5, about **€50.15 in single-quantity parts** (LCSC
   prices as in HAT-1wire 8.1, the LTC2983 from DigiKey):
 
 | Part | Qty | ≈ € |
 |---|---|---|
 | LTC2983 (8 × Pt1000; DigiKey $39.06 for one; LCSC rarely stocks it) | 1 | 39.00 |
 | PCB, ⅓ of an AISLER set of 3 (≈ €19), for building it yourself | — | 6.50 |
-| 74LVC1G123 (watchdog) | 1 | 1.29 |
 | 40-pin tall female header and 4 M2.5 spacers | 1 | 1.25 |
 | B0512S-1WR3 DC/DC | 1 | 1.10 |
 | Resistors and capacitors, about 45 (incl. the 2 kΩ 0.1 % sense resistor and 16 protection resistors) | — | 0.80 |
@@ -102,11 +101,12 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 | PESD5V0 ESD diodes (16 Pt1000 wires, 1-Wire, FB1) | 18 | 0.47 |
 | LEDs (PWR, WD, PUMP1, R1) | 4 | 0.04 |
 | SMBJ13A | 1 | 0.04 |
-| Pump driver transistors: MMBT3904 × 3, MMBT3906 × 1 (D22) | 4 | 0.04 |
+| Pump driver transistors: MMBT3904 × 2, MMBT3906, AO3400A (D22, D24) | 4 | 0.04 |
+| Capacitor watchdog: AO3400A, 1N4148W × 2, 6 R/C (D24) | 9 | 0.05 |
 | 100 mA polyfuse | 1 | 0.03 |
 | AO3400A, 1N4148W | 2 | 0.03 |
-| Relay supply switch: AO3401A, MMBT3904 (D23) | 2 | 0.03 |
-| **Total** | | **≈ 51.40** |
+| Relay supply switch: AO3401A, AO3400A (D23) | 2 | 0.03 |
+| **Total** | | **≈ 50.15** |
 
   The LTC2983 is three quarters of it; everything apart from the
   converter chip costs about €1 more than on the 1-Wire edition

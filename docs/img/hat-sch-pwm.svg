@@ -1,97 +1,102 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="800" viewBox="0 0 1500 800" font-family="Helvetica, Arial, sans-serif">
 <title>CoSTOS HAT rev A: watchdog, PWM pump output, feedback and readback</title>
-<desc>Retriggerable monostable watchdog producing WD_OK; the PWM pump output as a transistor chain: two NPN switches in series (PWM and watchdog) drive a PNP to the supply, an NPN pulls the terminal low; series resistor and TVS; pump feedback inputs with pull-up and RC filter; output readback divider.</desc>
+<desc>Capacitor watchdog: a heartbeat charge pump keeps WD_OK charged; the PWM pump output as a transistor chain: two NPN switches in series (PWM and watchdog) drive a PNP to the supply, an NPN pulls the terminal low; series resistor and TVS; pump feedback inputs with pull-up and RC filter; output readback divider.</desc>
 <style>.w{stroke:#222;stroke-width:2;fill:none}.b{stroke:#222;stroke-width:2;fill:white}.r{font-size:12px;font-weight:bold;fill:#222}.v{font-size:11px;fill:#444}.pn{font-size:11px;fill:#222}.num{font-size:10px;fill:#c62828}.n{font-size:11px;fill:#555;font-style:italic}.h{font-size:16px;font-weight:bold;fill:#222}</style>
 <rect width="1500" height="800" fill="white"/>
-<text x="20" y="30" class="h" text-anchor="start">4 · Hardware watchdog</text>
-<rect x="170" y="150" width="160" height="140" rx="3" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
-<text x="250.0" y="218.0" class="r" text-anchor="middle">U3</text>
-<text x="250.0" y="233.0" class="v" text-anchor="middle">74LVC1G123</text>
-<text x="250.0" y="247.0" class="n" text-anchor="middle">retriggerable monostable</text>
-<text x="175" y="184" class="pn" text-anchor="start">A</text>
-<path class="w" d="M170 180 L150 180"/>
-<text x="175" y="224" class="pn" text-anchor="start">B</text>
-<path class="w" d="M170 220 L150 220"/>
-<text x="200" y="164" class="pn" text-anchor="middle">VCC</text>
-<path class="w" d="M200 150 L200 130"/>
-<text x="250" y="164" class="pn" text-anchor="middle">REXT/CEXT</text>
-<path class="w" d="M250 150 L250 130"/>
-<text x="305" y="164" class="pn" text-anchor="middle">CEXT</text>
-<path class="w" d="M305 150 L305 130"/>
-<text x="325" y="224" class="pn" text-anchor="end">Q</text>
-<path class="w" d="M330 220 L350 220"/>
-<text x="325" y="264" class="pn" text-anchor="end">Q̄</text>
-<path class="w" d="M330 260 L350 260"/>
-<text x="210" y="284" class="pn" text-anchor="middle">CLR</text>
-<path class="w" d="M210 290 L210 310"/>
-<text x="280" y="284" class="pn" text-anchor="middle">GND</text>
-<path class="w" d="M280 290 L280 310"/>
-<path class="w" d="M150 220 L130 220"/>
-<polygon points="130,220 122,211 51,211 51,229 122,229" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
-<text x="86.5" y="224" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">HEARTBEAT</text>
-<text x="51" y="246" class="n" text-anchor="start">GPIO24 (pin 18)</text>
-<path class="w" d="M150 180 L135 180 L135 185"/>
-<path d="M135 185 V195 M123 195 H147 M127 200 H143 M131 205 H139" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path class="w" d="M345 255 L355 265 M345 265 L355 255"/>
-<path class="w" d="M200 130 L200 110"/>
-<path d="M200 110 V98 M188 98 H212" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
-<text x="200" y="88" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
-<path d="M250 50 V38 M238 38 H262" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
-<text x="250" y="28" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
-<g transform="translate(250 50) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="266.0" y="78.0" class="r" text-anchor="start">R3</text>
-<text x="266.0" y="92.0" class="v" text-anchor="start">300 kΩ</text>
-<path class="w" d="M250 110 L250 130"/>
-<circle cx="250" cy="120" r="3.5" fill="#222"/>
-<path class="w" d="M250 120 L262 120"/>
-<g transform="translate(262 120) rotate(0)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
-<text x="282.0" y="106.0" class="v" text-anchor="middle"><tspan class="r">C5</tspan> 10 µF</text>
-<path class="w" d="M302 120 L305 120 L305 130"/>
-<path class="w" d="M280 310 L280 320"/>
-<path d="M280 320 V330 M268 330 H292 M272 335 H288 M276 340 H284" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path class="w" d="M210 310 L210 340"/>
-<circle cx="210" cy="340" r="3.5" fill="#222"/>
-<path class="w" d="M210 340 L190 340"/>
-<g transform="translate(190 340) rotate(180)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="160.0" y="366.0" class="v" text-anchor="middle"><tspan class="r">R4</tspan> 100 kΩ</text>
-<path d="M130 340 V328 M118 328 H142" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
-<text x="130" y="318" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
-<g transform="translate(210 340) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
-<text x="226.0" y="358.0" class="r" text-anchor="start">C6</text>
-<text x="226.0" y="372.0" class="v" text-anchor="start">1 µF</text>
-<path d="M210 380 V390 M198 390 H222 M202 395 H218 M206 400 H214" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path class="w" d="M350 220 L400 220"/>
-<circle cx="400" cy="220" r="3.5" fill="#222"/>
-<g transform="translate(400 220) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="416.0" y="248.0" class="r" text-anchor="start">R5</text>
-<text x="416.0" y="262.0" class="v" text-anchor="start">1 kΩ</text>
-<g transform="translate(400 280) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/><path class="w" d="M14 -12 L21 -20" style="stroke-width:1.5"/><path d="M21 -20 L16 -18 L20 -15 Z" fill="#222"/><path class="w" d="M22 -12 L29 -20" style="stroke-width:1.5"/><path d="M29 -20 L24 -18 L28 -15 Z" fill="#222"/></g>
-<text x="430.0" y="298.0" class="r" text-anchor="start">D3</text>
-<text x="430.0" y="312.0" class="v" text-anchor="start">WD OK green</text>
-<path d="M400 320 V330 M388 330 H412 M392 335 H408 M396 340 H404" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
-<path class="w" d="M400 220 L420 220"/>
-<g transform="translate(420 220) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="450.0" y="206.0" class="v" text-anchor="middle"><tspan class="r">R6</tspan> 1 kΩ</text>
-<path class="w" d="M480 220 L590 220"/>
-<circle cx="500" cy="220" r="3.5" fill="#222"/>
-<g transform="translate(500 220) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -7 A7 7 0 0 0 12 7 Z M28 -7 A7 7 0 0 1 28 7 Z" style="fill:#888;stroke:#222;stroke-width:1.5"/></g>
-<text x="516.0" y="198.0" class="r" text-anchor="start">JP1</text>
-<text x="516.0" y="212.0" class="v" text-anchor="start">open</text>
-<path d="M500 180 V168 M488 168 H512" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
-<text x="500" y="158" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
-<path class="w" d="M500 220 L500 234"/>
-<circle cx="500" cy="239" r="5" style="fill:white;stroke:#222;stroke-width:2"/>
-<text x="510" y="252" class="r" text-anchor="start">TP1</text>
-<polygon points="590,220 598,211 641,211 641,229 598,229" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
-<text x="619.5" y="224" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
-<text x="20" y="430" class="n" text-anchor="start">Timeout ≈ R3 · C5 ≈ 3 s (tuned at bring-up). Only rising</text>
-<text x="20" y="445" class="n" text-anchor="start">edges on B retrigger U3: CoSTOS toggles HEARTBEAT once per</text>
-<text x="20" y="460" class="n" text-anchor="start">control cycle (1 s), so an edge arrives every 2 s. A line</text>
-<text x="20" y="475" class="n" text-anchor="start">stuck high or low lets WD_OK drop.</text>
-<text x="20" y="490" class="n" text-anchor="start">Power-up: R4/C6 hold CLR low; Q then stays low until the</text>
-<text x="20" y="505" class="n" text-anchor="start">first heartbeat, so nothing runs while the Pi boots.</text>
-<text x="20" y="520" class="n" text-anchor="start">JP1 forces WD_OK high for bench tests (open by default).</text>
-<text x="20" y="535" class="n" text-anchor="start">D3 shows U3's state, not the JP1 override.</text>
+<text x="20" y="30" class="h" text-anchor="start">4 · Hardware watchdog (capacitor watchdog, D24)</text>
+<polygon points="130,150 122,141 51,141 51,159 122,159" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="86.5" y="154" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">HEARTBEAT</text>
+<text x="51" y="176" class="n" text-anchor="start">GPIO24 (pin 18)</text>
+<path class="w" d="M130 150 L140 150"/>
+<g transform="translate(140 150) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="170.0" y="136.0" class="v" text-anchor="middle"><tspan class="r">R48</tspan> 4.7 kΩ</text>
+<path class="w" d="M200 150 L230 150"/>
+<circle cx="210" cy="150" r="3.5" fill="#222"/>
+<g transform="translate(210 150) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="226.0" y="168.0" class="r" text-anchor="start">C16</text>
+<text x="226.0" y="182.0" class="v" text-anchor="start">100 nF</text>
+<path d="M210 190 V200 M198 200 H222 M202 205 H218 M206 210 H214" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<g transform="translate(230 150) rotate(0)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="250.0" y="136.0" class="v" text-anchor="middle"><tspan class="r">C17</tspan> 470 nF</text>
+<path class="w" d="M270 150 L290 150"/>
+<g transform="translate(290 150) rotate(0)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="310.0" y="176.0" class="v" text-anchor="middle"><tspan class="r">C19</tspan> 470 nF</text>
+<path class="w" d="M330 150 L370 150"/>
+<circle cx="350" cy="150" r="3.5" fill="#222"/>
+<g transform="translate(350 200) rotate(270)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/></g>
+<text x="366.0" y="178.0" class="r" text-anchor="start">D20</text>
+<text x="366.0" y="192.0" class="v" text-anchor="start">1N4148W</text>
+<path d="M350 200 V210 M338 210 H362 M342 215 H358 M346 220 H354" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<path class="w" d="M350 160 L350 150"/>
+<g transform="translate(370 150) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/></g>
+<text x="390.0" y="136.0" class="v" text-anchor="middle"><tspan class="r">D19</tspan> 1N4148W</text>
+<path class="w" d="M410 150 L620 150"/>
+<path d="M440 50 V38 M428 38 H452" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="440" y="28" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(440 50) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -7 A7 7 0 0 0 12 7 Z M28 -7 A7 7 0 0 1 28 7 Z" style="fill:#888;stroke:#222;stroke-width:1.5"/></g>
+<text x="456.0" y="68.0" class="r" text-anchor="start">JP1</text>
+<text x="456.0" y="82.0" class="v" text-anchor="start">open</text>
+<g transform="translate(440 90) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="456.0" y="118.0" class="r" text-anchor="start">R52</text>
+<text x="456.0" y="132.0" class="v" text-anchor="start">10 kΩ</text>
+<circle cx="440" cy="150" r="3.5" fill="#222"/>
+<circle cx="480" cy="150" r="3.5" fill="#222"/>
+<g transform="translate(480 150) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
+<text x="496.0" y="168.0" class="r" text-anchor="start">C18</text>
+<text x="496.0" y="182.0" class="v" text-anchor="start">2.2 µF</text>
+<path d="M480 190 V200 M468 200 H492 M472 205 H488 M476 210 H484" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<circle cx="560" cy="150" r="3.5" fill="#222"/>
+<g transform="translate(560 150) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<path d="M560 210 V220 M548 220 H572 M552 225 H568 M556 230 H564" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<circle cx="590" cy="150" r="3.5" fill="#222"/>
+<g transform="translate(590 150) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<path d="M590 210 V220 M578 220 H602 M582 225 H598 M586 230 H594" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<text x="606" y="176" class="r" text-anchor="start">R49 ∥ R50</text>
+<text x="606" y="190" class="v" text-anchor="start">2.2 MΩ each</text>
+<polygon points="620,150 628,141 671,141 671,159 628,159" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="649.5" y="154" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
+<path d="M320 230 V218 M308 218 H332" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="320" y="208" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(320 230) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="304.0" y="258.0" class="r" text-anchor="end">R5</text>
+<text x="304.0" y="272.0" class="v" text-anchor="end">1 kΩ</text>
+<g transform="translate(320 290) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M28 0 H40"/><path d="M12 -9 L28 0 L12 9 Z" style="fill:white;stroke:#222;stroke-width:2"/><path class="w" d="M28 -9 V9"/><path class="w" d="M14 -12 L21 -20" style="stroke-width:1.5"/><path d="M21 -20 L16 -18 L20 -15 Z" fill="#222"/><path class="w" d="M22 -12 L29 -20" style="stroke-width:1.5"/><path d="M29 -20 L24 -18 L28 -15 Z" fill="#222"/></g>
+<text x="290.0" y="308.0" class="r" text-anchor="end">D3</text>
+<text x="290.0" y="322.0" class="v" text-anchor="end">WD green</text>
+<path class="w" d="M320 330 L320 340"/>
+<circle cx="320" cy="340" r="3.5" fill="#222"/>
+<g transform="translate(320 370)"><path class="w" d="M-30 0 H-14 M-14 -14 V14"/><path class="w" d="M-8 -17 V-7 M-8 -5 V5 M-8 7 V17" style="stroke-width:2.5"/><path class="w" d="M-8 -12 H0 V-30 M-8 12 H0 V30 M-8 0 H0 V12"/><path d="M-8 0 L-1 -4 L-1 4 Z" fill="#222"/></g>
+<text x="330" y="368" class="r" text-anchor="start">Q14</text>
+<text x="330" y="382" class="v" text-anchor="start">AO3400A</text>
+<text x="330" y="397" class="n" text-anchor="start">LED and readback</text>
+<path class="w" d="M320 400 L320 410"/>
+<path d="M320 410 V420 M308 420 H332 M312 425 H328 M316 430 H324" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
+<polygon points="250,370 242,361 199,361 199,379 242,379" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="220.5" y="374" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
+<path class="w" d="M250 370 L290 370"/>
+<path d="M420 230 V218 M408 218 H432" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
+<text x="420" y="208" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>
+<g transform="translate(420 230) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
+<text x="436.0" y="258.0" class="r" text-anchor="start">R51</text>
+<text x="436.0" y="272.0" class="v" text-anchor="start">10 kΩ</text>
+<path class="w" d="M420 290 L420 340 L320 340"/>
+<circle cx="420" cy="340" r="3.5" fill="#222"/>
+<path class="w" d="M420 340 L480 340"/>
+<polygon points="480,340 488,331 531,331 531,349 488,349" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
+<text x="509.5" y="344" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_RB</text>
+<text x="480" y="366" class="n" text-anchor="start">GPIO7 (pin 26), low = on</text>
+<g opacity="0.42">
+<rect x="440" y="392" width="230" height="44" rx="3" style="fill:white;stroke:#222;stroke-width:2;stroke-dasharray:5 4"/>
+<text x="555" y="411" class="v" text-anchor="middle">U3 74LVC1G123 (rev A only)</text>
+<text x="555" y="427" class="n" text-anchor="middle">B = HEARTBEAT, Q → R53 0 Ω → WD_OK</text>
+</g>
+<text x="20" y="462" class="n" text-anchor="start">Each heartbeat edge pumps charge through C17/C19 and D19 into C18; R49 ∥ R50 drain it</text>
+<text x="20" y="477" class="n" text-anchor="start">(τ ≈ 2.4 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about</text>
+<text x="20" y="492" class="n" text-anchor="start">1 kHz (R48/C16) → WD_OK below the MOSFET threshold within 1.1–3.1 s → pump and relays off.</text>
+<text x="20" y="507" class="n" text-anchor="start">No single failed part keeps WD_OK up (two R in parallel, two C in series).</text>
+<text x="20" y="522" class="n" text-anchor="start">WD_RB: never read C18 directly, GPIO7's boot pull-up would charge it.</text>
+<text x="20" y="537" class="n" text-anchor="start">JP1 forces WD_OK for bench tests (open by default).</text>
+<text x="20" y="552" class="n" text-anchor="start">Rev A: fit U3 and R53, remove R48 to compare with the 74LVC1G123.</text>
 <text x="640" y="30" class="h" text-anchor="start">5 · PWM pump output PUMP1 (transistor chain H3, D22)</text>
 <path class="w" d="M860 70 L1020 70"/>
 <path d="M940 70 V58 M928 58 H952" style="stroke:#222;stroke-width:2.5;fill:none"/>
@@ -117,10 +122,10 @@
 <text x="878" y="258" class="r" text-anchor="start">Q4</text>
 <text x="878" y="272" class="v" text-anchor="start">MMBT3904</text>
 <text x="878" y="285" class="n" text-anchor="start">PWM switch</text>
-<g transform="translate(860 350)"><circle cx="-4" cy="0" r="17" style="fill:white;stroke:#222;stroke-width:1.5"/><path class="w" d="M-30 0 H-10 M-10 -11 V11" style="stroke-width:2.5"/><path class="w" d="M-10 -5 L0 -13 V-30 M-10 5 L0 13 V30"/><path d="M0 13 L-7 12 L-3 7 Z" fill="#222"/></g>
-<text x="878" y="348" class="r" text-anchor="start">Q5</text>
-<text x="878" y="362" class="v" text-anchor="start">MMBT3904</text>
-<text x="878" y="375" class="n" text-anchor="start">watchdog switch</text>
+<g transform="translate(860 350)"><path class="w" d="M-30 0 H-14 M-14 -14 V14"/><path class="w" d="M-8 -17 V-7 M-8 -5 V5 M-8 7 V17" style="stroke-width:2.5"/><path class="w" d="M-8 -12 H0 V-30 M-8 12 H0 V30 M-8 0 H0 V12"/><path d="M-8 0 L-1 -4 L-1 4 Z" fill="#222"/></g>
+<text x="870" y="348" class="r" text-anchor="start">Q5</text>
+<text x="870" y="362" class="v" text-anchor="start">AO3400A</text>
+<text x="870" y="375" class="n" text-anchor="start">watchdog switch</text>
 <path class="w" d="M860 290 L860 320"/>
 <path class="w" d="M860 380 L860 385"/>
 <path d="M860 385 V395 M848 395 H872 M852 400 H868 M856 405 H864" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
@@ -137,9 +142,7 @@
 <text x="800.0" y="246.0" class="v" text-anchor="middle"><tspan class="r">R33</tspan> 10 kΩ</text>
 <polygon points="700,350 692,341 649,341 649,359 692,359" style="fill:#e3f2fd;stroke:#1565c0;stroke-width:1.5"/>
 <text x="670.5" y="354" class="pn" text-anchor="middle" style="font-weight:bold;fill:#1565c0">WD_OK</text>
-<path class="w" d="M700 350 L770 350"/>
-<g transform="translate(770 350) rotate(0)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
-<text x="800.0" y="336.0" class="v" text-anchor="middle"><tspan class="r">R34</tspan> 10 kΩ</text>
+<path class="w" d="M700 350 L830 350"/>
 <path class="w" d="M1020 180 L1020 440 L1060 440"/>
 <circle cx="1040" cy="440" r="3.5" fill="#222"/>
 <g transform="translate(1040 440) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
