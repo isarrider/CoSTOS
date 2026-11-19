@@ -61,8 +61,8 @@ be BX Plus inputs S1–S8.
     offsets, set against the BX Plus during shadow mode, keep the
     long-term charts continuous.
   - **S4 (solar flow) can briefly exceed a DS18B20's 125 °C** after a
-    stagnation day; fitting the HAT's PT2 position and keeping S4 as
-    Pt1000 (2 Pt1000 + 6 DS18B20) avoids that for about €9. And a short in
+    stagnation day; where that matters, the PT edition keeps S4 as a
+    Pt1000. And a short in
     one probe or its cable takes down its whole bus: CoSTOS then treats
     those sensors as unknown, never as cold.
   - Cost comparison of both options:

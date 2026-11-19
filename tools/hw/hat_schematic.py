@@ -381,8 +381,7 @@ def sheet_power(path):
         ("MOSI", "19", "10", "SPI0"),
         ("MISO", "21", "9", "SPI0"),
         ("SCLK", "23", "11", "SPI0"),
-        ("CS_PT1", "24", "8", "CE0, MAX31865 #1"),
-        ("CS_PT2", "26", "7", "CE1, MAX31865 #2 (n.f.)"),
+        ("CS_PT1", "24", "8", "CE0, MAX31865"),
         ("SDA, SCL", "3, 5", "2, 3", "DS2482 only (n.f.)"),
         ("ID_SD, ID_SC", "27, 28", "0, 1", "ID EEPROM (n.f.)"),
     ]
@@ -654,7 +653,6 @@ def sheet_sensors(path):
         "2-wire (default): JP2 and JP3 closed (FORCE+ = RTDIN+, RTDIN− = FORCE−), JP4 ties FORCE2 to GND.",
         "3-wire: open JP2, third wire to TP2, move JP4 to FORCE+. Not needed with the 2-wire roof cable.",
         "R21 (0.1 %) sets the Pt1000 range; C13 across the RTD as the datasheet gives for 1 kΩ RTDs.",
-        "U9 with J7 (PT2): identical, CS = CE1 = GPIO7 (pin 26); not fitted.",
         "DRDY is not used: CoSTOS polls once per second.",
     ])
     # ---- 1-Wire ----

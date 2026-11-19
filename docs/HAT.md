@@ -53,7 +53,7 @@ Prices are estimates until a real BOM exists (cost model:
 | PWM frequency | 🟢 settable, 100–1000 Hz ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)) | 🟢 same | 🟢 same |
 | REL1 (cut-off relay, valve, on/off load) | 🟢 yes | 🔴 not fitted | 🟢 yes |
 | Pumps | 🟢 solar profile; heating profile with a cut-off relay | 🟡 solar profile only | 🟢 solar profile; heating profile with a cut-off relay |
-| Unfitted spare positions | PT2, PUMP2, REL2, DS2482 | the same, plus REL1 and the DC/DC | PUMP2, REL2 |
+| Unfitted spare positions | PUMP2, REL2, DS2482 | the same, plus REL1 and the DC/DC | PUMP2, REL2 |
 | ***The same on all*** | | | |
 | Transistor pump driver with watchdog gating and output readback, field-line protection, power from the Pi, PWR / WD / PUMP1 LEDs, silkscreen cheat sheet, size and tall header | 🟢 | 🟢 | 🟢 |
 | ***Cost*** (incl. 19 % VAT unless noted) | | | |

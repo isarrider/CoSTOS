@@ -145,8 +145,7 @@
 <text x="20" y="545" class="n" text-anchor="start">2-wire (default): JP2 and JP3 closed (FORCE+ = RTDIN+, RTDIN− = FORCE−), JP4 ties FORCE2 to GND.</text>
 <text x="20" y="560" class="n" text-anchor="start">3-wire: open JP2, third wire to TP2, move JP4 to FORCE+. Not needed with the 2-wire roof cable.</text>
 <text x="20" y="575" class="n" text-anchor="start">R21 (0.1 %) sets the Pt1000 range; C13 across the RTD as the datasheet gives for 1 kΩ RTDs.</text>
-<text x="20" y="590" class="n" text-anchor="start">U9 with J7 (PT2): identical, CS = CE1 = GPIO7 (pin 26); not fitted.</text>
-<text x="20" y="605" class="n" text-anchor="start">DRDY is not used: CoSTOS polls once per second.</text>
+<text x="20" y="590" class="n" text-anchor="start">DRDY is not used: CoSTOS polls once per second.</text>
 <text x="840" y="30" class="h" text-anchor="start">10 · 1-Wire buses (DS18x20, powered)</text>
 <path d="M860 90 V78 M848 78 H872" style="stroke:#b8860b;stroke-width:2.5;fill:none"/>
 <text x="860" y="68" class="r" text-anchor="middle" style="fill:#b8860b">+3V3</text>

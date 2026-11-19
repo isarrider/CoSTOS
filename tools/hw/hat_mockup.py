@@ -105,7 +105,6 @@ if pt:
     term_h(316, 3, "1W-A", ["3V3", "DQ", "GND"])
     term_h(410, 2, "REL2", ["+5V", "OUT"], fitted=False)
 else:
-    term_h(316, 2, "PT2", ["A", "B"], fitted=False)
     term_h(390, 2, "REL2", ["+5V", "OUT"], fitted=False)
 term_h(500, 2, "REL1", ["+5V", "OUT"], fitted=not lite)
 # ---- signal paths on the silkscreen (D21): thin white lines, arrows, small text ----
@@ -133,10 +132,9 @@ if pt:
     flow((230, 118), (230, 81)); ft(235, 100, "SPI")
     chip(170, 270, 96, 26, "1-Wire", "pull-up, ESD")
 else:
-    chip(205, 110, 80, 40, "MAX31865", "Pt1000 #1")
+    chip(205, 110, 80, 40, "MAX31865", "Pt1000")
     flow((176, 120), (204, 120))
     flow((245, 110), (245, 81)); ft(250, 100, "SPI")
-    nf_chip(318, 112, 90, 30, "MAX31865 #2", "not fitted")
     nf_chip(318, 152, 90, 30, "DS2482", "not fitted")
     flow((190, 200), (300, 200), (300, 81)); ft(196, 195, "1-Wire A → GPIO4")
     flow((190, 290), (310, 290), (310, 81)); ft(196, 285, "1-Wire B → GPIO17")

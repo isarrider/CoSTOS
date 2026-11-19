@@ -61,7 +61,7 @@ for name, y0, pins in TERMS:
     t(mx(96) - 52, y0 + 14 * len(pins) + 4, name, 11, 600, "end")
 
 # front-edge terminals (mirrored)
-FRONT = [("PUMP2", 216, ["PWM", "GND", "FB"]), ("PT2", 316, ["A", "B"]),
+FRONT = [("PUMP2", 216, ["PWM", "GND", "FB"]),
          ("REL2", 390, ["+5V", "OUT"]), ("REL1", 500, ["+5V", "OUT"])]
 for name, x0, pins in FRONT:
     xs = [mx(x0 + 14 + 28 * k) for k in range(len(pins))]

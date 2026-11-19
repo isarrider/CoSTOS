@@ -110,7 +110,7 @@ not considered.
  │                                                            ▼           │
  │  REL1..2 ─────────────────────────────► low-side MOSFETs ◄─ relay supply ├──► external SSR / relay
  │                                                                         │
- │  SPI ─► MAX31865 #1, #2 (Pt1000) ◄──────────────────────────── sensors  │
+ │  SPI ─► MAX31865 (Pt1000) ◄─────────────────────────────────── sensors  │
  │  GPIO 4, 17 ─► pull-ups ─► 1-Wire bus A, B ◄────────────────── DS18x20  │
  │                                                                         │
  │  LEDs: power, watchdog OK, pump 1, relay 1, relay 2                     │
@@ -245,20 +245,18 @@ the 13 V TVS standoff at light load.
 
 ### 4.3 Pt1000 inputs
 
-- **Two MAX31865 positions** (SSOP-20, hand-solderable), each with its own
-  4.3 kΩ 0.1 % reference resistor, the input filter from the datasheet and
-  ESD protection on the terminal. **Rev A fits only #1 (PT1, collector).**
-  #2 and its PT2 terminal stay unfitted: a second collector sensor, the
-  hot flow line or precise heat metering can be added later without a new
-  board.
+- **One MAX31865** (SSOP-20) for PT1, the collector, with its 4.3 kΩ
+  0.1 % reference resistor, the input filter from the datasheet and ESD
+  protection on the terminal. There is no second Pt1000 position (D3):
+  whoever needs more Pt1000 inputs, for example for a flow line that can
+  pass 125 °C after a stagnation day, takes the PT edition.
 - **The collector needs a Pt1000:** the cable to the roof usually has only
   two wires, which is exactly what a Pt1000 needs. A DS18x20 would need
   three (normal powered mode) and only goes up to 125 °C. The cable's
   resistance shows up as a small fixed offset (about 0.25 K for 20 m of
   0.75 mm²), corrected by the per-sensor calibration value.
 - 2-wire connection by default; solder jumpers for 3-wire sensors.
-- On SPI0, with the two hardware chip selects: CE0 (pin 24) for #1, CE1
-  (pin 26) for #2.
+- On SPI0, chip select CE0 (pin 24).
 - The `DRDY` outputs are not connected; CoSTOS polls once per second.
 
 ### 4.4 1-Wire bus
@@ -397,8 +395,7 @@ channel numbers behind GPIO 18/19 differ, which is software configuration.
 | 1-Wire bus B | 11 | GPIO 17 | GPIO 17 |
 | I²C SDA / SCL (DS2482, only if fitted) | 3 / 5 | I2C1 | I2C1 |
 | SPI MOSI / MISO / SCLK | 19 / 21 / 23 | SPI0 | SPI0 |
-| SPI CE0 (MAX31865 #1) | 24 | GPIO 8 | GPIO 8 |
-| SPI CE1 (MAX31865 #2, only if fitted) | 26 | GPIO 7 | GPIO 7 |
+| SPI CE0 (MAX31865) | 24 | GPIO 8 | GPIO 8 |
 | PWM 1 | 12 | GPIO 18, PWM0 channel 0 | GPIO 18, RP1 PWM0 channel 2 |
 | PWM 2 (only if fitted) | 35 | GPIO 19, PWM0 channel 1 | GPIO 19, RP1 PWM0 channel 3 |
 | Feedback 1 | 16 | GPIO 23 | GPIO 23 |
@@ -426,7 +423,7 @@ set this up; listed here so it can be checked by hand.
 **`/boot/firmware/config.txt`**
 
 ```ini
-# SPI0 for the two MAX31865 (CE0, CE1)
+# SPI0 for the MAX31865 (CE0)
 dtparam=spi=on
 # Two 1-Wire buses for the DS18x20 sensors (external pull-ups on the HAT;
 # no "pullup" parameter, which would mean parasite power)
@@ -483,7 +480,7 @@ terminals** on **two edges**, as in the [mockup](#mockup):
 - **Left edge** (everything that is normally wired, D17): PT1, 1W-A,
   1W-B, PUMP1. The PT edition: the S1–S8 block and PUMP1.
 - **Front (bottom) edge** (rarely used or not fitted), from the left:
-  PUMP2, PT2, REL2, REL1 (PUMP2, PT2 and REL2 not fitted in rev A; REL1
+  PUMP2, REL2, REL1 (PUMP2 and REL2 not fitted in rev A; REL1
   sits right below its relay circuit). The PT edition: PUMP2, 1W-A, REL2,
   REL1. There is no power terminal (D18).
 - The top edge holds the 40-pin header. The right edge stays free: on the
@@ -513,7 +510,6 @@ All labelled on the silkscreen:
 | PUMP1 | PWM, GND, FB | pump 1 signal cable (brown, blue, black) |
 | PUMP2 | PWM, GND, FB | pump 2 signal cable (not fitted in rev A) |
 | PT1 | A, B | Pt1000 sensor 1 (collector); no polarity, wires in any order |
-| PT2 | A, B | Pt1000 sensor 2 (not fitted in rev A) |
 | 1W-A, 1W-B | 3V3, DQ, GND | DS18x20 sensors |
 | REL1 | +5V, OUT | relay / SSR 1, optional: cut-off relay (option C), heating-profile pump, valve |
 | REL2 | +5V, OUT | SSR / relay 2 (not fitted in rev A) |
@@ -750,7 +746,7 @@ Single-quantity parts; "saved" is what the 1-Wire Lite saves on that row.
 | R31 readback divider (4.1) | 27 kΩ | **6.8 kΩ** | — |
 | ***The same in both*** | | | |
 | MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
-| Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
+| Unfitted spots for PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
 | ***Totals*** | | | |
 | Parts, single quantity (LCSC, with ⅓ AISLER PCB set) | ≈ €15.20 | ≈ €13.90 | **≈ €1.30** |
 | **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €75 | ≈ €68 | **≈ €6** |

@@ -28,7 +28,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 |---|---|---|
 | D1 | 12 V (DC/DC) or 5 V driver supply? | **12 V**: the HAT is meant to run for years; the margin is worth one DC/DC module |
 | D2 | One or two PWM outputs and relay outputs? | **Two positions each, one fitted**: PUMP1 and REL1 for the solar pump; PUMP2 and REL2 stay unfitted until a second pump is added |
-| D3 | How many Pt1000 inputs? | **Two on the board, one fitted**: PT1 for the collector; PT2 (MAX31865 #2, its parts and terminal) stays unfitted until needed |
+| D3 | How many Pt1000 inputs? | **One** (revised): PT1 for the collector. The unfitted PT2 position (second MAX31865, terminal) was dropped: it made the board, the KiCad work and the docs bigger for an option few would use, and fitting it later meant hand-soldering an SSOP-20. A second Pt1000 (e.g. a flow line that passes 125 °C) means the PT edition. Frees CE1 (GPIO7) and space on the front edge |
 | D4 | DS2482 or plain `w1-gpio`? | **`w1-gpio` on two buses** (GPIO 4 and 17), sensors in powered mode, DS2482 footprint as unfitted fallback. Keeps I²C out of normal use |
 | D5 | Power the Pi from the HAT? | ~~Yes~~, replaced by D18: **no**, the Pi uses its own USB-C supply |
 | D6 | Fit the HAT ID EEPROM? | **Footprint only**; fit later if automatic configuration is wanted |
@@ -307,7 +307,7 @@ Lite variants against the normal build (single-quantity parts; 🟢 good,
 | 0 Ω link for 5 V | — | — | one extra part | — | **−€0.01** |
 | ***Kept on all three*** | | | | | |
 | MAX31865 for the collector, watchdog + PWM gating, all field-line protection, PUMP1 with feedback, WD and PUMP1 LEDs, tall header, full outline | 🟢 | 🟢 | 🟢 | — | — |
-| PT2, PUMP2, REL2, DS2482 spots for later | 🟢 | 🔴 none | 🟢 | — | — |
+| PUMP2, REL2, DS2482 spots for later | 🟢 | 🔴 none | 🟢 | — | — |
 | ***Totals*** | | | | | |
 | Parts, single quantity | ≈ €30 | ≈ €24.60 | ≈ €24.60 | **≈ €5.40** | **≈ €5.39** |
 | **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €71 | ≈ €71 | **≈ €19** | **≈ €19** |
@@ -340,7 +340,7 @@ the smallest order of 2 (8.2). 🟢 good,
 |---|---|---|---|---|---|---|
 | ***Channels*** | | | | | | |
 | Independent 2-wire Pt1000s per chip | 1 | 5 (force + sense pin each) | 7 (16 analog pins) | 🔴 4 (10 inputs, 2 per sensor + sense resistor) | 🟢 9 (20 inputs) | collector: 1; DS18B20: one chip per probe |
-| Spare channels with 8 sensors | 🔴 0 | 🟡 2 | 🟢 6 | 🔴 none: 8 only as a series stack | 🟡 1 more sensor | 🟢 PT2 footprint; the buses take more probes |
+| Spare channels with 8 sensors | 🔴 0 | 🟡 2 | 🟢 6 | 🔴 none: 8 only as a series stack | 🟡 1 more sensor | 🟡 the buses take more probes |
 | 1-Wire bus on the same board | 🔴 no: GPIO4/17 drive the chip-select decoder | 🟢 possible | 🟢 possible | 🟢 possible | 🟢 **yes, 1W-A** | 🟢 2 buses |
 | ***Cost*** | | | | | | |
 | Chips, LCSC | 🟡 8 × $4.27 = $34 | 🟢 2 × $6.46 = $13 | 🟢 2 × $10.47 = $21 | 🔴 $53 | 🟡 $39 | 🟢 $4.27 |
@@ -357,7 +357,7 @@ the smallest order of 2 (8.2). 🟢 good,
 | Input protection | 🟢 ±45 V built in | 🟡 external parts, needs care | 🟡 external parts, needs care | 🟢 external, easy (buffered inputs) | 🟢 external, easy (buffered inputs) | 🟢 MAX ±45 V; 1-Wire ESD + polyfuse |
 | Open / short detection | 🟢 fault register | 🟡 burnout current + software | 🟢 burnout + diagnostics built in | 🟢 built in, per sensor type | 🟢 built in, per sensor type | 🟡 CRC, missing probe; a short takes down its whole bus |
 | Output | ratio, converted to °C in software | raw ADC codes, software does all | raw ADC codes, software does all | 🟢 °C directly, linearised | 🟢 °C directly, linearised | 🟢 DS18B20 gives °C directly |
-| Range, accuracy | 🟢 Pt1000 beyond 200 °C, class B ±0.6 K at 60 °C | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟡 ±0.5 K, max 125 °C (S4 can exceed it: fit PT2) |
+| Range, accuracy | 🟢 Pt1000 beyond 200 °C, class B ±0.6 K at 60 °C | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟢 same sensors | 🟡 ±0.5 K, max 125 °C (S4 can exceed it: PT edition) |
 | Resolution | 15-bit, ≈ 0.03 K | 24-bit | 24-bit | 24-bit, 0.1 °C accuracy | 24-bit, 0.1 °C accuracy | DS18B20 12-bit, 0.0625 K |
 | Package, space | 🔴 8 × SSOP-20, tight | 🟢 2 × TQFP-32 5×5 | 🟢 2 × QFN-32 5×5 (no hand soldering) | 🟢 1 × LQFP-48 7×7 | 🟢 1 × LQFP-48 7×7 | 🟢 roomy |
 | ***Effort and risk*** | | | | | | |
@@ -368,9 +368,8 @@ the smallest order of 2 (8.2). 🟢 good,
 | ***Verdict*** | | | | | | |
 | Best for | fallback with a proven circuit, no 1-Wire | cheapest; cost-down option | spare analog inputs (other sensors) | only up to 4 independent sensors | 🟢 **PT edition: chosen** | 🟢 new installations, or when sensors get replaced anyway |
 
-Variant not shown as a column: the 1-Wire edition with PT2 fitted, so S4
-stays Pt1000 (2 Pt1000 + 6 DS18B20): about €5 more assembled, one probe
-less. The LTC2984 is the LTC2983 with an EEPROM for the channel setup; it
+(A 1-Wire edition with a second Pt1000 for S4 was a variant here; its
+PT2 position was dropped, D3.) The LTC2984 is the LTC2983 with an EEPROM for the channel setup; it
 costs more (≈ $71 at LCSC) and CoSTOS doesn't need it.
 
 **Also considered: a DiSoCon2-style divider front-end** (each Pt1000 in a

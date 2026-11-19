@@ -22,10 +22,10 @@ the LTC2983 and the other decisions:
 
 | | 1-Wire edition | PT edition |
 |---|---|---|
-| Pt1000 inputs | 1 (PT1, MAX31865), PT2 footprint not fitted | **8 (S1–S8) on one LTC2983**, each wired independently |
+| Pt1000 inputs | 1 (PT1, MAX31865) | **8 (S1–S8) on one LTC2983**, each wired independently |
 | 1-Wire | 2 buses (GPIO4, GPIO17) | **1 bus (1W-A, GPIO4)**: same circuit (4.7 kΩ pull-up, 100 Ω series resistor, ESD diode, polyfuse) |
 | Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way, all on the left edge | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*) on the left edge, plus 1W-A 3-way at the front |
-| SPI | CE0 (CE1 for PT2) | CE0 for the LTC2983 |
+| SPI | CE0 | CE0 for the LTC2983 |
 | Extra GPIOs | | LTC2983 /RESET on GPIO22 (pin 15), INTERRUPT (conversion done) on GPIO27 (pin 13) |
 | Everything else | 12 V, PUMP1/2 (transistor chain), REL1/2, watchdog, feedback, readback, header, EEPROM footprint | **identical** |
 
@@ -83,7 +83,7 @@ gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 
 - **Space:** one 7 × 7 mm chip, the sense resistor, 16 protection
   resistors and ESD diodes fit comfortably where the 1-Wire edition has
-  PT1, PT2, the DS2482 footprint and the second 1-Wire bus (see the
+  PT1, the DS2482 footprint and the second 1-Wire bus (see the
   mockup).
 - **Cost** (estimates, comparison in [HAT-development.md 4](HAT-development.md#4-pt-edition-choice-of-measuring-chip-d13), assembly model in [HAT-1wire.md 8.2](HAT-1wire.md#82-what-one-controller-costs)):
   **≈ €162 for one** (smallest assembled order, 2 boards), about €65.50 per

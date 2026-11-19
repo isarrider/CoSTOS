@@ -85,11 +85,6 @@
 <circle cx="394.0" cy="466" r="4" fill="#C9A227"/><circle cx="394.0" cy="466" r="2" fill="#0F3A20"/>
 <text x="394" y="452" text-anchor="middle" style="font-size:8px;font-weight:400;fill:#ffffff">FB</text>
 <text x="422.0" y="440" text-anchor="middle" style="font-size:10px;font-weight:600;fill:#ffffff">PUMP2</text>
-<circle cx="350.0" cy="466" r="4" fill="#C9A227"/><circle cx="350.0" cy="466" r="2" fill="#0F3A20"/>
-<text x="350" y="452" text-anchor="middle" style="font-size:8px;font-weight:400;fill:#ffffff">A</text>
-<circle cx="322.0" cy="466" r="4" fill="#C9A227"/><circle cx="322.0" cy="466" r="2" fill="#0F3A20"/>
-<text x="322" y="452" text-anchor="middle" style="font-size:8px;font-weight:400;fill:#ffffff">B</text>
-<text x="336.0" y="440" text-anchor="middle" style="font-size:10px;font-weight:600;fill:#ffffff">PT2</text>
 <circle cx="276.0" cy="466" r="4" fill="#C9A227"/><circle cx="276.0" cy="466" r="2" fill="#0F3A20"/>
 <text x="276" y="452" text-anchor="middle" style="font-size:8px;font-weight:400;fill:#ffffff">+5V</text>
 <circle cx="248.0" cy="466" r="4" fill="#C9A227"/><circle cx="248.0" cy="466" r="2" fill="#0F3A20"/>
