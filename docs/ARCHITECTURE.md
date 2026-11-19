@@ -101,7 +101,7 @@ Safety comes in layers. Each layer assumes the one above it can fail.
 | Measure | Why |
 |---|---|
 | **Outputs default to OFF**: relay/SSR boards that switch off when the GPIO floats, plus pull-downs; PWM outputs pulled low (= stop for solar-profile pumps) | A booting, crashed or unpowered SBC must not switch pumps on. With a permanently powered solar pump (5.6 option A) the PWM line is the only stop path, so it is gated by the external watchdog too. |
-| **Output enable via an external watchdog**: a charge-pump or retriggerable monostable that only enables the output stage while the SBC toggles a heartbeat GPIO | Covers a hung kernel or a GPIO stuck high, which the internal watchdog can miss. |
+| **Output enable via an external watchdog**: a charge pump into a capacitor (the HAT's choice, D24) or a retriggerable monostable, which only enables the output stage while the SBC toggles a heartbeat GPIO | Covers a hung kernel or a GPIO stuck high, which the internal watchdog can miss. |
 | **SoC hardware watchdog** (`/dev/watchdog`) | Reboots a hung system. |
 | **Independent overtemperature cut-out** on the store (capillary thermostat in series with the solar pump) | Last line of defence that does not depend on CoSTOS at all. Many systems already have one. Check. |
 | **Manual changeover switch** RESOL ↔ CoSTOS per output (during migration) | Lets you fall back to the RESOL controller in seconds. See section 9. |
@@ -128,6 +128,17 @@ control core and the outputs. It can only **reduce** what the core asks for
 
 If the supervisor itself panics, the process exits, the heartbeat stops and
 the hardware layer turns everything off.
+
+**Heartbeat for the HAT's watchdog** ([HAT-1wire 4.6](HAT-1wire.md#46-hardware-watchdog),
+D24): a small task toggles GPIO 24 every 25 ms (about 20 Hz), but only
+while the last control cycle (sensors read, decision made, outputs
+written) succeeded less than about 1 s ago. So a hung control loop stops
+the heartbeat even when the rest of the process still runs, and a crash
+stops it anyway. The HAT's capacitor watchdog only stays charged by a
+heartbeat between about 0.5 Hz and 1 kHz: a pin that is stuck, toggled
+too slowly, or toggled in a fast loop does not count. Hardware PWM must
+never drive the heartbeat, because it keeps running when the software
+hangs. Linux scheduling delays of up to about 1 s do not trip it.
 
 ### 4.3 Process layer
 
@@ -664,7 +675,7 @@ can be switched off.
 | **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) |
 | **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
 | **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
-| **PWM output check** (CoSTOS addition, needs the HAT's output readback) | Continuously: the line is high while 0 % is commanded, or its measured duty (edge timestamps, like the feedback input) differs from the command. At every start: **watchdog self-test**, PWM set high and the heartbeat stopped, the line must drop to 0 V within about 3 s | Stuck driver, AND gate or transistor; a watchdog layer that no longer cuts the output; broken PWM path | Alarm. A failed self-test keeps the pump output off and the alarm active until the fault is fixed; with a permanently powered solar-profile pump that means the solar loop is not used, which is the safe side. The pump runs for at most 3 s during the self-test |
+| **PWM output check** (CoSTOS addition, needs the HAT's output readback) | Continuously: the line is high while 0 % is commanded, or its measured duty (edge timestamps, like the feedback input) differs from the command. At every start: **watchdog self-test**, PWM set high and the heartbeat stopped, the line must drop to 0 V within about 5 s; the watchdog readback (GPIO 7) gives the real timeout, which must lie between about 0.8 and 5 s | Stuck driver, AND gate or transistor; a watchdog layer that no longer cuts the output; a watchdog part that has drifted or failed (timeout outside its range); broken PWM path | Alarm. A failed self-test keeps the pump output off and the alarm active until the fault is fixed; with a permanently powered solar-profile pump that means the solar loop is not used, which is the safe side. The pump runs for at most a few seconds during the self-test |
 | **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. Matters most for the HAT's 1-Wire Lite, whose pump driver runs on this 5 V and stops working below 4.5 V ([HAT-1wire 11.1](HAT-1wire.md#111-rule-it-may-fail-but-it-may-not-break-anything)); the pump then stays stopped, which the pump feedback also reports |
 
 A **fault output** (switching REL2 to drive a lamp or buzzer on any alarm)
@@ -778,6 +789,9 @@ VictoriaMetrics is the only time-series target. No InfluxDB support.
     - `costos_pump_output_duty_01`: the duty measured at the terminal, %.
     - `costos_watchdog_selftest`: 1 if the last start-up self-test passed,
       0 if it failed.
+    - `costos_watchdog_timeout_seconds`: the watchdog timeout measured at
+      the last start through the readback on GPIO 7; a slow drift shows
+      ageing parts long before they fail.
   - **Supply voltage** (6.2, "supply under-voltage"):
     - `costos_supply_undervoltage`: 1 while the Pi reports under-voltage,
       else 0.
