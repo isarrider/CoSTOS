@@ -900,7 +900,7 @@ Solar control would cope with ±0.5–1 K, but for a controller meant to run
 
 ## 12. Lite build (decided, D19)
 
-The cheapest way to an CoSTOS controller: **the same 1-Wire edition
+The cheapest way to a CoSTOS controller: **the same 1-Wire edition
 board with fewer parts fitted**, not a separate board. It saves about
 **€4.60 per board**, can be upgraded to the full build by soldering the
 missing parts on, and needs no second layout. A dedicated Lite board was
