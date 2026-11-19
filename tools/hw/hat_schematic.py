@@ -321,7 +321,7 @@ def sheet_power(path):
         "R2: minimum load (≈ 8 mA), keeps the output",
         "below the TVS standoff (13 V) at light load.",
         "+V_DRV feeds the pump driver U6: R25 fitted = 12 V",
-        "(normal build); Lite build: U2, R2, C4, R25 not",
+        "(normal build); Lite build: U2, C3, C4, R2, R25 not",
         "fitted, R26 fitted = 5 V. Never both.",
     ])
     # ---- header table ----

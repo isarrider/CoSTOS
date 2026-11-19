@@ -87,7 +87,7 @@
 <text x="800" y="560" class="n" text-anchor="start">R2: minimum load (≈ 8 mA), keeps the output</text>
 <text x="800" y="575" class="n" text-anchor="start">below the TVS standoff (13 V) at light load.</text>
 <text x="800" y="590" class="n" text-anchor="start">+V_DRV feeds the pump driver U6: R25 fitted = 12 V</text>
-<text x="800" y="605" class="n" text-anchor="start">(normal build); Lite build: U2, R2, C4, R25 not</text>
+<text x="800" y="605" class="n" text-anchor="start">(normal build); Lite build: U2, C3, C4, R2, R25 not</text>
 <text x="800" y="620" class="n" text-anchor="start">fitted, R26 fitted = 5 V. Never both.</text>
 <text x="720" y="30" class="h" text-anchor="start">3 · 40-pin header (Pi 4 / Pi 5)</text>
 <rect x="720" y="50" width="440" height="448" rx="4" style="fill:#fafafa;stroke:#222;stroke-width:2"/>

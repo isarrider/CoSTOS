@@ -52,7 +52,7 @@ until a real BOM exists. 🟢 good, 🟡 medium, 🔴 weak or missing.
 | **Against the 1-Wire edition, price for one** | — | 🟢 **saves ≈ €17** | 🔴 **≈ €68 more** |
 | ***Building and status*** | | | |
 | Hardest part to solder (only when building it yourself) | 🟡 MAX31865, SSOP-20 at 0.65 mm pitch | 🟡 same as the 1-Wire edition | 🔴 LTC2983, LQFP-48 at 0.5 mm pitch |
-| Upgrade later | — | 🟢 to the normal build by soldering on U2, C4, R2, R25 (remove R26) and the REL1 parts | — |
+| Upgrade later | — | 🟢 to the normal build by soldering on U2, C3, C4, R2, R25 (remove R26) and the REL1 parts | — |
 | Status | 🟡 rev A, designed first | 🟡 same board as the 1-Wire edition | 🔴 planned as the second board |
 
 ---
@@ -1031,7 +1031,7 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | | **Normal build** | **Lite build** | **Saved** |
 |---|---|---|---|
 | ***Left out in the Lite build*** | | | |
-| 12 V DC/DC U2 with C4 and minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.7 V at the pump | **€3.05** |
+| 12 V DC/DC block: U2 with its input and output capacitors C3, C4, minimum load R2; R25 | 🟢 pump signal ≈ 10.6 V, large margin | 🟡 R26 (0 Ω) fitted instead: driver on 5 V, ≈ 4.7 V at the pump | **€3.08** |
 | Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€1.55** |
 | R26 (0 Ω) | not fitted | fitted | **−€0.01** |
 | ***The same in both*** | | | |
@@ -1041,7 +1041,7 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | Parts, single quantity | ≈ €30 | ≈ €25.50 | **≈ €4.60** |
 | **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €73 | **≈ €17** |
 | Assembled, per board in a batch of 5 | ≈ €27 | ≈ €20 | **≈ €7** |
-| Upgrade | — | 🟢 solder on U2, C4, R2, R25 (remove R26) and the REL1 parts | — |
+| Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26) and the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that
 would short the 12 V and 5 V rails. The silkscreen marks them "12 V" and
