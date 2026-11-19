@@ -90,7 +90,7 @@
 <text x="800" y="605" class="n" text-anchor="start">(normal build); Lite build: U2, C3, C4, R2, R25 not</text>
 <text x="800" y="620" class="n" text-anchor="start">fitted, R26 fitted = 5 V. Never both.</text>
 <text x="720" y="30" class="h" text-anchor="start">3 · 40-pin header (Pi 4 / Pi 5)</text>
-<rect x="720" y="50" width="440" height="448" rx="4" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
+<rect x="720" y="50" width="440" height="450" rx="4" style="fill:#fafafa;stroke:#222;stroke-width:2"/>
 <text x="730" y="69" class="r" text-anchor="start">Net</text>
 <text x="840" y="69" class="r" text-anchor="start">Pin</text>
 <text x="930" y="69" class="r" text-anchor="start">GPIO</text>
@@ -100,78 +100,86 @@
 <text x="840" y="95" class="pn" text-anchor="start">1, 17</text>
 <text x="930" y="95" class="pn" text-anchor="start"></text>
 <text x="980" y="95" class="n" text-anchor="start">from the Pi</text>
-<text x="730" y="117" class="r" text-anchor="start" style="fill:#ef6c00">+5V</text>
-<text x="840" y="117" class="pn" text-anchor="start">2, 4</text>
-<text x="930" y="117" class="pn" text-anchor="start"></text>
-<text x="980" y="117" class="n" text-anchor="start">from the Pi</text>
-<text x="730" y="139" class="r" text-anchor="start" style="fill:#2e7d32">GND</text>
-<text x="840" y="139" class="pn" text-anchor="start">6, 9, 14, 20, 25, 30, 34, 39</text>
-<text x="930" y="139" class="pn" text-anchor="start"></text>
-<text x="980" y="139" class="n" text-anchor="start"></text>
-<text x="730" y="161" class="r" text-anchor="start" style="fill:#1565c0">1W_A</text>
-<text x="840" y="161" class="pn" text-anchor="start">7</text>
-<text x="930" y="161" class="pn" text-anchor="start">4</text>
-<text x="980" y="161" class="n" text-anchor="start">1-Wire bus A</text>
-<text x="730" y="183" class="r" text-anchor="start" style="fill:#1565c0">1W_B</text>
-<text x="840" y="183" class="pn" text-anchor="start">11</text>
-<text x="930" y="183" class="pn" text-anchor="start">17</text>
-<text x="980" y="183" class="n" text-anchor="start">1-Wire bus B</text>
-<text x="730" y="205" class="r" text-anchor="start" style="fill:#1565c0">PWM1</text>
-<text x="840" y="205" class="pn" text-anchor="start">12</text>
-<text x="930" y="205" class="pn" text-anchor="start">18</text>
-<text x="980" y="205" class="n" text-anchor="start">pump 1 PWM</text>
-<text x="730" y="227" class="r" text-anchor="start" style="fill:#9e9e9e">PWM2</text>
-<text x="840" y="227" class="pn" text-anchor="start" style="fill:#9e9e9e">35</text>
-<text x="930" y="227" class="pn" text-anchor="start" style="fill:#9e9e9e">19</text>
-<text x="980" y="227" class="n" text-anchor="start">pump 2 PWM (n.f.)</text>
-<text x="730" y="249" class="r" text-anchor="start" style="fill:#1565c0">FB1</text>
-<text x="840" y="249" class="pn" text-anchor="start">16</text>
-<text x="930" y="249" class="pn" text-anchor="start">23</text>
-<text x="980" y="249" class="n" text-anchor="start">pump 1 feedback</text>
-<text x="730" y="271" class="r" text-anchor="start" style="fill:#9e9e9e">FB2</text>
-<text x="840" y="271" class="pn" text-anchor="start" style="fill:#9e9e9e">36</text>
-<text x="930" y="271" class="pn" text-anchor="start" style="fill:#9e9e9e">16</text>
-<text x="980" y="271" class="n" text-anchor="start">pump 2 feedback (n.f.)</text>
-<text x="730" y="293" class="r" text-anchor="start" style="fill:#1565c0">HEARTBEAT</text>
-<text x="840" y="293" class="pn" text-anchor="start">18</text>
-<text x="930" y="293" class="pn" text-anchor="start">24</text>
-<text x="980" y="293" class="n" text-anchor="start">watchdog</text>
-<text x="730" y="315" class="r" text-anchor="start" style="fill:#1565c0">REL1</text>
-<text x="840" y="315" class="pn" text-anchor="start">22</text>
-<text x="930" y="315" class="pn" text-anchor="start">25</text>
-<text x="980" y="315" class="n" text-anchor="start">relay output 1</text>
-<text x="730" y="337" class="r" text-anchor="start" style="fill:#9e9e9e">REL2</text>
-<text x="840" y="337" class="pn" text-anchor="start" style="fill:#9e9e9e">29</text>
-<text x="930" y="337" class="pn" text-anchor="start" style="fill:#9e9e9e">5</text>
-<text x="980" y="337" class="n" text-anchor="start">relay output 2 (n.f.)</text>
-<text x="730" y="359" class="r" text-anchor="start" style="fill:#1565c0">MOSI</text>
-<text x="840" y="359" class="pn" text-anchor="start">19</text>
-<text x="930" y="359" class="pn" text-anchor="start">10</text>
-<text x="980" y="359" class="n" text-anchor="start">SPI0</text>
-<text x="730" y="381" class="r" text-anchor="start" style="fill:#1565c0">MISO</text>
-<text x="840" y="381" class="pn" text-anchor="start">21</text>
-<text x="930" y="381" class="pn" text-anchor="start">9</text>
-<text x="980" y="381" class="n" text-anchor="start">SPI0</text>
-<text x="730" y="403" class="r" text-anchor="start" style="fill:#1565c0">SCLK</text>
-<text x="840" y="403" class="pn" text-anchor="start">23</text>
-<text x="930" y="403" class="pn" text-anchor="start">11</text>
-<text x="980" y="403" class="n" text-anchor="start">SPI0</text>
-<text x="730" y="425" class="r" text-anchor="start" style="fill:#1565c0">CS_PT1</text>
-<text x="840" y="425" class="pn" text-anchor="start">24</text>
-<text x="930" y="425" class="pn" text-anchor="start">8</text>
-<text x="980" y="425" class="n" text-anchor="start">CE0, MAX31865 #1</text>
-<text x="730" y="447" class="r" text-anchor="start" style="fill:#9e9e9e">CS_PT2</text>
-<text x="840" y="447" class="pn" text-anchor="start" style="fill:#9e9e9e">26</text>
-<text x="930" y="447" class="pn" text-anchor="start" style="fill:#9e9e9e">7</text>
-<text x="980" y="447" class="n" text-anchor="start">CE1, MAX31865 #2 (n.f.)</text>
-<text x="730" y="469" class="r" text-anchor="start" style="fill:#9e9e9e">SDA, SCL</text>
-<text x="840" y="469" class="pn" text-anchor="start" style="fill:#9e9e9e">3, 5</text>
-<text x="930" y="469" class="pn" text-anchor="start" style="fill:#9e9e9e">2, 3</text>
-<text x="980" y="469" class="n" text-anchor="start">DS2482 only (n.f.)</text>
-<text x="730" y="491" class="r" text-anchor="start" style="fill:#9e9e9e">ID_SD, ID_SC</text>
-<text x="840" y="491" class="pn" text-anchor="start" style="fill:#9e9e9e">27, 28</text>
-<text x="930" y="491" class="pn" text-anchor="start" style="fill:#9e9e9e">0, 1</text>
-<text x="980" y="491" class="n" text-anchor="start">ID EEPROM (n.f.)</text>
+<text x="730" y="115" class="r" text-anchor="start" style="fill:#ef6c00">+5V</text>
+<text x="840" y="115" class="pn" text-anchor="start">2, 4</text>
+<text x="930" y="115" class="pn" text-anchor="start"></text>
+<text x="980" y="115" class="n" text-anchor="start">from the Pi</text>
+<text x="730" y="135" class="r" text-anchor="start" style="fill:#2e7d32">GND</text>
+<text x="840" y="135" class="pn" text-anchor="start">6, 9, 14, 20, 25, 30, 34, 39</text>
+<text x="930" y="135" class="pn" text-anchor="start"></text>
+<text x="980" y="135" class="n" text-anchor="start"></text>
+<text x="730" y="155" class="r" text-anchor="start" style="fill:#1565c0">1W_A</text>
+<text x="840" y="155" class="pn" text-anchor="start">7</text>
+<text x="930" y="155" class="pn" text-anchor="start">4</text>
+<text x="980" y="155" class="n" text-anchor="start">1-Wire bus A</text>
+<text x="730" y="175" class="r" text-anchor="start" style="fill:#1565c0">1W_B</text>
+<text x="840" y="175" class="pn" text-anchor="start">11</text>
+<text x="930" y="175" class="pn" text-anchor="start">17</text>
+<text x="980" y="175" class="n" text-anchor="start">1-Wire bus B</text>
+<text x="730" y="195" class="r" text-anchor="start" style="fill:#1565c0">PWM1</text>
+<text x="840" y="195" class="pn" text-anchor="start">12</text>
+<text x="930" y="195" class="pn" text-anchor="start">18</text>
+<text x="980" y="195" class="n" text-anchor="start">pump 1 PWM</text>
+<text x="730" y="215" class="r" text-anchor="start" style="fill:#9e9e9e">PWM2</text>
+<text x="840" y="215" class="pn" text-anchor="start" style="fill:#9e9e9e">35</text>
+<text x="930" y="215" class="pn" text-anchor="start" style="fill:#9e9e9e">19</text>
+<text x="980" y="215" class="n" text-anchor="start">pump 2 PWM (n.f.)</text>
+<text x="730" y="235" class="r" text-anchor="start" style="fill:#1565c0">FB1</text>
+<text x="840" y="235" class="pn" text-anchor="start">16</text>
+<text x="930" y="235" class="pn" text-anchor="start">23</text>
+<text x="980" y="235" class="n" text-anchor="start">pump 1 feedback</text>
+<text x="730" y="255" class="r" text-anchor="start" style="fill:#9e9e9e">FB2</text>
+<text x="840" y="255" class="pn" text-anchor="start" style="fill:#9e9e9e">36</text>
+<text x="930" y="255" class="pn" text-anchor="start" style="fill:#9e9e9e">16</text>
+<text x="980" y="255" class="n" text-anchor="start">pump 2 feedback (n.f.)</text>
+<text x="730" y="275" class="r" text-anchor="start" style="fill:#1565c0">RB1</text>
+<text x="840" y="275" class="pn" text-anchor="start">31</text>
+<text x="930" y="275" class="pn" text-anchor="start">6</text>
+<text x="980" y="275" class="n" text-anchor="start">pump 1 PWM readback</text>
+<text x="730" y="295" class="r" text-anchor="start" style="fill:#9e9e9e">RB2</text>
+<text x="840" y="295" class="pn" text-anchor="start" style="fill:#9e9e9e">37</text>
+<text x="930" y="295" class="pn" text-anchor="start" style="fill:#9e9e9e">26</text>
+<text x="980" y="295" class="n" text-anchor="start">pump 2 PWM readback (n.f.)</text>
+<text x="730" y="315" class="r" text-anchor="start" style="fill:#1565c0">HEARTBEAT</text>
+<text x="840" y="315" class="pn" text-anchor="start">18</text>
+<text x="930" y="315" class="pn" text-anchor="start">24</text>
+<text x="980" y="315" class="n" text-anchor="start">watchdog</text>
+<text x="730" y="335" class="r" text-anchor="start" style="fill:#1565c0">REL1</text>
+<text x="840" y="335" class="pn" text-anchor="start">22</text>
+<text x="930" y="335" class="pn" text-anchor="start">25</text>
+<text x="980" y="335" class="n" text-anchor="start">relay output 1</text>
+<text x="730" y="355" class="r" text-anchor="start" style="fill:#9e9e9e">REL2</text>
+<text x="840" y="355" class="pn" text-anchor="start" style="fill:#9e9e9e">29</text>
+<text x="930" y="355" class="pn" text-anchor="start" style="fill:#9e9e9e">5</text>
+<text x="980" y="355" class="n" text-anchor="start">relay output 2 (n.f.)</text>
+<text x="730" y="375" class="r" text-anchor="start" style="fill:#1565c0">MOSI</text>
+<text x="840" y="375" class="pn" text-anchor="start">19</text>
+<text x="930" y="375" class="pn" text-anchor="start">10</text>
+<text x="980" y="375" class="n" text-anchor="start">SPI0</text>
+<text x="730" y="395" class="r" text-anchor="start" style="fill:#1565c0">MISO</text>
+<text x="840" y="395" class="pn" text-anchor="start">21</text>
+<text x="930" y="395" class="pn" text-anchor="start">9</text>
+<text x="980" y="395" class="n" text-anchor="start">SPI0</text>
+<text x="730" y="415" class="r" text-anchor="start" style="fill:#1565c0">SCLK</text>
+<text x="840" y="415" class="pn" text-anchor="start">23</text>
+<text x="930" y="415" class="pn" text-anchor="start">11</text>
+<text x="980" y="415" class="n" text-anchor="start">SPI0</text>
+<text x="730" y="435" class="r" text-anchor="start" style="fill:#1565c0">CS_PT1</text>
+<text x="840" y="435" class="pn" text-anchor="start">24</text>
+<text x="930" y="435" class="pn" text-anchor="start">8</text>
+<text x="980" y="435" class="n" text-anchor="start">CE0, MAX31865 #1</text>
+<text x="730" y="455" class="r" text-anchor="start" style="fill:#9e9e9e">CS_PT2</text>
+<text x="840" y="455" class="pn" text-anchor="start" style="fill:#9e9e9e">26</text>
+<text x="930" y="455" class="pn" text-anchor="start" style="fill:#9e9e9e">7</text>
+<text x="980" y="455" class="n" text-anchor="start">CE1, MAX31865 #2 (n.f.)</text>
+<text x="730" y="475" class="r" text-anchor="start" style="fill:#9e9e9e">SDA, SCL</text>
+<text x="840" y="475" class="pn" text-anchor="start" style="fill:#9e9e9e">3, 5</text>
+<text x="930" y="475" class="pn" text-anchor="start" style="fill:#9e9e9e">2, 3</text>
+<text x="980" y="475" class="n" text-anchor="start">DS2482 only (n.f.)</text>
+<text x="730" y="495" class="r" text-anchor="start" style="fill:#9e9e9e">ID_SD, ID_SC</text>
+<text x="840" y="495" class="pn" text-anchor="start" style="fill:#9e9e9e">27, 28</text>
+<text x="930" y="495" class="pn" text-anchor="start" style="fill:#9e9e9e">0, 1</text>
+<text x="980" y="495" class="n" text-anchor="start">ID EEPROM (n.f.)</text>
 <g opacity="0.42"><rect x="928" y="622" width="26" height="14" style="fill:white;stroke:#222;stroke-width:2"/></g>
 <text x="962" y="634" class="n" text-anchor="start">faded = not fitted in rev A (n.f.)</text>
 </svg>

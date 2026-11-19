@@ -337,6 +337,8 @@ def sheet_power(path):
         ("PWM2", "35", "19", "pump 2 PWM (n.f.)"),
         ("FB1", "16", "23", "pump 1 feedback"),
         ("FB2", "36", "16", "pump 2 feedback (n.f.)"),
+        ("RB1", "31", "6", "pump 1 PWM readback"),
+        ("RB2", "37", "26", "pump 2 PWM readback (n.f.)"),
         ("HEARTBEAT", "18", "24", "watchdog"),
         ("REL1", "22", "25", "relay output 1"),
         ("REL2", "29", "5", "relay output 2 (n.f.)"),
@@ -348,13 +350,13 @@ def sheet_power(path):
         ("SDA, SCL", "3, 5", "2, 3", "DS2482 only (n.f.)"),
         ("ID_SD, ID_SC", "27, 28", "0, 1", "ID EEPROM (n.f.)"),
     ]
-    s.add(f'<rect x="{hx}" y="{hy}" width="440" height="{30 + 22*len(rows)}" rx="4" style="fill:#fafafa;stroke:{INK};stroke-width:2"/>')
+    s.add(f'<rect x="{hx}" y="{hy}" width="440" height="{30 + 20*len(rows)}" rx="4" style="fill:#fafafa;stroke:{INK};stroke-width:2"/>')
     cols = (10, 120, 210, 260)
     for c, h in zip(cols, ("Net", "Pin", "GPIO", "Use")):
         s.text(hx + c, hy + 19, h, "r")
     s.add(f'<path d="M{hx} {hy+27} H{hx+440}" style="stroke:#bbb"/>')
     for i, (net, pin, gpio, use) in enumerate(rows):
-        y = hy + 45 + 22 * i
+        y = hy + 45 + 20 * i
         col = "#9e9e9e" if "n.f." in use else None
         s.text(hx + cols[0], y, net, "r", color=col or RAIL_COL.get(net, GNDC if net == "GND" else SIG))
         s.text(hx + cols[1], y, pin, "pn", color=col)

@@ -246,6 +246,25 @@ the 13 V TVS standoff at light load.
   With 470 Ω on a 5 V driver the pump would see only ≈ 3.6 V, its bare
   minimum. Same values as the stripboard driver boards in HARDWARE.md (470 Ω
   / 15 V TVS on the 12 V board, 100 Ω / 6.8 V TVS on the 5 V board).
+- **Output readback** (any driver chain): a divider from the PWM terminal
+  (behind R9) to a GPIO lets CoSTOS see what really leaves the board.
+  PUMP1 on GPIO 6 (pin 31), PUMP2 on GPIO 26 (pin 37, unfitted with
+  PUMP2). R31 (top, build-dependent like R9) and R32 8.2 kΩ to GND:
+
+  | | Normal (12 V) | Lite (5 V) |
+  |---|---|---|
+  | R31 | 27 kΩ | 6.8 kΩ |
+  | At the GPIO when high | ≈ 2.8 V (≈ 3.1 V at 13.5 V) | ≈ 2.7 V |
+  | Load on the output | ≈ 0.34 mA | ≈ 0.33 mA |
+
+  CoSTOS uses it twice (ARCHITECTURE 6.2, "PWM output check"):
+  continuously, the line must be low when 0 % is commanded and its duty
+  (measured from edge timestamps, like the feedback input) must match the
+  command; and at every start, a **watchdog self-test**: PWM set high,
+  heartbeat stopped, the line must drop to 0 V within about 3 s. That
+  catches a stuck driver or AND gate (or, with H3, a shorted transistor)
+  directly, and a silently lost watchdog layer before it matters. The
+  pump runs for at most those 3 s.
 - **R9 package: at least 0.5 W** (e.g. 1210 or 2010). With a shorted pump
   cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (Lite) for as long as
   the short lasts, more than an 0805 resistor takes.
@@ -672,6 +691,8 @@ channel numbers behind GPIO 18/19 differ, which is software configuration.
 | PWM 2 (only if fitted) | 35 | GPIO 19, PWM0 channel 1 | GPIO 19, RP1 PWM0 channel 3 |
 | Feedback 1 | 16 | GPIO 23 | GPIO 23 |
 | Feedback 2 (only if fitted) | 36 | GPIO 16 | GPIO 16 |
+| PWM readback 1 | 31 | GPIO 6 | GPIO 6 |
+| PWM readback 2 (only if fitted) | 37 | GPIO 26 | GPIO 26 |
 | Heartbeat | 18 | GPIO 24 | GPIO 24 |
 | Relay 1 | 22 | GPIO 25 | GPIO 25 |
 | Relay 2 (only if fitted) | 29 | GPIO 5 | GPIO 5 |
@@ -702,6 +723,8 @@ dtoverlay=w1-gpio,gpiopin=17
 
 # Relay outputs and heartbeat: outputs, driven low as early as possible
 gpio=24,25,5=op,dl
+# PWM output readback: inputs with pull-down
+gpio=6,26=ip,pd
 
 [pi3]
 # Same as the Pi 4 (untested on the Pi 3)
@@ -1057,6 +1080,8 @@ dtparam=spi=on
 dtoverlay=w1-gpio,gpiopin=4
 # no second w1-gpio line (GPIO17 is unused on the PT edition)
 gpio=24,25,5=op,dl
+# PWM output readback: inputs with pull-down
+gpio=6,26=ip,pd
 gpio=22=op,dh   # LTC2983 /RESET released
 gpio=27=ip,pu   # LTC2983 INTERRUPT (conversion done)
 ```
@@ -1295,6 +1320,7 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | Relay output REL1: TPS22918, AO3400A, 1N4148W, terminal, R1 LED | 🟢 cut-off relay (ARCHITECTURE 5.6 option C), heating-profile pumps, on/off loads | 🔴 none: solar-profile pumps only | **€1.55** |
 | R26 (0 Ω) | not fitted | fitted | **−€0.01** |
 | R9 series resistor, D4 TVS (4.1) | 470 Ω, SMBJ13A | **100 Ω, SMBJ6.0A** | — |
+| R31 readback divider (4.1) | 27 kΩ | **6.8 kΩ** | — |
 | ***The same in both*** | | | |
 | MAX31865 (collector), both 1-Wire buses, watchdog + PWM gating, field-line protection, PUMP1 with feedback, PWR, WD and PUMP1 LEDs, tall header, outline | 🟢 | 🟢 | — |
 | Unfitted spots for PT2, PUMP2, REL2, DS2482 | 🟢 | 🟢 | — |
@@ -1302,7 +1328,7 @@ Single-quantity parts; "saved" is what the Lite build saves on that row.
 | Parts, single quantity | ≈ €30 | ≈ €25.50 | **≈ €4.60** |
 | **Price for one** (smallest assembled order: 2 boards, 8.2) | ≈ €90 | ≈ €73 | **≈ €17** |
 | Assembled, per board in a batch of 5 | ≈ €27 | ≈ €20 | **≈ €7** |
-| Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9 to 470 Ω and D4 to SMBJ13A, and fit the REL1 parts | — |
+| Upgrade | — | 🟢 solder on the DC/DC block (U2, C3, C4, R2, R25; remove R26), change R9 to 470 Ω, D4 to SMBJ13A and R31 to 27 kΩ, and fit the REL1 parts | — |
 
 The two 0 Ω positions R25 and R26 must **never be fitted together**: that
 would short the 12 V and 5 V rails. The silkscreen marks them "12 V" and
