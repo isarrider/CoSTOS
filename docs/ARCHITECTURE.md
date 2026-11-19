@@ -1216,7 +1216,7 @@ flexibility decided it (D14).
 | Waveshare ESP32-P4-ETH | $12.99 ($16.99 with PoE) | 32 MB PSRAM, 32 MB flash, RJ45, microSD, 40-pin header compatible with some Pico HATs; would need its own carrier board |
 | Olimex ESP32-P4-DevKit | €16.00 | open hardware (OSHW certified), Ethernet with PoE option, all GPIOs exposed, 72 × 30 mm; needs a carrier board |
 | Waveshare ESP32-P4-NANO | €22.60 incl. VAT (Eckstein) | 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (Wi-Fi, unused), 28 GPIOs; header not Pi-shaped, needs a carrier board |
-| **Waveshare ESP32-P4-WIFI6-DEV-KIT** | €24.90 incl. VAT (Eckstein) | **Pi form factor** (85 × 56.5 mm) with a Pi-style 40-pin header, so the CoSTOS HAT could plug on directly; 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (unused), PoE header. Pin map checked against the HAT in HAT 2.1: three signals would have to move |
+| **Waveshare ESP32-P4-WIFI6-DEV-KIT** | €24.90 incl. VAT (Eckstein) | **Pi form factor** (85 × 56.5 mm) with a Pi-style 40-pin header, so the CoSTOS HAT could plug on directly; 32 MB PSRAM, 16 MB flash, RJ45, ESP32-C6 (unused), PoE header. Pin map checked against the HAT in HAT-development 7: three signals would have to move |
 
 If the port is ever done, the WIFI6-DEV-KIT under the same HAT is the
 simplest route. That door is kept open by the rules for `costos-core`
