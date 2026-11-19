@@ -350,7 +350,9 @@ only has a bulk capacitor and a power LED on its 5 V rail.
 
 - **Supply:** the official Raspberry Pi USB-C supply (27 W for the Pi 5,
   15 W for the Pi 4) or an equivalent; for a Pi 3 its micro-USB supply
-  (5.1 V, 2.5 A). The Pi 5 negotiates 5 A over USB
+  (5.1 V, 2.5 A). **No phone chargers or long, thin USB cables**: the
+  Lite build's pump driver runs on this 5 V and has only about 0.5 V of
+  margin (12.1, point 5). The Pi 5 negotiates 5 A over USB
   power delivery, so no `PSU_MAX_CURRENT` setting is needed.
 - **DIN-rail builds** (ARCHITECTURE 5.6 options B/C): a 5 V DIN-rail
   supply feeds the Pi through a short USB-C lead (5.1 V, 3 A for a Pi 4,
@@ -694,7 +696,12 @@ into 8.2.
 1. Visual check, then resistance checks between all rails before power.
 2. HAT on the Pi, Pi on its USB-C supply with a USB power meter: current
    rises by well under 200 mA, power LED on.
-3. 12 V and 3.3 V present on the HAT.
+3. 12 V and 3.3 V present on the HAT. Measure the 5 V on the HAT
+   (at C2) idle and with the Pi under load (`stress-ng` on all cores plus
+   a USB drive copying): it must stay at or above 4.75 V. **Lite build:**
+   also measure the PWM high level at J2 (pump connected, 100 % duty),
+   idle and under load; it must stay above 4.5 V. Check that the Pi
+   reports no under-voltage (`vcgencmd get_throttled` returns `0x0`).
 4. Watchdog: `WD_OK` low after boot, high while a test script toggles the
    heartbeat, low again 2–3 s after it stops.
 5. Relay output REL1 with an LED/resistor as dummy load, with and without
@@ -982,6 +989,39 @@ damage the Pi:
    ([HARDWARE.md](HARDWARE.md#12-v-or-5-v)). If that isn't enough (long
    cable, a pump with a higher threshold), the pump simply doesn't start,
    and the feedback input reports it.
+5. **The driver's supply margin is small, so the supply must be a proper
+   one.** The TC4427 needs at least 4.5 V. In the normal build it runs on
+   12 V from the DC/DC; in the Lite build it runs directly on the Pi's 5 V
+   rail (R26), which sits a little below the supply's label:
+
+   | Point | Voltage | Margin to the TC4427's 4.5 V |
+   |---|---|---|
+   | Official Raspberry Pi supply, at the plug | 5.1 V | 0.6 V |
+   | Pi's 5 V rail, after its own input protection | ≈ 5.0 V | ≈ 0.5 V |
+   | Same, Pi under heavy load (CPU, USB devices) | ≈ 4.8 V | ≈ 0.3 V |
+   | Pi flags "under-voltage" itself | below ≈ 4.63 V | ≈ 0.1 V |
+   | **TC4427 minimum supply** | **4.5 V** | — |
+
+   With the official supply (or an equal one that holds 5.1 V under load)
+   this is inside the datasheet. A weak supply (phone charger, thin or long
+   USB cable) is not: below 4.5 V the TC4427 is not damaged, but its
+   output gets weaker, the pump sees a signal below its threshold and,
+   with a solar-profile pump, **stays stopped**. Nothing breaks, but the
+   pump silently doesn't run on a sunny day. So:
+
+   - **Lite build: official Raspberry Pi supply, or one that holds
+     5.1 V under load. No phone chargers, no long USB cables.** The normal
+     build is far less sensitive (its 12 V comes from an isolated DC/DC
+     that works down to about 4.5 V input), but the same advice applies.
+   - **CoSTOS watches it:** the Pi's own under-voltage flag raises the
+     "supply under-voltage" alarm
+     ([ARCHITECTURE 6.2](ARCHITECTURE.md#function-checks-and-alarms)),
+     with an e-mail if notifications are on.
+   - **The pump feedback is the second check:** a pump that gets a run
+     command but reports stand-by raises the feedback mismatch alarm
+     (ARCHITECTURE 6.5).
+   - **Bring-up measures it** (9, step 3): the 5 V on the HAT and the PWM
+     high level at the pump, idle and under load.
 
 ### 12.2 Normal build against Lite build
 
