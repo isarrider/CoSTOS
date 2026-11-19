@@ -178,8 +178,8 @@ not considered.
  │  5 V from the Pi (pins 2/4) ─► bulk capacitor, power LED ─► HAT         │
  │  5 V ──► DC/DC 5→12 V ──► 12 V ─┐                                       │
  │                                 ▼                                       │
- │  PWM1 ─► AND ─► TC4427 ch A ─► R ─► TVS ─────────────────────► Pump 1   │ PWM / GND / FB
- │  PWM2 ─► AND ─► TC4427 ch B ─► R ─► TVS ─────────────────────► Pump 2   │ PWM / GND / FB
+ │  PWM1 ─► switches Q4·Q5 (AND WD_OK) ─► Q6 / Q7 ─► R ─► TVS ──► Pump 1   │ PWM / GND / FB
+ │  PWM2 ─► same chain, not fitted ─► R ─► TVS ─────────────────► Pump 2   │ PWM / GND / FB
  │          ▲                                                              │
  │  FB1, FB2 ◄── R/C filter ◄── pull-up 3.3 V ◄─────────────────── Pumps   │
  │          │                                                              │
@@ -210,7 +210,8 @@ are footprints that are not fitted in rev A. Regenerate with
 ![Pt1000 and 1-Wire inputs](img/hat-sch-sensors.svg)
 
 Part choices the drawings add to the text below (all to be confirmed
-when the BOM is made): relay supply switch TPS22918; AND gates 74LVC1G08; relay
+when the BOM is made): relay supply switch TPS22918; pump driver from MMBT3904/MMBT3906
+transistors (D22); relay
 MOSFETs AO3400A with 1N4148W flyback diodes; ESD diodes PESD5V0 on the
 sensor inputs; 100 mA polyfuse for the 1-Wire sensor supply; a 1.5 kΩ
 minimum load on the 12 V output, which keeps the unregulated DC/DC below
@@ -220,17 +221,39 @@ the 13 V TVS standoff at light load.
 
 ### 4.1 PWM pump outputs
 
-- **Two output positions**, one per TC4427 channel. **Rev A fits only
-  PUMP1** (solar pump). PUMP2 (its series resistor, TVS, AND gate,
-  feedback parts and terminal) stays unfitted, as a spare for a later
-  store-loading or heating pump (D2).
-- **Fitted in any case:** the 100 kΩ pull-down on the TC4427's channel B
-  input, so the unused input is held low and never floats.
-- Same circuit as the [12 V driver board](HARDWARE.md#option-1-driver-board-12-v):
-  TC4427 from a 5 V → 12 V DC/DC, 470 Ω series resistor, P6KE15A-class
-  TVS (SMD equivalent with the same breakdown voltage, e.g. SMBJ13A; not
-  lower, since the unregulated 12 V can reach 13.5 V), 100 kΩ pull-down at
-  the input (D1).
+- **Two output positions. Rev A fits only PUMP1** (solar pump). PUMP2
+  (its transistors, resistors, TVS, feedback parts and terminal) stays
+  unfitted, as a spare for a later store-loading or heating pump (D2).
+- **The driver is a transistor chain (H3, D22)**, from basic parts only:
+
+  ```
+              +V_DRV (12 V normal / 5 V Lite)
+                │
+              ┌─┴── R36 2.2 kΩ
+              ├──┤ Q6 MMBT3906 PNP "to the supply" ──► R9 ──┬───────► J2 PWM
+     PWM_OFF  │                                            ├── D4 TVS
+              │                                            ├──┤ Q7 MMBT3904 "pull-down"
+             R35 2.7 kΩ                                    │     base from PWM_OFF via R37 10 kΩ
+              │                                            ├── R38 10 kΩ to GND
+ PWM1 ─R33 10 kΩ─► Q4 MMBT3904  "PWM switch"               └── R31/R32 readback → GPIO 6
+ WD_OK ─R34 10 kΩ─► Q5 MMBT3904 "watchdog switch"
+              │
+             GND
+  ```
+
+  **Two switches in a row, one switch to the supply, one to ground.** Q4
+  (the PWM) and Q5 (the watchdog) in series are the watchdog AND: only
+  when both are on is node PWM_OFF pulled low, Q6 switches the output to
+  +V_DRV and Q7 is off. If either is off, R36 pulls PWM_OFF high, Q6 turns
+  off and Q7 pulls the terminal actively to 0 V = stop. R7 (100 kΩ) holds
+  PWM1 low while the Pi boots. Q7 sits behind R9, so the brief moment when
+  Q6 and Q7 overlap while switching is limited by R9 like a shorted cable.
+  Why this chain and what it replaced: alternatives table below; the
+  original AND gate + TC4427 chain stays on the rev A prototype as a
+  jumper-selected fallback until the tests below confirm H3.
+- P6KE15A-class TVS at the terminal (SMD equivalent with the same
+  breakdown voltage, SMBJ13A; not lower, since the unregulated 12 V can
+  reach 13.5 V), R9 470 Ω, R7 at the input (D1); Lite values below.
 - **R9 and D4 depend on the build**, like R25/R26, because the pump's
   input draws current (about 3 mA, up to 7.5 mA) and R9 takes voltage
   away before the signal reaches the pump:
@@ -245,7 +268,9 @@ the 13 V TVS standoff at light load.
 
   With 470 Ω on a 5 V driver the pump would see only ≈ 3.6 V, its bare
   minimum. Same values as the stripboard driver boards in HARDWARE.md (470 Ω
-  / 15 V TVS on the 12 V board, 100 Ω / 6.8 V TVS on the 5 V board).
+  / 15 V TVS on the 12 V board, 100 Ω / 6.8 V TVS on the 5 V board). With
+  the transistor chain the output sits ≈ 0.15 V below +V_DRV, so the pump
+  sees ≈ 10.5 V (normal) and ≈ 4.55 V (Lite).
 - **Output readback** (any driver chain): a divider from the PWM terminal
   (behind R9) to a GPIO lets CoSTOS see what really leaves the board.
   PUMP1 on GPIO 6 (pin 31), PUMP2 on GPIO 26 (pin 37, unfitted with
@@ -262,12 +287,24 @@ the 13 V TVS standoff at light load.
   (measured from edge timestamps, like the feedback input) must match the
   command; and at every start, a **watchdog self-test**: PWM set high,
   heartbeat stopped, the line must drop to 0 V within about 3 s. That
-  catches a stuck driver or AND gate (or, with H3, a shorted transistor)
-  directly, and a silently lost watchdog layer before it matters. The
+  catches a shorted transistor in the chain (or, on the prototype's
+  fallback chain, a stuck driver or AND gate) directly, and a silently lost watchdog layer before it matters. The
   pump runs for at most those 3 s.
 - **R9 package: at least 0.5 W** (e.g. 1210 or 2010). With a shorted pump
   cable it dissipates ≈ 0.3 W (normal) or ≈ 0.25 W (Lite) for as long as
   the short lasts, more than an 0805 resistor takes.
+
+- **Watchdog gating:** the watchdog switch Q5 sits in series with the PWM
+  switch Q4, so a stopped watchdog also forces the output to 0 %. With a solar (PWM2)
+  pump that means "stop", in addition to the relay cutting its mains.
+  (For heating-profile pumps 0 % means full speed; there the relay is
+  what stops them. The documentation for the outputs must say so.)
+- Per output a 3-way terminal: **PWM, GND, FB**, in the cable's order
+  (brown, blue, black).
+- **Frequency settable** per output in software, default 500 Hz, checked
+  range 100–1000 Hz, limited by the edge speed through R9 into D4's
+  capacitance
+  ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)).
 
 #### Driver chain: alternatives considered (D22)
 
@@ -275,13 +312,14 @@ The chain from GPIO 18 to the terminal (step by step in
 [12.3](#123-the-pump-signal-step-by-step-lite-build)) has four jobs: raise
 3.3 V to at least 3.6 V (≈ 4.7 V wanted) at the pump, deliver its input
 current (up to 7.5 mA), go to 0 V when the watchdog trips, and survive a
-shorted or disturbed cable. Today an AND gate and a TC4427 do it, ≈ €8.60
-per order of two boards in parts and JLCPCB fees. Pump voltages for the
+shorted or disturbed cable. The original design used an AND gate and a
+TC4427, ≈ €8.60 per order of two boards in parts and JLCPCB fees; the
+transistor chain H3 replaced it as the default. Pump voltages for the
 Lite build at 3 mA; "price for one" against today.
 
 | Option | How | Pump voltage | Watchdog / fail behaviour | Robust on the cable | Price for one | Verdict |
 |---|---|---|---|---|---|---|
-| **A: AND gate + TC4427** (rev A) | As in 12.3 | 🟢 ≈ 4.7 V | 🟢 AND gate forces 0 V; pull-down at boot | 🟢 TC4427 takes shorts and spikes | — | 🟢 **rev A** |
+| A: AND gate + TC4427 (original design) | 74LVC1G08 gates the PWM with WD_OK, TC4427 drives | 🟢 ≈ 4.7 V | 🟢 AND gate forces 0 V; pull-down at boot | 🟢 TC4427 takes shorts and spikes | — | 🟡 **prototype fallback** (jumper on rev A) |
 | B: one 5 V gate (74AHCT1G08), Lite only | TTL inputs accept 3.3 V, 5 V output, does the AND itself | 🟡 ≈ 4.1 V (R9 ≥ 220 Ω for its 25 mA limit); ≈ 3.4 V at 7.5 mA, below the minimum | 🟢 as A | 🟡 a logic gate on the field cable | ≈ −€5.40 (Lite) | 🔴 no margin; the normal build still needs the TC4427, so two footprints |
 | C: driver with enable input (UCC27524) instead of AND gate + TC4427 | WD_OK to the enable pins; pin-compatible with the TC4427 (its NC pins 1/8 are ENA/ENB) | 🟢 ≈ 4.7 V | 🔴 enable pins pulled **up** internally (200 kΩ): open = enabled, so safety depends on an external pull-down; gating and driving in one chip. Under-voltage lockout only below ≈ 3.8 V (3.5–4.1 V), so no help between 4.5 and 4 V | 🟢 like the TC4427 | ≈ −€3.60 (≈ −€1.30 per board in a group of 5) | 🔴 reviewed and dropped (below) |
 | D: transistor + pull-up to 5 V | Transistor pulls down, resistor pulls up | 🔴 1 kΩ pull-up: ≈ 2 V at the pump | 🔴 inverts: Pi stopped or transistor open = **full speed** | 🟡 | ≈ −€5.50 | 🔴 unsafe fail direction |
@@ -289,7 +327,7 @@ Lite build at 3 mA; "price for one" against today.
 | F: Pi GPIO directly | Through a resistor | 🔴 3.3 V, below 3.6 V | 🔴 no gating | 🔴 Pi pin on the field cable | ≈ −€8.60 | 🔴 doesn't work |
 | G: level-shifter chip (TXS0101 etc.) | 3.3 V → 5 V translator | 🔴 made for logic inputs, not mA loads | 🟡 | 🔴 | ≈ −€2 | 🔴 |
 | **H2: three transistors instead of AND gate + TC4427** | Two NPNs in series (PWM and watchdog: "two switches in a row") drive a PNP high-side switch; pull-down and a small ESD diode at the terminal | 🟢 ≈ 4.3 V (Lite), ≈ 7–8 V (normal) | 🟢 open parts end in 0 V; 🟡 three parts can fail short | 🟡 small ESD diode instead of the 600 W TVS | ≈ −€8.60 | 🟡 superseded by H3 |
-| **H3: H2 plus an active pull-down transistor at the terminal** | As H2; a third transistor behind R9 pulls the terminal low whenever Q2 is off | 🟢 ≈ 4.55 V (Lite), ≈ 10.5 V (normal) | 🟢 open parts end in 0 V; the new transistor fails to "stop" or "slower edge" | 🟢 the 600 W TVS stays | **≈ −€8.55** | 🟢 **candidate, tested on the rev A prototype** (below) |
+| **H3: H2 plus an active pull-down transistor at the terminal** | As H2; a third transistor behind R9 pulls the terminal low whenever Q2 is off | 🟢 ≈ 4.55 V (Lite), ≈ 10.5 V (normal) | 🟢 open parts end in 0 V; the new transistor fails to "stop" or "slower edge" | 🟢 the 600 W TVS stays | **≈ −€8.55** | 🟢 **default** (D22); confirmed on the rev A prototype (below) |
 | H: two transistors instead of the TC4427 (AND gate stays) | NPN pulls the base of a PNP high-side switch down; a resistor pulls the output low | 🟢 ≈ 4.6 V | 🟢 non-inverting, open parts end in 0 V; two parts instead of one can fail "stuck high" | 🟡 relies on D4 and R9; 40 V transistors | ≈ −€5.30 | 🔴 the resistor pull-down is too slow against D4's capacitance; a fix needs a third transistor (below) |
 
 **Option C in detail, and why it was dropped.** Checked against TI's
@@ -415,43 +453,43 @@ cable protection at once, all in the safety path, and the smaller
 protection diode is the open question for a boiler room, where the pump's
 signal cable often runs next to its 230 V cable.
 
-**Option H3: H2 plus an active pull-down (candidate, replaces H2).** Nearly
+**Option H3: H2 plus an active pull-down (the default).** Nearly
 all of H2's weak points come from the resistor that pulls the line low.
 A third transistor at the terminal does that job actively:
 
 ```
               +V_DRV (5 V / 12 V)
                 │
-              ┌─┴── R3 2.2 kΩ
-              ├──┤ Q2 MMBT3906 PNP ──► R9 ──┬──────────────► J2 PWM
-       node X │                             ├── D4 SMBJ (600 W TVS), as today
-              │                             ├──┤ Q3 MMBT3904 NPN "pull-down switch"
-              │                             │     base from node X via R5 10 kΩ
-             R2 2.7 kΩ                      └── R4 10 kΩ to GND (keeps the line defined)
+              ┌─┴── R36 2.2 kΩ
+              ├──┤ Q6 MMBT3906 PNP ──► R9 ──┬──────────────► J2 PWM
+       node PWM_OFF │                             ├── D4 SMBJ (600 W TVS), as today
+              │                             ├──┤ Q7 MMBT3904 NPN "pull-down switch"
+              │                             │     base from node PWM_OFF via R37 10 kΩ
+             R35 2.7 kΩ                      └── R38 10 kΩ to GND (keeps the line defined)
               │
- PWM1 ─R1a 10 kΩ─► Q1a MMBT3904   "PWM switch"
- WD_OK ─R1b 10 kΩ─► Q1b MMBT3904  "watchdog switch"
+ PWM1 ─R33 10 kΩ─► Q4 MMBT3904   "PWM switch"
+ WD_OK ─R34 10 kΩ─► Q5 MMBT3904  "watchdog switch"
               │
              GND
 ```
 
-Both switches on: node X goes low, Q2 switches the output to the supply,
-Q3 has no base current and is off. Either switch off: R3 pulls node X
-high, Q2 turns off and Q3 turns on and pulls the terminal actively to 0 V.
+Both switches on: node PWM_OFF goes low, Q6 switches the output to the supply,
+Q7 has no base current and is off. Either switch off: R36 pulls node PWM_OFF
+high, Q6 turns off and Q7 turns on and pulls the terminal actively to 0 V.
 
 | | H2 | **H3** |
 |---|---|---|
-| Falling edge | R4 discharges cable and diode: ≈ 1.3 µs | Q3 discharges them directly: well under 1 µs |
+| Falling edge | R4 discharges cable and diode: ≈ 1.3 µs | Q7 discharges them directly: well under 1 µs |
 | Cable protection | small ESD diode (open question) | **the 600 W SMBJ TVS stays**: the fall is active, the rise through R9 is the same as with the TC4427 |
 | Pump voltage at 3 mA | ≈ 4.3 V / ≈ 7–8 V (R9/R4 divider) | ≈ 4.55 V / ≈ 10.5 V (no divider) |
-| Wasted current while high | ≈ 4.5 / 8 mA | ≈ 0.5 / 1.2 mA (R4 10 kΩ) |
+| Wasted current while high | ≈ 4.5 / 8 mA | ≈ 0.5 / 1.2 mA (R38 10 kΩ) |
 | Frequency range | 100–1000 Hz | 100–1000 Hz (the rise through R9 into the TVS sets it, as with the TC4427) |
 | Parts with a JLCPCB fee | 0 | 0 |
 | Price for one vs AND gate + TC4427 | ≈ −€8.60 | ≈ −€8.55 (one transistor and one resistor more) |
 
-**Shoot-through:** while switching, Q2 and Q3 can both be on for about a
+**Shoot-through:** while switching, Q6 and Q7 can both be on for about a
 microsecond (a saturated transistor needs that long to switch off).
-Because Q3 sits behind R9, that current is limited by R9 to the same
+Because Q7 sits behind R9, that current is limited by R9 to the same
 ≈ 50 mA (Lite) / ≈ 25 mA (normal) a shorted cable causes, which the design
 already takes; at 1000 Hz it is a few µs per period and no heat to speak
 of.
@@ -460,10 +498,10 @@ of.
 
 | Part | Breaks open | Breaks short |
 |---|---|---|
-| Q1a (PWM switch) | 🟢 stop | 🔴 follows only the watchdog: full speed while CoSTOS runs (caught by the output readback, 4.1) |
-| Q1b (watchdog switch) | 🟢 stop | 🟡 works, but the watchdog layer is silently gone (caught by the readback self-test at start) |
-| Q2 (to the supply) | 🟢 stop | 🔴 stuck high: full speed (caught by the readback and the pump feedback) |
-| Q3 (pull-down) | 🟡 slower falling edge through R4; pump still runs and stops | 🟢 output stuck at 0 V = stop; R9 limits the current |
+| Q4 (PWM switch) | 🟢 stop | 🔴 follows only the watchdog: full speed while CoSTOS runs (caught by the output readback, 4.1) |
+| Q5 (watchdog switch) | 🟢 stop | 🟡 works, but the watchdog layer is silently gone (caught by the readback self-test at start) |
+| Q6 (to the supply) | 🟢 stop | 🔴 stuck high: full speed (caught by the readback and the pump feedback) |
+| Q7 (pull-down) | 🟡 slower falling edge through R38; pump still runs and stops | 🟢 output stuck at 0 V = stop; R9 limits the current |
 
 The dangerous and the silent faults exist in the AND gate + TC4427 chain
 too, inside the chips; the readback (4.1) catches them in either chain.
@@ -479,41 +517,30 @@ pump needs more than 1 kHz, so the range stays 100–1000 Hz.
 
 **Test on the rev A prototype, not on a stripboard.** The first assembled
 order (rev A) is a prototype anyway (bring-up plan, section 9). It carries
-**both chains** (AND gate + TC4427, and H3), populated by JLCPCB, selected
-by solder jumpers (prototype only; the released board keeps one chain and
-no jumpers):
+**both chains** (H3 and, as the fallback, AND gate + TC4427), populated by
+JLCPCB, selected by solder jumpers (prototype only; the released board
+keeps one chain and no jumpers):
 
 1. Both chains on the same board, switched by jumper, measured with the
    same pump and cable: high level at J2 and at the pump (3 mA and with
    the pump's maximum current), rise and fall time at 1000 Hz.
 2. Watchdog: with H3, the output must go to 0 V within ≈ 3 s after the
    heartbeat stops, measured at J2 and seen by the output readback.
-3. Fail behaviour by hand: lift R1a, R1b, R2, R5 one at a time (output must
-   stay at 0 V); lift Q3 (output still stops, slower falling edge); short
-   Q1a, Q1b, Q3 (document the effect; the readback must report Q1a and
-   the self-test Q1b).
+3. Fail behaviour by hand: lift R33, R34, R35, R37 one at a time (output
+   must stay at 0 V); lift Q7 (output still stops, slower falling edge);
+   short Q4, Q5, Q7 (document the effect; the readback must report Q4 and
+   the self-test Q5).
 4. Shoot-through: current from +V_DRV during switching at 1000 Hz, and
-   the temperature of Q2, Q3 and R9 after an hour.
+   the temperature of Q6, Q7 and R9 after an hour.
 5. Bursts: switch the pump's 230 V (and a nearby contactor or the boiler)
    on and off many times with the signal cable laid next to the mains
    cable; the PWM output and the pump must not react, and nothing may fail.
 6. ESD with the HAT powered: discharges to the J2 terminals (by hand from
    a charged body, or with an ESD gun if one can be borrowed).
 
-If H3 passes, it becomes the chain for the released board; if not, the
-AND gate + TC4427 stays. The extra cost of carrying both on the prototype
+H3 is the default; if it fails these tests, the released board goes back
+to the AND gate + TC4427. The extra cost of carrying both on the prototype
 (two more fees for one order) is less than a second prototype order.
-- **Watchdog gating:** each PWM signal passes an AND gate with `WD_OK`, so
-  a stopped watchdog also forces the PWM to 0 %. With a solar (PWM2)
-  pump that means "stop", in addition to the relay cutting its mains.
-  (For heating-profile pumps 0 % means full speed; there the relay is
-  what stops them. The documentation for the outputs must say so.)
-- Per output a 3-way terminal: **PWM, GND, FB**, in the cable's order
-  (brown, blue, black).
-- **Frequency settable** per output in software, default 500 Hz, checked
-  range 100–1000 Hz, limited by the edge speed through R9 into D4's
-  capacitance
-  ([ARCHITECTURE](ARCHITECTURE.md#pwm-frequency-settable-per-output)).
 
 ### 4.2 Pump feedback inputs
 
@@ -645,7 +672,7 @@ software is wrong; none needs an overlay or any software.
 |---|---|---|---|
 | PWR | green | 5 V rail | the HAT has power |
 | WD | green | watchdog output WD_OK | heartbeat seen, outputs enabled (4.6) |
-| **PUMP1** | green | TC4427 output via 2.2 kΩ | what really reaches the pump: off = stop, brighter = faster |
+| **PUMP1** | green | driver output (Q6) via 2.2 kΩ | what really reaches the pump: off = stop, brighter = faster |
 | R1 | yellow | relay output 1 | relay or SSR switched on |
 | PUMP2, R2 | | | only with the unfitted second channels |
 
@@ -671,7 +698,7 @@ light pipes above them.
 | Rail | Source | Users | Estimated current |
 |---|---|---|---|
 | 5 V | Pi header pins 2/4 (from the Pi's USB-C supply) | DC/DC, relay supply, LEDs | HAT < 200 mA with a relay coil, < 100 mA with an SSR (per extra fitted relay output up to +100 mA) |
-| 12 V | DC/DC on the HAT (1 W) | TC4427, PWM outputs | < 30 mA |
+| 12 V | DC/DC on the HAT (1 W) | pump driver chain, PWM output | < 30 mA |
 | 3.3 V | Pi header pins 1/17 | MAX31865 × 2, DS18x20 sensors, pull-ups | < 30 mA |
 
 ## 5. Pin assignment
@@ -994,8 +1021,9 @@ into 8.2.
    otherwise fit the DS2482.
 9. Repeat steps 3–8 on the other board (Pi 4 ↔ Pi 5), and on a Pi 3 B / B+
    if one is at hand.
-10. Pump driver chains (D22): compare the AND gate + TC4427 chain and the
-    transistor chain H3 by jumper, as in the test list in 4.1.
+10. Pump driver chains (D22): test the transistor chain H3 (the default)
+    against the fallback AND gate + TC4427 chain by jumper, as in the test
+    list in 4.1.
 
 ## 10. Decisions
 
@@ -1022,7 +1050,7 @@ into 8.2.
 | D19 | A separate low-cost board? | **No: a Lite build of the 1-Wire edition** (section 12): same board, without the 12 V DC/DC and the relay output; the pump driver runs on 5 V through R26 (0 Ω), with R9 = 100 Ω and D4 = SMBJ6.0A. Both 1-Wire buses and the PWR LED stay. Saves ≈ €4.60, as much as a dedicated Lite board would with the same parts, without a second layout, and can be upgraded. Solar-profile pumps only |
 | D20 | Which parts to pick for the BOM? | **JLCPCB basic or preferred extended parts for everything ordinary** (8.3), so only the special chips pay a loading fee: about six fees per order instead of fifteen or more, ≈ €25–30 less for a small order. Checked against the current lists before ordering. LEDs: types with a forward voltage of about 2 V (4.8) |
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
-| D22 | How is the pump signal driven? | **Open, decided after the rev A prototype.** Baseline: AND gate + TC4427 (proven, fails to 0 V, both edges driven). Candidate: **H3, four transistors** replacing both chips: two NPNs in series as the AND (PWM and watchdog), a PNP to the supply and an NPN pull-down at the terminal. ≈ €8.55 less for one, no JLCPCB fee in the chain, the 600 W TVS and full pump voltage stay, easy to explain. The rev A prototype carries both chains, selected by jumper, tested as in 4.1. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (needed a weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. The PWM range stays 100–1000 Hz either way |
+| D22 | How is the pump signal driven? | **Transistor chain H3, the default** (4.1): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the Lite build, 12.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in 4.1, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
 
 ---
 
@@ -1048,7 +1076,7 @@ reference installation plans to use it (see
 | Sensor terminals | PT1 2-way, 1W-A and 1W-B 3-way, all on the left edge | **one two-level block, 8 positions** (upper and lower level of position *n* are the two wires of sensor S*n*) on the left edge, plus 1W-A 3-way at the front |
 | SPI | CE0 (CE1 for PT2) | CE0 for the LTC2983 |
 | Extra GPIOs | | LTC2983 /RESET on GPIO22 (pin 15), INTERRUPT (conversion done) on GPIO27 (pin 13) |
-| Everything else | 12 V, PUMP1/2, REL1/2, watchdog, AND gates, feedback, header, EEPROM footprint | **identical** |
+| Everything else | 12 V, PUMP1/2 (transistor chain), REL1/2, watchdog, feedback, readback, header, EEPROM footprint | **identical** |
 
 ### 11.2 Pt1000 inputs (LTC2983)
 
@@ -1258,7 +1286,7 @@ The Lite build may stop working; it must never leave the pump running or
 damage the Pi:
 
 1. **Every fault ends in "pump stopped".** The PWM line keeps its
-   pull-down and the watchdog-gated AND gate (4.6), and the Lite build only
+   pull-down and the watchdog switch in the driver chain (4.1, 4.6), and the Lite build only
    supports **solar-profile pumps** (Wilo PWM2, Grundfos profile C), where
    no signal or a low signal means stop. The setup wizard refuses a
    heating profile on a Lite build.
@@ -1274,30 +1302,31 @@ damage the Pi:
    SMBJ6.0A** (4.1); with the normal build's 470 Ω it would be only ≈ 3.6 V. If that isn't enough (long
    cable, a pump with a higher threshold), the pump simply doesn't start,
    and the feedback input reports it.
-5. **The driver's supply margin is small, so the supply must be a proper
-   one.** The TC4427 needs at least 4.5 V. In the normal build it runs on
-   12 V from the DC/DC; in the Lite build it runs directly on the Pi's 5 V
-   rail (R26), which sits a little below the supply's label:
+5. **The pump signal follows the Pi's 5 V, so the supply must be a proper
+   one.** In the Lite build the driver runs directly on the Pi's 5 V rail
+   (R26), which sits a little below the supply's label. The transistor
+   chain (D22) has no minimum supply of its own: the pump gets the rail
+   minus ≈ 0.15 V (Q6) and ≈ 0.3 V (R9), against its 3.6 V minimum:
 
-   | Point | Voltage | Margin to the TC4427's 4.5 V |
-   |---|---|---|
-   | Official Raspberry Pi supply, at the plug | 5.1 V | 0.6 V |
-   | Pi's 5 V rail, after its own input protection | ≈ 5.0 V | ≈ 0.5 V |
-   | Same, Pi under heavy load (CPU, USB devices) | ≈ 4.8 V | ≈ 0.3 V |
-   | Pi flags "under-voltage" itself | below ≈ 4.63 V | ≈ 0.1 V |
-   | **TC4427 minimum supply** | **4.5 V** | — |
+   | Point | Pi's 5 V | At the pump | Margin to 3.6 V |
+   |---|---|---|---|
+   | Official Raspberry Pi supply | ≈ 5.0 V | ≈ 4.55 V | 🟢 ≈ 0.95 V |
+   | Same, Pi under heavy load (CPU, USB devices) | ≈ 4.8 V | ≈ 4.35 V | 🟢 ≈ 0.75 V |
+   | Pi flags "under-voltage" itself | ≈ 4.63 V | ≈ 4.2 V | 🟡 ≈ 0.6 V |
+   | Weak supply | 4.5 V | ≈ 4.05 V | 🟡 ≈ 0.45 V |
+   | Pump stops responding | ≈ 4.05 V | 3.6 V | 🔴 0 |
 
-   With the official supply (or an equal one that holds 5.1 V under load)
-   this is inside the datasheet. A weak supply (phone charger, thin or long
-   USB cable) is not: below 4.5 V the TC4427 is not damaged, but its
-   output gets weaker, the pump sees a signal below its threshold and,
-   with a solar-profile pump, **stays stopped**. Nothing breaks, but the
+   (The original TC4427 driver needed 4.5 V for itself, which left only
+   ≈ 0.3 V under load; the transistor chain removed that limit.) A weak
+   supply (phone charger, thin or long USB cable) can still sag far
+   enough: then the pump sees a signal below its threshold and, with a
+   solar-profile pump, **stays stopped**. Nothing breaks, but the
    pump silently doesn't run on a sunny day. So:
 
    - **Lite build: official Raspberry Pi supply, or one that holds
      5.1 V under load. No phone chargers, no long USB cables.** The normal
-     build is far less sensitive (its 12 V comes from an isolated DC/DC
-     that works down to about 4.5 V input), but the same advice applies.
+     build is far less sensitive (its 12 V comes from an isolated DC/DC),
+     but the same advice applies.
    - **CoSTOS watches it:** the Pi's own under-voltage flag raises the
      "supply under-voltage" alarm
      ([ARCHITECTURE 6.2](ARCHITECTURE.md#function-checks-and-alarms)),
@@ -1345,22 +1374,24 @@ Regenerate with `python3 tools/hw/pwm_chain_svg.py > docs/img/hat-lite-pwm-chain
 1. **Pi GPIO 18** makes the PWM in hardware (5.5): 0 V or 3.3 V, 500 Hz
    by default. Too low for the pump on its own, which needs at least
    3.6 V at 3 mA.
-2. **AND gate U4** (74LVC1G08, on 3.3 V) passes the signal only while the
-   watchdog reports OK (4.6). If CoSTOS hangs, its output goes to 0 V
-   after about 3 s.
-3. **R7** (100 kΩ to GND) holds the driver input at 0 V while the Pi
-   boots, before GPIO 18 is configured. 0 V means "pump stopped".
-4. **Driver U6** (TC4427) runs on the Pi's 5 V through R26 and turns the
-   3.3 V signal into 0 V / about 5 V, strong enough for the pump's input
-   current and the cable. Its supply margin is in 12.1, point 5.
-5. **R9** (100 Ω, at least ½ W) drops only about 0.3 V at the pump's
-   ~3 mA, so the pump sees about 4.7 V. With a shorted cable it limits the
-   current to about 50 mA.
-6. **D4** (SMBJ6.0A) at the terminal catches spikes coming back on the
+2. **R7** (100 kΩ to GND) holds the line at 0 V while the Pi boots,
+   before GPIO 18 is configured. 0 V means "pump stopped".
+3. **Two switches in a row:** Q4 (the PWM switch) and Q5 (the watchdog
+   switch, driven by WD_OK, 4.6). Only when both are on is the output
+   switched on. If CoSTOS hangs, the watchdog opens Q5 after about 3 s.
+4. **Q6, the switch to the supply** (a PNP transistor), connects the
+   output to the Pi's 5 V (through R26): ≈ 4.85 V.
+5. **Q7, the switch to ground**, pulls the terminal actively to 0 V
+   whenever Q6 is off, so the falling edge is as sharp as the rising one.
+6. **R9** (100 Ω, at least ½ W) drops only about 0.3 V at the pump's
+   ~3 mA, so the pump sees about 4.55 V. With a shorted cable (or the
+   moment Q6 and Q7 overlap while switching) it limits the current to
+   about 50 mA.
+7. **D4** (SMBJ6.0A) at the terminal catches spikes coming back on the
    cable.
-7. **LED D12** with R22 (2.2 kΩ) sits right at the driver output and shows
-   what really leaves the board: off = stop, brighter = faster.
+8. **LED D12** with R22 (2.2 kΩ) sits right at the driver output and shows
+   what really leaves the board: off = stop, brighter = faster. The
+   readback (R31/R32 to GPIO 6) lets CoSTOS check the same thing.
 
-Three active stages (the Pi's PWM, the AND gate, the driver) and two
-protection parts. The normal build has the same chain with the driver on
-12 V, R9 = 470 Ω and D4 = SMBJ13A (4.1).
+Four transistors, all basic parts, and two protection parts. The normal
+build has the same chain on 12 V, with R9 = 470 Ω and D4 = SMBJ13A (4.1).

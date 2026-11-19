@@ -32,10 +32,10 @@ def dash(x, y1, y2):
 out.append(f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
            'font-family="Helvetica, Arial, sans-serif">')
 out.append('<title>CoSTOS HAT, Lite build: PWM signal path</title>')
-out.append('<desc>Pi GPIO 18 (3.3 V PWM) through the AND gate U4, gated by the watchdog, into the '
-           'TC4427 driver U6 running on 5 V via R26, through R9 (100 ohm) to the PWM pin of J2. Below: R7 '
-           'pull-down at the driver input, the PUMP1 LED D12 with R22 at the driver output, and the TVS '
-           'diode D4 at the terminal.</desc>')
+out.append('<desc>Pi GPIO 18 (3.3 V PWM) into two transistor switches in series, Q4 for the PWM and Q5 '
+           'for the watchdog, which drive Q6, the switch to the 5 V supply via R26, then R9 (100 ohm) to the '
+           'PWM pin of J2. Below: R7 pull-down at the input, the PUMP1 LED D12 with R22 at the driver '
+           'output, Q7 pulling the terminal to ground, and the TVS diode D4.</desc>')
 out.append('<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" '
            'orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#555" stroke-width="1.5"/></marker></defs>')
 out.append(f'<rect width="{W}" height="{H}" fill="white"/>')
@@ -44,17 +44,19 @@ box(165, 30, 100, 44, SAFE, "Watchdog OK")
 box(290, 30, 100, 44, NEUT, "+5 V via R26")
 arrow(215, 74, 215, 118)
 arrow(340, 74, 340, 118)
-main = [(40, "Pi GPIO 18", "3.3 V PWM"), (165, "AND gate U4", "74LVC1G08"), (290, "Driver U6", "TC4427 on 5 V"),
+main = [(40, "Pi GPIO 18", "3.3 V PWM"), (165, "Q4 + Q5", "two switches"), (290, "Q6", "to the supply"),
         (415, "R9", "100 Ω, ½ W"), (540, "J2 PWM pin", "brown wire")]
-for x, t, s in main:
-    box(x, 120, 100, 56, SIG, t, s)
+for x, t, s_ in main:
+    box(x, 120, 100, 56, SIG, t, s_)
 for x in (140, 265, 390, 515):
     arrow(x, 148, x + 23, 148)
-for x in (277, 402, 527):
+for x in (152, 402, 527):
     dash(x, 148, 228)
-box(225, 230, 104, 56, SAFE, "R7 100 kΩ", "boot = stop")
+dash(600, 176, 228)
+box(100, 230, 104, 56, SAFE, "R7 100 kΩ", "boot = stop")
 box(350, 230, 104, 56, NEUT, "LED D12", "R22 2.2 kΩ")
-box(475, 230, 104, 56, SAFE, "D4 TVS", "SMBJ6.0A")
+box(463, 230, 104, 56, SAFE, "Q7", "to ground")
+box(576, 230, 94, 56, SAFE, "D4 TVS", "SMBJ6.0A")
 out.append('<text x="40" y="314" style="font-size:12px;fill:#555">Purple: the signal path. '
            'Green: safety and protection. Voltages and roles: HAT.md 12.3.</text>')
 out.append('</svg>')

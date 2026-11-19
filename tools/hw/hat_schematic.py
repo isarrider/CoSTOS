@@ -232,6 +232,27 @@ class Sheet:
             self.add("</g>")
         return (x - 30, y), (x, y - 30), (x, y + 30)
 
+    def bjt(self, x, y, ref, val, pnp=False, lab="r", sub=None):
+        """Bipolar transistor, vertical. Base end (x-30, y). NPN: collector
+        (x, y-30), emitter (x, y+30). PNP: emitter (x, y-30), collector (x, y+30)."""
+        g = [f'<g transform="translate({x} {y})">',
+             '<circle cx="-4" cy="0" r="17" style="fill:white;stroke:#222;stroke-width:1.5"/>',
+             '<path class="w" d="M-30 0 H-10 M-10 -11 V11" style="stroke-width:2.5"/>',
+             '<path class="w" d="M-10 -5 L0 -13 V-30 M-10 5 L0 13 V30"/>']
+        if pnp:   # emitter on top, arrow pointing into the base
+            g.append(f'<path d="M-9 -6 L-2 -7 L-6 -12 Z" fill="{INK}"/>')
+        else:     # emitter at the bottom, arrow pointing out
+            g.append(f'<path d="M0 13 L-7 12 L-3 7 Z" fill="{INK}"/>')
+        g.append("</g>")
+        self.add("".join(g))
+        if lab == "r":
+            self.text(x + 18, y - 2, ref, "r"); self.text(x + 18, y + 12, val)
+            if sub: self.text(x + 18, y + 25, sub, "n")
+        elif lab == "l":
+            self.text(x - 26, y - 10, ref, "r", "end"); self.text(x - 26, y - 22, val, "v", "end")
+        top, bot = (x, y - 30), (x, y + 30)
+        return {"B": (x - 30, y), "C": bot if pnp else top, "E": top if pnp else bot}
+
     def term(self, x, y, ref, name, pins, nf=False, conn="l"):
         """Field terminal; pins: list of (dy, label). Connection points on the
         left edge (conn='l', labels right) or the right edge (conn='r', labels left)."""
@@ -367,9 +388,10 @@ def sheet_power(path):
 
 # ======================================================================
 def sheet_pwm(path):
-    s = Sheet(1180, 800, "CoSTOS HAT rev A: watchdog, PWM pump outputs and feedback inputs",
-              "Retriggerable monostable watchdog producing WD_OK; two PWM channels gated by WD_OK through AND gates "
-              "into a TC4427 driver at 12 V with series resistor and TVS; pump feedback inputs with pull-up and RC filter.")
+    s = Sheet(1500, 800, "CoSTOS HAT rev A: watchdog, PWM pump output, feedback and readback",
+              "Retriggerable monostable watchdog producing WD_OK; the PWM pump output as a transistor chain: two NPN "
+              "switches in series (PWM and watchdog) drive a PNP to the supply, an NPN pulls the terminal low; series "
+              "resistor and TVS; pump feedback inputs with pull-up and RC filter; output readback divider.")
     s.heading(20, 30, "4 · Hardware watchdog")
     u3 = s.ic(170, 150, 160, 140, "U3", "74LVC1G123", [
         ("l", 30, "A", None), ("l", 70, "B", None), ("t", 30, "VCC", None), ("t", 80, "REXT/CEXT", None),
@@ -414,52 +436,58 @@ def sheet_pwm(path):
         "JP1 forces WD_OK high for bench tests (open by default).",
         "D3 shows U3's state, not the JP1 override.",
     ])
-    # ---- PWM channels ----
-    s.heading(640, 30, "5 · PWM pump outputs (12 V)")
-    u6 = s.ic(860, 70, 100, 300, "U6", "TC4427", [
-        ("l", 50, "IN A", "2"), ("l", 260, "IN B", "4"), ("r", 50, "OUT A", "7"), ("r", 260, "OUT B", "5"),
-        ("t", 50, "VDD", "6"), ("b", 50, "GND", "3")], sub="dual driver")
-    s.wire(u6["VDD"], (910, 45)); s.rail(910, 45, "+V_DRV")
-    s.text(925, 62, "C7 1 µF, C8 100 nF", "n")
-    s.wire(u6["GND"], (910, 395)); s.gnd(910, 395)
-    for n, y in ((1, 120), (2, 330)):
-        nf = n == 2
-        gpio, pin = (18, 12) if n == 1 else (19, 35)
-        if nf: s.begin_nf()
-        a, b, out = s.andgate(700, y, "U4" if n == 1 else "U5", "74LVC1G08 (n.f.)" if nf else "74LVC1G08")
-        s.wire((690, y - 10), a); s.flag(690, y - 10, f"PWM{n}", "L")
-        s.text(640, y - 6, f"GPIO{gpio} (pin {pin})", "n", "end")
-        s.wire((690, y + 10), b); s.flag(690, y + 10, "WD_OK", "L")
-        s.wire(out, (800, y))
-        if nf: s.end_nf()
-        s.wire((800, y), (840, y)); s.dot(810, y)
-        s.part("R", 810, y, "d", "R7" if n == 1 else "R8", "100 kΩ", lab="l"); s.gnd(810, y + 60)
-        if nf: s.begin_nf()
-        s.wire(u6["OUT A" if n == 1 else "OUT B"], (990, y))
-        s.dot(975, y); s.wire((975, y), (975, y + 60))
-        s.part("R", 975, y + 60, "d", "R22" if n == 1 else "R24", "2.2 kΩ", lab="r")
-        s.part("LED", 975, y + 120, "d", "D12" if n == 1 else "D14", f"PUMP{n}", lab="r")
-        s.gnd(975, y + 160)
-        s.part("R", 990, y, "r", "R9" if n == 1 else "R10", "470 Ω ½ W")
-        s.wire((1050, y), (1110, y)); s.dot(1070, y)
-        s.wire((1070, y), (1070, y + 10))
-        s.part("TVS", 1070, y + 50, "u", "D4" if n == 1 else "D5", "SMBJ13A", lab="l")
-        s.gnd(1070, y + 50)
-        tp = s.term(1110, y, "J2" if n == 1 else "J3", f"PUMP{n}", [(0, "PWM"), (45, "GND"), (90, "FB")])
-        s.wire(tp["GND"], (1100, y + 45), (1100, y + 50)); s.gnd(1100, y + 50)
-        s.wire(tp["FB"], (1095, y + 90)); s.flag(1095, y + 90, f"P{n}_FB", "L")
-        if nf: s.end_nf()
-    s.note(640, 470, [
-        "U4/U5: the PWM reaches the driver only while WD_OK is high;",
-        "otherwise the output is 0 % = stop (PWM2 solar profile).",
-        "R7/R8 hold the driver inputs low; R8 is fitted although",
-        "channel 2 is not, so IN B never floats.",
-        "R9 limits the current into a shorted cable; D4 clamps",
-        "spikes from the pump cable. Lite build: R9 100 Ω, D4 SMBJ6.0A",
-        "(4.1). R9 at least ½ W. Terminal order = cable colours",
-        "brown (PWM), blue (GND), black (FB).",
-        "D12 shows what really reaches the pump: off = stop,",
-        "brighter = faster (≈ 4.5 mA at 12 V, ≈ 1.3 mA in the Lite build).",
+    # ---- PWM channel (H3, default; D22) ----
+    s.heading(640, 30, "5 · PWM pump output PUMP1 (transistor chain H3, D22)")
+    s.wire((860, 70), (1020, 70)); s.rail(940, 70, "+V_DRV"); s.dot(940, 70)
+    s.part("R", 860, 70, "d", "R36", "2.2 kΩ", lab="l")
+    s.wire((860, 130), (860, 170)); s.dot(860, 150)
+    s.wire((800, 150), (990, 150)); s.flag(800, 150, "PWM_OFF", "L")
+    q6 = s.bjt(1020, 150, "Q6", "MMBT3906", pnp=True, sub="to the supply")
+    s.wire(q6["E"], (1020, 70))
+    s.part("R", 860, 170, "d", "R35", "2.7 kΩ", lab="l")
+    q4 = s.bjt(860, 260, "Q4", "MMBT3904", sub="PWM switch")
+    q5 = s.bjt(860, 350, "Q5", "MMBT3904", sub="watchdog switch")
+    s.wire(q4["E"], q5["C"])
+    s.wire(q5["E"], (860, 385)); s.gnd(860, 385)
+    s.flag(700, 260, "PWM1", "L"); s.text(700, 284, "GPIO18 (pin 12)", "n", "end")
+    s.wire((700, 260), (770, 260)); s.dot(740, 260)
+    s.part("R", 740, 260, "d", "R7", "100 kΩ", lab="l"); s.gnd(740, 320)
+    s.part("R", 770, 260, "r", "R33", "10 kΩ", lab="a")
+    s.flag(700, 350, "WD_OK", "L")
+    s.wire((700, 350), (770, 350))
+    s.part("R", 770, 350, "r", "R34", "10 kΩ", lab="a")
+    s.wire(q6["C"], (1020, 440), (1060, 440)); s.dot(1040, 440)
+    s.part("R", 1040, 440, "d", "R22", "2.2 kΩ", lab="l")
+    s.part("LED", 1040, 500, "d", "D12", "PUMP1", lab="l"); s.gnd(1040, 540)
+    s.part("R", 1060, 440, "r", "R9", "470 Ω ½ W", lab="a")
+    s.wire((1120, 440), (1420, 440))
+    s.dot(1170, 440); s.wire((1170, 440), (1170, 470))
+    q7 = s.bjt(1170, 500, "Q7", "MMBT3904", sub="pull-down")
+    s.wire(q7["E"], (1170, 535)); s.gnd(1170, 535)
+    s.wire(q7["B"], (1140, 540)); s.part("R", 1140, 600, "u", "R37", "10 kΩ", lab="l")
+    s.flag(1140, 600, "PWM_OFF", "R")
+    s.dot(1260, 440); s.part("R", 1260, 440, "d", "R38", "10 kΩ", lab="r"); s.gnd(1260, 500)
+    s.dot(1330, 440); s.wire((1330, 440), (1330, 450))
+    s.part("TVS", 1330, 490, "u", "D4", "SMBJ13A", lab="r"); s.gnd(1330, 490)
+    s.dot(1390, 440); s.wire((1390, 440), (1390, 400)); s.flag(1390, 400, "P1_OUT", "L")
+    tp = s.term(1420, 440, "J2", "PUMP1", [(0, "PWM"), (45, "GND"), (90, "FB")])
+    s.wire(tp["GND"], (1410, 485), (1410, 490)); s.gnd(1410, 490)
+    s.wire(tp["FB"], (1405, 530)); s.flag(1405, 530, "P1_FB", "L")
+    s.note(1180, 120, [
+        "Q4 and Q5 in a row are the watchdog AND: Q6 switches the",
+        "output to +V_DRV only while PWM1 and WD_OK are both high.",
+        "Either switch off: R36 pulls PWM_OFF high, Q6 turns off",
+        "and Q7 pulls the terminal actively to 0 V = stop.",
+        "R7 holds PWM1 low while the Pi boots. R9 limits a shorted",
+        "cable and the brief Q6/Q7 overlap when switching.",
+        "Lite build: R9 100 Ω, D4 SMBJ6.0A, R31 6.8 kΩ (4.1).",
+        "D12 shows what leaves the board: off = stop, brighter = faster.",
+        "Terminal order = cable colours brown, blue, black.",
+        "PUMP2 (n.f.): the same chain, Q8–Q11, R39–R44, R10, R24,",
+        "D5, D14, J3, from PWM2 = GPIO19 (pin 35).",
+        "Prototype rev A only: the AND gate + TC4427 chain (U4, U6,",
+        "C7, C8) as a jumper-selected fallback (4.1); not on the",
+        "released board.",
     ])
     # ---- feedback ----
     s.heading(20, 610, "6 · Pump feedback inputs (open collector, 75 Hz)")
@@ -479,6 +507,13 @@ def sheet_pwm(path):
         s.flag(x0 + 200, y, f"FB{n}", "R")
         s.text(x0 + 200, y + 28, f"GPIO{23 if n == 1 else 16} (pin {16 if n == 1 else 36})", "n")
         if nf: s.end_nf()
+    s.heading(960, 655, "7 · PWM output readback")
+    s.flag(1040, 710, "P1_OUT", "L")
+    s.wire((1040, 710), (1060, 710))
+    s.part("R", 1060, 710, "r", "R31", "27 kΩ (Lite 6.8 kΩ)", lab="a")
+    s.wire((1120, 710), (1200, 710)); s.dot(1150, 710)
+    s.part("R", 1150, 710, "d", "R32", "8.2 kΩ", lab="r"); s.gnd(1150, 770)
+    s.flag(1200, 710, "RB1", "R"); s.text(1200, 738, "GPIO6 (pin 31)", "n")
     s.save(path)
 
 
