@@ -141,7 +141,7 @@ else:
 # pump chain (D22), row Q
 chip(205, 332, 78, 36, "Q6 · Q7", "push-pull")
 chip(300, 332, 78, 36, "Q4 · Q5", "PWM and WD")
-chip(400, 332, 78, 36, "Watchdog", "capacitor, 1–3 s")
+chip(400, 332, 78, 36, "Watchdog", "capacitor, ≈ 10 s")
 flow((339, 296), (339, 330)); ft(343, 310, "PWM ← GPIO18")
 flow((439, 296), (439, 330)); ft(443, 310, "heartbeat ← GPIO24")
 flow((400, 350), (380, 350)); ft(389, 327, "WD_OK", "middle")

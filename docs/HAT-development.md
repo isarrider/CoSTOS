@@ -49,7 +49,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D21 | How much text goes on the board? | **As much as fits** (7.1): pin names at every terminal and the signal paths (lines, arrows and small text from each terminal through its circuit to its GPIO) on the top side, a full wiring cheat sheet with the safety rules, the R25/R26 rule, LED meanings, build tick boxes and a QR code on the empty bottom side. Free at JLCPCB; text at least 1 mm high. DS18B20 wire colours are left out because they vary between makers |
 | D22 | How is the pump signal driven? | **Transistor chain H3, the default** (HAT-1wire.md 4.1; alternatives in section 2 of this page): two NPN switches in series as the watchdog AND (PWM and WD_OK), a PNP to the supply, an NPN pulling the terminal low; all basic parts, ≈ €8.55 less for one than the original AND gate + TC4427, easy to explain, 40 V parts, the 600 W TVS and full pump voltage stay, and no 4.5 V minimum supply (helps the 1-Wire Lite, 11.1). Confirmed on the rev A prototype, which also carries the AND gate + TC4427 as a jumper-selected fallback; if H3 fails the tests in section 2 of this page, the released board goes back to it. Dropped: UCC27524 (enable defaults to on), two transistors with a resistor pull-down (too slow), H2 (weaker cable protection), single gate, single transistor, the Pi pin directly, level shifters. PWM range 100–1000 Hz |
 | D23 | Can the relay supply switch and the watchdog be built from basic parts? | **Relay supply switch: yes**, an AO3401A P-MOSFET switched by an MMBT3904 from WD_OK (both JLCPCB basic parts) replaces the TPS22918: one loading fee less, ≈ €3 less for one controller on the 1-Wire and PT editions; it fails safe the same way. Watchdog: see D24. Section 8 of this page |
-| D24 | Which watchdog? | **A capacitor watchdog from basic parts** instead of the 74LVC1G123: the software toggles the heartbeat at about 20 Hz while the control loop is healthy; each edge pumps a little charge into a capacitor through two diodes, and the capacitor holds the gates of the MOSFETs that let the pump signal and the relay supply through. Heartbeat stops (or is stuck, too slow or too fast) → the capacitor empties in about 1–3 s → everything off. No single failed part leaves it on (two drain resistors in parallel, two coupling capacitors in series), and a readback on GPIO20 lets the self-test measure the timeout at every start. No fee, about €4 less for one on every edition, only 3.3 V, easy to explain. Simulated; rev A carries both, selected by 0 Ω. Section 8.2 of this page |
+| D24 | Which watchdog? | **A capacitor watchdog from basic parts** instead of the 74LVC1G123: the software toggles the heartbeat at about 20 Hz while the control loop is healthy; each edge pumps a little charge into a capacitor through two diodes, and the capacitor holds the gates of the MOSFETs that let the pump signal and the relay supply through. Heartbeat stops (or is stuck, too slow or too fast) → the capacitor empties in about 5–14 s, which is fast enough: the watchdog only ever switches off, and nothing in a solar system turns dangerous within seconds → everything off. No single failed part leaves it on (two drain resistors in parallel, two coupling capacitors in series), and a readback on GPIO20 lets the self-test measure the timeout at every start. Timeout about 5–14 s, long on purpose: the watchdog only ever switches off. No fee, about €4 less for one on every edition, only 3.3 V, easy to explain. Simulated; rev A carries both, selected by 0 Ω. Section 8.2 of this page |
 
 ## 2. Pump driver chain: alternatives (D22)
 
@@ -272,7 +272,7 @@ keeps one chain and no jumpers):
 1. Both chains on the same board, switched by jumper, measured with the
    same pump and cable: high level at J2 and at the pump (3 mA and with
    the pump's maximum current), rise and fall time at 1000 Hz.
-2. Watchdog: with H3, the output must go to 0 V within ≈ 1–3 s after
+2. Watchdog: with H3, the output must go to 0 V within ≈ 5–14 s after
    the heartbeat stops, measured at J2 and seen by the output readback.
 3. Fail behaviour by hand: lift R33, R35, R37 one at a time (output
    must stay at 0 V); lift Q7 (output still stops, slower falling edge);
@@ -451,8 +451,8 @@ into 8.2.
    idle and under load; it must stay above 4.5 V. Check that the Pi
    reports no under-voltage (`vcgencmd get_throttled` returns `0x0`).
 4. Watchdog (D24): `WD_OK` low after boot, high while a test script
-   toggles the heartbeat at 20 Hz, low again within 1–3 s after it stops
-   (scope on C18, and the readback on GPIO 20). Then the window: 0.5 Hz
+   toggles the heartbeat at 20 Hz, low again within about 5–14 s after it
+   stops (scope on C18, and the readback on GPIO 20). Then the window: 0.5 Hz
    and 2 kHz must not hold it on. Then each fault from the table in 8.2
    by hand (lift R49, short C17, …). Last, the 74LVC1G123 (U3, R53)
    against it on the same board.
@@ -574,7 +574,7 @@ the capacitor empties and the MOSFETs switch off.
 GPIO24 ─R48 4.7 kΩ─●──┤├────────┤├──●──►|── D19 1N4148W ──●── WD_OK ──► gates of Q5, Q13, Q14 (AO3400A)
 (heartbeat 20 Hz)  │                │                     ├──────────┬──────────┐
                   ═══ C16           ▲ D20 1N4148W        ═══ C18    ▯ R49      ▯ R50
-                   │ 100 nF         │                     │ 2.2 µF  │ 2.2 MΩ   │ 2.2 MΩ
+                   │ 100 nF         │                     │ 10 µF   │ 2.2 MΩ   │ 2.2 MΩ
                   GND              GND                   GND       GND        GND
 
  Q14 (gate on WD_OK) ── drain: WD LED D3 with R5 to +3V3, R51 10 kΩ to +3V3, readback to GPIO20 (pin 38)
@@ -589,7 +589,12 @@ GPIO24 ─R48 4.7 kΩ─●──┤├────────┤├──●�
   or stuck low pumps nothing, and the DC level never reaches C18. The
   coupling capacitors are small compared with C18, so one slow edge adds
   little: a heartbeat that is too slow does not hold it on.
-- **C18 with R49 ∥ R50** sets the timeout (τ ≈ 2.4 s).
+- **C18 with R49 ∥ R50** sets the timeout (τ ≈ 11 s). Long on purpose:
+  the watchdog only ever switches **off**, so a few seconds more do not
+  matter (a hung controller does no harm within seconds; overheating
+  takes minutes), while a long time constant rides through Linux stalls
+  of several seconds, makes the MOSFET's threshold spread matter less,
+  and makes a single stray edge count for little.
 - **Q5** (pump chain, in series with the PWM switch Q4), **Q13** (relay
   supply switch, D23) and **Q14** (WD LED and readback) are AO3400A whose
   gates sit on `WD_OK`, the voltage on C18. Q5 and Q13 replace two MMBT3904 and their base
@@ -604,7 +609,7 @@ GPIO24 ─R48 4.7 kΩ─●──┤├────────┤├──●�
   not drive the heartbeat: it keeps running when the software hangs. At
   each start the self-test stops the heartbeat, measures how long the
   readback takes to go high (metric `costos_watchdog_timeout_seconds`)
-  and raises an alarm outside about 0.8–5 s.
+  and raises an alarm outside about 3–20 s.
 - **Bench override:** JP1 ties `WD_OK` to +3V3 through R52 10 kΩ (open
   by default).
 
@@ -613,16 +618,16 @@ threshold 0.65–1.45 V by the datasheet):
 
 | Heartbeat | `WD_OK` | Result |
 |---|---|---|
-| 20 Hz (normal) | 2.31–2.35 V | 🟢 on, MOSFETs fully switched |
-| 5 Hz / 200 Hz | 1.59–1.70 / 2.36 V | 🟢 on: the exact rate does not matter much |
-| 2 Hz / 1 Hz | 0.93–1.11 / 0.51–0.74 V | 🟡 in between: a MOSFET at the low end of its threshold range may conduct a little |
-| 0.5 Hz / 0.25 Hz (too slow) | 0.23–0.35 / 0.08–0.12 V | 🟢 off |
+| 20 Hz (normal) | 2.34 V | 🟢 on, MOSFETs fully switched |
+| 5 Hz / 200 Hz | 1.65–1.67 / 2.36 V | 🟢 on: the exact rate does not matter much |
+| 2 Hz / 1 Hz | 1.01–1.05 / 0.60–0.65 V | 🟡 in between: a MOSFET at the low end of its threshold range may conduct a little |
+| 0.5 Hz / 0.25 Hz (too slow) | 0.32–0.35 / 0.16–0.17 V | 🟢 off |
 | 2 kHz (too fast, a runaway loop) | 0.20 V | 🟢 off (without the filter: 2.56 V, held on) |
-| Stuck high or low (stops at t = 0) | below 1.45 V after 1.1 s, below 0.65 V after 3.1 s, 0.3 V after 4.9 s | 🟢 off within 1.1–3.1 s, depending on the MOSFET |
-| Linux stalls 0.5 s / 1.0 s | lowest 1.88 / 1.53 V | 🟢 stays on, no false trip |
-| Power-up | 0 V until the heartbeat starts, then on within about 0.3 s | 🟢 off while the Pi boots |
-| One drain resistor open | timeout 2.7–6.6 s | 🟢 still stops, slower |
-| One coupling capacitor shorted | 2.45 V, timeout 1.3–3.2 s | 🟢 works as before |
+| Stuck high or low (stops at t = 0) | below 1.45 V after 5 s, below 0.65 V after 14 s, 0.3 V after 22 s | 🟢 off within about 5–14 s, depending on the MOSFET |
+| Linux stalls 1 s / 3 s / 5 s | lowest 2.13 / 1.78 / 1.48 V | 🟢 stays on, no false trip |
+| Power-up | 0 V until the heartbeat starts, then on within about 2 s | 🟢 off while the Pi boots |
+| One drain resistor open | timeout 12–30 s | 🟢 still stops, slower |
+| One coupling capacitor shorted | 2.48 V, timeout 6–15 s | 🟢 works as before |
 
 **Why the capacitor watchdog and no longer the 74LVC1G123:**
 
@@ -637,9 +642,9 @@ threshold 0.65–1.45 V by the datasheet):
 | Stuck high / stuck low | 🟢 off | 🟢 off | 🟢 off |
 | Too slow | 🟡 accepted down to the timeout | 🟡 same | 🟢 0.5 Hz and slower: off |
 | Too fast (runaway loop toggling) | 🔴 accepted: every edge retriggers | 🔴 accepted | 🟢 rejected by the input filter (window watchdog) |
-| Timeout | 🟢 ≈ 3 s, set by one RC | 🟢 set by one RC | 🟡 1.1–3.1 s: depends on the MOSFET threshold; measured at every start |
+| Timeout | 🟢 ≈ 3 s, set by one RC | 🟢 set by one RC | 🟡 about 5–14 s: depends on the MOSFET threshold; long on purpose (it only switches off); measured at every start |
 | Switch-off | 🟢 sharp | 🟢 sharp | 🟡 over about 1–2 s while the gate passes the threshold; harmless for a pump signal and a relay |
-| Linux stall of 1 s | 🟢 no trip | 🟢 no trip | 🟢 no trip |
+| Linux stall | 🟡 up to about 1 s | 🟡 same | 🟢 up to about 5 s |
 | One part fails, watchdog stays on | 🔴 output stuck high | 🔴 output stuck high | 🟢 none (only Q5/Q13 themselves, as with any switch) |
 | Software sees its state | 🔴 only through the pump output | 🔴 same | 🟢 readback on GPIO20, timeout measured at every start |
 | Parts on the board | 🟢 1 chip + RC | 🔴 chip, PNP, 3–4 R/C | 🟡 12 small parts; Q5 and Q13 replace transistors already there |
@@ -653,7 +658,7 @@ threshold 0.65–1.45 V by the datasheet):
 | D20 (clamp) | 🟢 the coupling capacitors cannot recharge → off | 🟢 nothing pumped → off |
 | D19 (rectifier) | 🟢 off | 🟢 no rectification → off |
 | C18 (hold) | 🟡 gates follow the pulses: the pump signal is chopped at 20 Hz, the PWM output check raises an alarm | 🟢 off |
-| R49 or R50 (drain, in parallel) | 🟢 timeout about doubles; the start-up measurement raises an alarm | 🟢 off (cannot charge) |
+| R49 or R50 (drain, in parallel) | 🟢 timeout about doubles (12–30 s); the start-up measurement raises an alarm | 🟢 off (cannot charge) |
 | R48 (filter) | 🟢 off | 🟡 filter gone: fast toggling is accepted again; otherwise works |
 | Q14 (LED, readback) | 🟡 LED off, readback reads "off": the self-test raises an alarm | 🟡 LED on, readback reads "on": the self-test raises an alarm |
 | Q5 / Q13 | 🟢 pump or relays off | 🔴 that path is no longer gated, as with any switch; the other path still stops, and the self-test sees the pump output keep running |

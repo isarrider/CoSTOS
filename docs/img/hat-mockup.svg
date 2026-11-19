@@ -127,7 +127,7 @@
 <text class="ts" x="339.0" y="362.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">PWM and WD</text>
 <rect x="400" y="332" width="78" height="36" rx="3" fill="#151515" stroke="#3a3a3a" stroke-width="1"/>
 <text class="th" x="439.0" y="347.0" text-anchor="middle" style="font-size:12px;font-weight:500;fill:#ffffff">Watchdog</text>
-<text class="ts" x="439.0" y="362.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">capacitor, 1–3 s</text>
+<text class="ts" x="439.0" y="362.0" text-anchor="middle" style="font-size:11px;font-weight:400;fill:#bdbdbd">capacitor, ≈ 10 s</text>
 <polyline points="339,296 339,330" fill="none" stroke="#ffffff" stroke-width="1.3" opacity="0.9" marker-end="url(#fa)"/>
 <text class="ts" x="343" y="310" text-anchor="start" style="font-size:9px;font-weight:400;fill:#FFFFFF">PWM ← GPIO18</text>
 <polyline points="439,296 439,330" fill="none" stroke="#ffffff" stroke-width="1.3" opacity="0.9" marker-end="url(#fa)"/>

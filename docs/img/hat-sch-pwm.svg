@@ -43,7 +43,7 @@
 <circle cx="480" cy="150" r="3.5" fill="#222"/>
 <g transform="translate(480 150) rotate(90)"><path class="w" d="M0 0 H17"/><path class="w" d="M23 0 H40"/><path class="w" d="M17 -12 V12" style="stroke-width:2.5"/><path class="w" d="M23 -12 V12" style="stroke-width:2.5"/></g>
 <text x="496.0" y="168.0" class="r" text-anchor="start">C18</text>
-<text x="496.0" y="182.0" class="v" text-anchor="start">2.2 µF</text>
+<text x="496.0" y="182.0" class="v" text-anchor="start">10 µF</text>
 <path d="M480 190 V200 M468 200 H492 M472 205 H488 M476 210 H484" style="stroke:#2e7d32;stroke-width:2;fill:none"/>
 <circle cx="560" cy="150" r="3.5" fill="#222"/>
 <g transform="translate(560 150) rotate(90)"><path class="w" d="M0 0 H12"/><path class="w" d="M48 0 H60"/><rect class="b" x="12" y="-7" width="36" height="14"/></g>
@@ -91,8 +91,8 @@
 <text x="555" y="427" class="n" text-anchor="middle">B = HEARTBEAT, Q → R53 0 Ω → WD_OK</text>
 </g>
 <text x="20" y="462" class="n" text-anchor="start">Each heartbeat edge pumps charge through C17/C19 and D19 into C18; R49 ∥ R50 drain it</text>
-<text x="20" y="477" class="n" text-anchor="start">(τ ≈ 2.4 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about</text>
-<text x="20" y="492" class="n" text-anchor="start">1 kHz (R48/C16) → WD_OK below the MOSFET threshold within 1.1–3.1 s → pump and relays off.</text>
+<text x="20" y="477" class="n" text-anchor="start">(τ ≈ 11 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about</text>
+<text x="20" y="492" class="n" text-anchor="start">1 kHz (R48/C16) → WD_OK below the MOSFET threshold within about 5–14 s → pump and relays off.</text>
 <text x="20" y="507" class="n" text-anchor="start">No single failed part keeps WD_OK up (two R in parallel, two C in series).</text>
 <text x="20" y="522" class="n" text-anchor="start">WD_RB: never read C18 directly, a GPIO's boot pull-up or pull-down would move it.</text>
 <text x="20" y="537" class="n" text-anchor="start">JP1 forces WD_OK for bench tests (open by default).</text>

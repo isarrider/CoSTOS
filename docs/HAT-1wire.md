@@ -211,7 +211,7 @@ the 13 V TVS standoff at light load.
   continuously, the line must be low when 0 % is commanded and its duty
   (measured from edge timestamps, like the feedback input) must match the
   command; and at every start, a **watchdog self-test**: PWM set high,
-  heartbeat stopped, the line must drop to 0 V within about 5 s, and the
+  heartbeat stopped, the line must drop to 0 V within about 15 s, and the
   watchdog readback (4.6) gives the exact timeout. That catches a
   shorted transistor in the chain (or, on the prototype's fallback chain,
   a stuck driver or AND gate) directly, and a silently lost watchdog
@@ -314,14 +314,17 @@ reasoning, simulation and failure analysis are in
   supply (4.5, D23), Q14 drives the WD LED and the readback.
 - Heartbeat stopped, stuck high or low, slower than about 0.5 Hz, or
   faster than about 1 kHz (filter R48/C16, a program stuck in a loop):
-  C18 empties and the MOSFETs switch off within about 1–3 s.
+  C18 empties and the MOSFETs switch off within about 5–14 s. That is
+  long on purpose: the watchdog only ever switches off, and nothing in a
+  solar system turns dangerous within seconds, while the long time
+  constant rides through Linux stalls of several seconds.
 - After power-up C18 is empty until the software starts the heartbeat,
   so nothing runs while the Pi boots.
 - No single failed part keeps it on: the drain resistors are two in
   parallel, the coupling capacitors two in series.
 - **Readback on GPIO 20** (pin 38, through Q14, low = watchdog on): at
-  every start the self-test stops the heartbeat and measures the real timeout
-  (alarm outside about 0.8–5 s).
+  every start the self-test stops the heartbeat and measures the real
+  timeout (alarm outside about 3–20 s).
 - LED "WD", and jumper JP1 to force `WD_OK` for bench tests (clearly
   marked, open by default).
 - Built only from JLCPCB basic parts for a few cents; the 74LVC1G123 it
@@ -790,7 +793,7 @@ Regenerate with `python3 tools/hw/pwm_chain_svg.py > docs/img/hat-lite-pwm-chain
    before GPIO 18 is configured. 0 V means "pump stopped".
 3. **Two switches in a row:** Q4 (the PWM switch) and Q5 (the watchdog
    switch, driven by WD_OK, 4.6). Only when both are on is the output
-   switched on. If CoSTOS hangs, the watchdog opens Q5 within about 1–3 s.
+   switched on. If CoSTOS hangs, the watchdog opens Q5 within about 5–14 s.
 4. **Q6, the switch to the supply** (a PNP transistor), connects the
    output to the Pi's 5 V (through R26): ≈ 4.85 V.
 5. **Q7, the switch to ground**, pulls the terminal actively to 0 V

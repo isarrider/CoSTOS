@@ -423,7 +423,7 @@ def sheet_pwm(path):
     s.rail(440, 50, "+3V3")
     s.part("JP", 440, 50, "d", "JP1", "open", lab="r")
     s.part("R", 440, 90, "d", "R52", "10 kΩ", lab="r"); s.dot(440, 150)
-    s.dot(480, 150); s.part("C", 480, 150, "d", "C18", "2.2 µF", lab="r"); s.gnd(480, 190)
+    s.dot(480, 150); s.part("C", 480, 150, "d", "C18", "10 µF", lab="r"); s.gnd(480, 190)
     for x, ref in ((560, "R49"), (590, "R50")):
         s.dot(x, 150); s.part("R", x, 150, "d", ref, "", lab="-"); s.gnd(x, 210)
     s.text(606, 176, "R49 ∥ R50", "r"); s.text(606, 190, "2.2 MΩ each")
@@ -448,8 +448,8 @@ def sheet_pwm(path):
     s.end_nf()
     s.note(20, 462, [
         "Each heartbeat edge pumps charge through C17/C19 and D19 into C18; R49 ∥ R50 drain it",
-        "(τ ≈ 2.4 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about",
-        "1 kHz (R48/C16) → WD_OK below the MOSFET threshold within 1.1–3.1 s → pump and relays off.",
+        "(τ ≈ 11 s). Heartbeat stopped, stuck, slower than about 0.5 Hz or faster than about",
+        "1 kHz (R48/C16) → WD_OK below the MOSFET threshold within about 5–14 s → pump and relays off.",
         "No single failed part keeps WD_OK up (two R in parallel, two C in series).",
         "WD_RB: never read C18 directly, a GPIO's boot pull-up or pull-down would move it.",
         "JP1 forces WD_OK for bench tests (open by default).",
