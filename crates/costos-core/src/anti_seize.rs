@@ -36,11 +36,18 @@
 //! but the supervisor after it can still turn everything off, so a
 //! collector emergency or a failed sensor still wins.
 //!
+//! **Start profile.** Both runs reach 100 % the way the pump's start
+//! profile says ([`StartProfile`]): with *kick* at once, with *ramp* or
+//! *soft kick* in steps. The time at 100 % ([`AntiSeizeConfig::run`],
+//! [`AntiSeizeConfig::purge`]) counts from the first second at 100 %, so a
+//! ramp makes the run longer, never the time at full speed shorter.
+//!
 //! **What it never does.** It never stops a pump the control wants on, and
 //! it never lowers a request except back to the request itself when its
 //! own run ends.
 
 use crate::output::Duty;
+use crate::start_profile::{StartProfile, StartProfileError};
 use crate::time::{Seconds, TimeOfDay};
 
 /// Settings. A duration of zero switches that part off:
@@ -65,6 +72,9 @@ pub struct AntiSeizeConfig {
     pub purge_interval: Seconds,
     /// Length of the purge at 100 % at the start of a normal run. 0 = off.
     pub purge: Seconds,
+    /// How both runs get to 100 %: the pump's start profile, the same
+    /// setting the speed control uses for normal starts.
+    pub profile: StartProfile,
 }
 
 /// Why an [`AntiSeizeConfig`] is not valid.
@@ -77,6 +87,8 @@ pub enum AntiSeizeConfigError {
     /// window" would then need two comparisons and a wrap, and a run at
     /// night is exactly what the window is there to avoid.
     WindowCrossesMidnight,
+    /// The start profile is not valid.
+    Profile(StartProfileError),
 }
 
 impl AntiSeizeConfig {
@@ -95,10 +107,14 @@ impl AntiSeizeConfig {
         run: Seconds::new(10),
         purge_interval: Seconds::new(7 * 24 * 3600),
         purge: Seconds::new(60),
+        profile: StartProfile::Kick,
     };
 
     /// Checks the settings.
     pub fn validate(&self) -> Result<(), AntiSeizeConfigError> {
+        self.profile
+            .validate()
+            .map_err(AntiSeizeConfigError::Profile)?;
         // A switched-off anti-seize run needs no window.
         if self.run == Seconds::ZERO {
             return Ok(());
@@ -122,16 +138,57 @@ impl Default for AntiSeizeConfig {
     }
 }
 
+/// One run towards and at 100 % (anti-seize or purge).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Run {
+    /// First cycle of the run; the ramp counts from here.
+    since: Seconds,
+    /// The duty the ramp starts from: 0 % for an anti-seize run, the
+    /// request at the start for a purge.
+    from: Duty,
+    /// First cycle at 100 %, once reached; the time at full speed counts
+    /// from here.
+    full_since: Option<Seconds>,
+    /// How long to stay at 100 %.
+    hold: Seconds,
+}
+
+impl Run {
+    fn new(now: Seconds, from: Duty, hold: Seconds) -> Self {
+        Self {
+            since: now,
+            from,
+            full_since: None,
+            hold,
+        }
+    }
+
+    /// The duty for this cycle and the run as it continues, or `None` if
+    /// the run is over (it has held 100 % for `hold`).
+    fn advance(self, profile: &StartProfile, now: Seconds) -> Option<(Duty, Self)> {
+        if let Some(full) = self.full_since {
+            // Already at full speed: hold, then end.
+            return (now.saturating_since(full) < self.hold).then_some((Duty::FULL, self));
+        }
+        let duty = profile.towards_full(self.from, now.saturating_since(self.since));
+        let run = Self {
+            full_since: (duty == Duty::FULL).then_some(now),
+            ..self
+        };
+        Some((duty, run))
+    }
+}
+
 /// What this module is doing at the moment.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 enum Mode {
     /// Passing the request through unchanged.
     #[default]
     Pass,
-    /// Anti-seize run at 100 % until (not including) this time.
-    AntiSeize(Seconds),
-    /// Purge at 100 % until (not including) this time.
-    Purge(Seconds),
+    /// Anti-seize run.
+    AntiSeize(Run),
+    /// Purge at the start of a normal run.
+    Purge(Run),
 }
 
 /// State carried from one cycle to the next.
@@ -161,9 +218,9 @@ pub struct AntiSeizeState {
 pub enum AntiSeizeStatus {
     /// The request passes unchanged.
     Pass,
-    /// Anti-seize run at 100 %.
+    /// Anti-seize run: ramping up to or holding 100 %.
     AntiSeize,
-    /// Purge at 100 % at the start of a normal run.
+    /// Purge at the start of a normal run: ramping up to or holding 100 %.
     Purge,
 }
 
@@ -193,48 +250,59 @@ pub fn step(
     requested: Duty,
 ) -> (AntiSeizeState, Duty, AntiSeizeStatus) {
     let requested_on = !requested.is_off();
+    let profile = &config.profile;
 
-    let mode = if requested_on {
+    let (mode, output, status) = if requested_on {
         // The control wants the pump on: a normal run.
         let starting = !state.was_requested;
-        match state.mode {
-            // A purge that is already running continues until its end.
-            Mode::Purge(until) if now < until => Mode::Purge(until),
-            // A normal start, purge switched on and due: purge now. Only at
-            // a start, so a long run that never reaches 100 % isn't
-            // interrupted by a sudden jump to full speed.
+        let purge = match state.mode {
+            // A purge that is already running continues until it has held
+            // 100 % long enough.
+            Mode::Purge(run) => run.advance(profile, now),
+            // A normal start, purge switched on and due: start one, ramping
+            // from the request. Only at a start, so a long run that never
+            // reaches 100 % isn't interrupted by a sudden jump.
             _ if starting
                 && config.purge != Seconds::ZERO
                 && due(now, state.last_full, config.purge_interval) =>
             {
-                Mode::Purge(now.saturating_add(config.purge))
+                Run::new(now, requested, config.purge).advance(profile, now)
             }
             // Otherwise, including an anti-seize run that is interrupted by
             // a real request (the request takes over; the pump runs anyway).
-            _ => Mode::Pass,
+            _ => None,
+        };
+        match purge {
+            // Never below the request: if the control asks for more than
+            // the ramp has reached, the control wins.
+            Some((duty, run)) => (
+                Mode::Purge(run),
+                duty.max(requested),
+                AntiSeizeStatus::Purge,
+            ),
+            None => (Mode::Pass, requested, AntiSeizeStatus::Pass),
         }
     } else {
-        // The control wants the pump off.
-        match state.mode {
+        // The control wants the pump off. A purge that was running ends
+        // here: it only ever changes the speed of a normal run, never its
+        // length.
+        let anti_seize = match state.mode {
             // An anti-seize run that has started runs to its end.
-            Mode::AntiSeize(until) if now < until => Mode::AntiSeize(until),
-            // Due and inside the midday window: start one. A purge that was
-            // running ends here: it only ever extends a normal run.
+            Mode::AntiSeize(run) => run.advance(profile, now),
+            // Due and inside the midday window: start one, from standstill.
             _ if config.run != Seconds::ZERO
                 && due(now, state.last_run, config.idle_limit)
                 && time_of_day >= config.start
                 && time_of_day.saturating_since(config.start) < config.window =>
             {
-                Mode::AntiSeize(now.saturating_add(config.run))
+                Run::new(now, Duty::OFF, config.run).advance(profile, now)
             }
-            _ => Mode::Pass,
+            _ => None,
+        };
+        match anti_seize {
+            Some((duty, run)) => (Mode::AntiSeize(run), duty, AntiSeizeStatus::AntiSeize),
+            None => (Mode::Pass, requested, AntiSeizeStatus::Pass),
         }
-    };
-
-    let (output, status) = match mode {
-        Mode::Pass => (requested, AntiSeizeStatus::Pass),
-        Mode::AntiSeize(_) => (Duty::FULL, AntiSeizeStatus::AntiSeize),
-        Mode::Purge(_) => (Duty::FULL, AntiSeizeStatus::Purge),
     };
 
     // Bookkeeping from the *output*: an anti-seize run counts as a run and
@@ -291,6 +359,16 @@ mod tests {
             out.push((t, d, st));
         }
         (state, out)
+    }
+
+    /// One step at time `t` with the matching time of day.
+    fn step_fn(
+        cfg: &AntiSeizeConfig,
+        state: AntiSeizeState,
+        t: u64,
+        requested: Duty,
+    ) -> (AntiSeizeState, Duty, AntiSeizeStatus) {
+        step(cfg, state, Seconds::new(t), tod(t), requested)
     }
 
     /// A state in which the pump ran at 100 % at time `t`, so neither job
@@ -451,7 +529,87 @@ mod tests {
         assert!(out.iter().all(|(_, d, _)| d.is_off()));
     }
 
+    /// With a ramp profile the anti-seize run climbs from 0 in steps of
+    /// 10 %, then holds 100 % for the full 10 s: 9 ramp seconds below
+    /// 100 % plus 10 at 100 %.
+    #[test]
+    fn anti_seize_ramps_with_a_ramp_profile() {
+        let cfg = AntiSeizeConfig {
+            profile: StartProfile::Ramp {
+                percent_per_second: 10,
+            },
+            ..AntiSeizeConfig::DEFAULT
+        };
+        let noon = 2 * DAY + 12 * 3600;
+        let (_, out) = run(&cfg, ran_full_at(0), noon, noon + 60, Duty::OFF);
+        let duties: Vec<u8> = out
+            .iter()
+            .map(|(_, d, _)| d.percent())
+            .filter(|p| *p > 0)
+            .collect();
+        assert_eq!(&duties[..9], &[10, 20, 30, 40, 50, 60, 70, 80, 90]);
+        assert_eq!(duties.iter().filter(|p| **p == 100).count(), 10);
+        assert_eq!(duties.len(), 19);
+    }
+
+    /// Soft kick ramps the purge from the request (here 30 %) up to 100 %,
+    /// holds 60 s, then hands back to the request.
+    #[test]
+    fn purge_ramps_from_the_request_with_soft_kick() {
+        let cfg = AntiSeizeConfig {
+            profile: StartProfile::SoftKick {
+                percent_per_second: 10,
+            },
+            ..AntiSeizeConfig::DEFAULT
+        };
+        let low = Duty::new(30).unwrap();
+        let (_, out) = run(&cfg, AntiSeizeState::default(), 1000, 1200, low);
+        let duties: Vec<u8> = out.iter().map(|(_, d, _)| d.percent()).collect();
+        assert_eq!(&duties[..7], &[40, 50, 60, 70, 80, 90, 100]);
+        assert_eq!(duties.iter().filter(|p| **p == 100).count(), 60);
+        assert_eq!(duties[66], 30);
+        assert!(out[66].2 == AntiSeizeStatus::Pass);
+    }
+
+    /// An invalid profile is caught by the config check.
+    #[test]
+    fn invalid_profile_is_rejected() {
+        let cfg = AntiSeizeConfig {
+            profile: StartProfile::Ramp {
+                percent_per_second: 0,
+            },
+            ..AntiSeizeConfig::DEFAULT
+        };
+        assert_eq!(
+            cfg.validate(),
+            Err(AntiSeizeConfigError::Profile(
+                StartProfileError::StepOutOfRange
+            ))
+        );
+    }
+
     proptest! {
+        /// With a ramp profile the output is never below the request and
+        /// never above 100 %: a ramp only ever adds speed.
+        #[test]
+        fn ramp_never_goes_below_the_request(
+            requests in proptest::collection::vec(0_u8..=100, 1..300),
+            step in 1_u8..=100,
+        ) {
+            let cfg = AntiSeizeConfig {
+                profile: StartProfile::Ramp { percent_per_second: step },
+                ..AntiSeizeConfig::DEFAULT
+            };
+            let mut state = AntiSeizeState::default();
+            for (i, r) in requests.iter().enumerate() {
+                let t = 40_000 + u64::try_from(i).unwrap();
+                let req = Duty::new(*r).unwrap();
+                let (s, d, _) = step_fn(&cfg, state, t, req);
+                state = s;
+                prop_assert!(d >= req);
+            }
+        }
+
         /// Whatever happens, the output is the request or 100 %: the
         /// module never lowers a request and never invents a speed.
         #[test]
