@@ -605,6 +605,7 @@ costos/
 ├─ crates/
 │  ├─ costos-core/       # control logic: pure, no I/O, no async, no clock (time is an input)
 │  ├─ costos-safety/     # safety supervisor: pure, can only reduce outputs
+│  ├─ costos-replay/     # PC tool: replays recorded BX days (tests/replay) through the core, lists differences (8.1)
 │  ├─ costos-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
 │  ├─ costos-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; LTC2983, MAX31865, DS18x20, DS2482 drivers
 │  ├─ costos-sim/        # thermal model of collector + store, used for tests and dry runs
@@ -612,6 +613,7 @@ costos/
 │  ├─ costos-web/        # web interface: server-rendered pages (maud), htmx handlers, SSE streams
 │  └─ costosd/           # daemon: scheduler, tasks, HTTP API, MQTT, VictoriaMetrics push + buffer, systemd
 ├─ assets/               # vendored htmx, htmx SSE extension, uPlot, CSS, icons (embedded in the binary)
+├─ tests/replay/        # recorded BX Plus days, the replay test data (8.1)
 └─ docs/
 ```
 
@@ -689,7 +691,7 @@ config:
 
 | Function | Behaviour |
 |---|---|
-| **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. **Collector minimum temperature** (optional, default on, 10 °C as on the BX Plus): no start below it, even when ΔT is met. The control loop uses a lightly smoothed ΔT (moving average over a few samples, as DiSoCon2 does) so single noisy readings don't toggle the pump; raw values still go to VictoriaMetrics. |
+| **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. **Collector minimum temperature** (optional, default on, 10 °C as on the BX Plus): no start below it, even when ΔT is met. The control loop uses a lightly smoothed ΔT (moving average over a few samples, as DiSoCon2 does) so single noisy readings don't toggle the pump; raw values still go to VictoriaMetrics. **Flow/return switch-off** (optional, as the BX Plus "flow sensor / return sensor" option): with a solar flow and return sensor, a running pump stops only once flow − return has fallen to ΔT_off as well, so it keeps running while the loop still carries heat into the store (8.1). A fault on flow or return only drops this extra condition and raises an alarm; the control then falls back to the plain collector difference, which stops earlier, never later. |
 | **Speed control** | While on, a PI controller drives the PWM duty to keep ΔT around a setpoint (for example 10 K), between min and max speed. **Start profile** per output: *kick* (default: 100 % for a short purge, then control) or *ramp* (soft start from minimum speed in steps of, say, 10 %/s, as DiSoCon2 does), for pumps or hydraulics that dislike a hard start. Optional **BX-compatible mode**: speed steps up or down by one step each time ΔT moves by the "rise value" (BX Plus default 2 K) around the setpoint, so shadow mode can compare like with like. |
 | **Anti-seize run and full-speed purge** | Two parts, both configurable. **Anti-seize:** if a pump has been idle for more than 24 h, it runs for 10 s at 100 %, started at midday (12:00 local time, never at night). This replaces the BX Plus "blocking protection" (daily at 12:00 for 10 s, skipped if the pump already ran that day), which in 147 days of replay data ran only 4 times. **Full-speed purge:** with speed control a pump rarely reaches 100 %, which is what flushes air and deposits out. If a pump hasn't been at 100 % for 7 days, its next normal start begins with 60 s at 100 % (the *kick* start profile, extended). It only happens while there is solar gain anyway, so it costs no heat; a timed weekly 100 % run was rejected because in winter it would move store heat out to the cold collector. |
 | **Store maximum** | Stops loading at T(store) ≥ T_max. Emergency stop at the hard limit (enforced by the supervisor as well). |
@@ -1083,8 +1085,9 @@ analysed once; six days are kept in the repository as test data.
 Comment lines start with `#` and say why the day was picked. Columns:
 `unix_s,s1,s2,s3,s4,s5,relay`, temperatures in °C with one decimal, relay in
 percent. A row is written whenever a value changes, and at least once every
-60 s; so rows more than 60 s apart are a **recording gap**, not a quiet
-period.
+60 s. The raw samples are sometimes up to about 90 s apart (a few skipped
+telegrams), so only rows more than **120 s** apart count as a **recording
+gap**; none of the kept days has one.
 
 | Day | Why it is kept |
 |---|---|
@@ -1092,8 +1095,9 @@ period.
 | 2026-07-13 | Hottest day: collector 91.3 °C, store top 83.0 °C |
 | 2026-08-03 | Morning cycling: short runs that end at S1 − S2 = 2 K |
 | 2026-08-17 | Most starts in one day (7) |
-| 2026-09-16 | Most recording gaps (4) |
-| 2026-11-14 | Cold: collector down to −2.1 °C, no pump run |
+| 2026-09-16 | Irregular sampling: four raw sample intervals of 60–75 s |
+| 2026-11-06 | No pump run: collector never above 12.5 °C |
+| 2026-11-14 | Cold night (collector −2.1 °C), then 4.6 h of winter sun with 2 starts |
 
 **What the data shows.**
 
@@ -1106,17 +1110,48 @@ period.
 | 🟡 25 mismatches longer than 1 min | Mostly the BX stopping at S1 − S2 = 2 K while S4 − S5 was still 2.4–4.9 K, and a few starts the sample rate missed | The rule above is close, not exact; replay reports these as differences to look at, not as failures |
 | 🟢 Four 10–15 s runs at about 14:57 | On 07-01, 07-07, 07-08, 07-26, days with no earlier run | The BX Plus blocking protection (anti-seize run, manual default 12:00, 10 s). The BX clock is known to be off, which explains the time. Replay compares in Unix time and ignores the BX clock; CoSTOS takes its time from NTP and uses its own anti-seize logic (6.2), so replay lists runs shorter than 30 s separately instead of as differences |
 | 🟡 **No stagnation** in the record | Collector maximum 91.3 °C, store top maximum 83.0 °C | Emergency shutdown and store maximum can't be checked by replay; they stay with unit and simulation tests |
-| 🟢 17 days without a pump run | Autumn and November | Cold-collector and sensor-range behaviour gets real data |
+| 🟢 17 days without a pump run | Autumn and November; there is no recording gap over 120 s in the whole export | Cold-collector and sensor-range behaviour gets real data. Gap handling is tested with made-up data |
 
 **What counts as "decided differently".** The replay tool steps the core
 with the recorded S1 and S2 (and S4/S5 once the second off condition
 exists), compares `pump_on` with `relay > 0` and lists every stretch where
 they differ, with its start, length and the temperatures at its start.
-Differences shorter than one sample interval (5 s) are not listed: the
-recording can't place a switch event more precisely than that. A recording
-gap ends the comparison and restarts it after the gap with a fresh state,
+Differences shorter than 6 s (about one sample interval) are not listed:
+the recording can't place a switch event more precisely than that. BX relay
+runs shorter than 30 s are its anti-seize run; they are listed separately
+and not compared. A recording gap ends the comparison and restarts it after the gap with a fresh state,
 because CoSTOS would have seen stale sensors there (section 5.1) and the
 recording doesn't show what the BX did.
+
+**The replay tool** is the crate `costos-replay`:
+
+```
+cargo run -p costos-replay -- tests/replay/*.csv
+cargo run -p costos-replay -- --no-flow-return tests/replay/2026-07-09.csv
+```
+
+Results with the BX settings (ΔT_on 5 K, ΔT_off 2 K, collector minimum
+10 °C, no minimum run time, flow/return switch-off on S4/S5), November 2026:
+
+| Day | Agreement | Pump on BX / CoSTOS | Starts BX / CoSTOS | Differences of 6 s or more |
+|---|---|---|---|---|
+| 2026-07-09 | 99.99 % | 9.5 h / 9.5 h | 1 / 1 | none |
+| 2026-07-13 | 99.99 % | 7.6 h / 7.6 h | 1 / 1 | none |
+| 2026-08-03 | 99.98 % | 8.0 h / 8.0 h | 2 / 2 | none |
+| 2026-08-17 | 99.49 % | 1.7 h / 1.8 h | 6 / 5 | 🟡 406 s: the BX stopped at S1 − S2 = 1.9 K although S4 − S5 was still 4.9 K; CoSTOS ran on |
+| 2026-09-16 | 99.99 % | 1.8 h / 1.8 h | 1 / 1 | none |
+| 2026-11-06 | 100 % | 0 / 0 | 0 / 0 | none |
+| 2026-11-14 | 99.97 % | 4.6 h / 4.6 h | 2 / 1 | 🟢 14 s: the BX paused briefly, CoSTOS didn't |
+| **Total** | **99.92 %** | **33.2 h / 33.3 h** | **13 / 11** | |
+
+Without the flow/return switch-off, 2026-07-09 drops to 96.9 % and CoSTOS
+stops about 40 minutes before the BX. The 08-17 case is the only open
+detail: the BX sometimes stops on the collector difference alone while the
+loop is still 2–5 K warm (25 such stretches in 147 days, section 8.1
+above). Possibly a BX condition we don't know; it costs at most a few
+minutes of pumping either way. The replay tests in `costos-replay` keep
+every day at 99 % or more, so a change to the ΔT control that breaks this
+has to explain why.
 
 ---
 
@@ -1158,7 +1193,10 @@ come first.
 
 1. `costos-core` + `costos-safety` with ΔT control, speed control, store max
    and collector emergency shutdown. Tests and a replay tool for vbus2influx
-   data.
+   data. *Done so far:* basic types, ΔT control with the flow/return
+   switch-off, anti-seize run and full-speed purge, safety supervisor,
+   replay tool with seven recorded days. *Open:* speed control, store
+   maximum.
 2. `costos-sim` and simulation tests in CI.
 3. HAL + Linux backend: LTC2983, MAX31865, 1-Wire, GPIO outputs, PWM, watchdog. Bench setup.
 4. `costosd` + `costos-config`: scheduler, systemd, config store with
