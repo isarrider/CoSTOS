@@ -1,8 +1,8 @@
 # CoSTOS replay data, 2026-09-16 (local day, Europe/Berlin)
-# why this day: most gaps in the recording (4)
+# why this day: irregular sampling: four sample intervals of 60-75 s, still no real recording gap
 # source: vbus2influx -> VictoriaMetrics, RESOL DeltaSol BX Plus, ~5 s samples
 # a row is written only when a value changes; hold the previous row until the next one
-# at least one row per 60 s is written, so rows more than 60 s apart mark a recording gap (see docs/ARCHITECTURE.md 8.1)
+# at least one row per 60 s is written (raw samples can be up to ~90 s apart), so rows more than 120 s apart mark a recording gap (see docs/ARCHITECTURE.md 8.1)
 # columns: unix time [s], S1 collector, S2 store bottom, S3 store top, S4 solar flow, S5 solar return [deg C], relay_01 solar pump [%]
 unix_s,s1,s2,s3,s4,s5,relay
 1789509601,20.9,57.9,60.0,25.2,23.9,0

@@ -2,7 +2,7 @@
 # why this day: sunny, one long run; pump keeps running ~36 min after S1-S2 < 2 K (S4-S5 still > 2 K)
 # source: vbus2influx -> VictoriaMetrics, RESOL DeltaSol BX Plus, ~5 s samples
 # a row is written only when a value changes; hold the previous row until the next one
-# at least one row per 60 s is written, so rows more than 60 s apart mark a recording gap (see docs/ARCHITECTURE.md 8.1)
+# at least one row per 60 s is written (raw samples can be up to ~90 s apart), so rows more than 120 s apart mark a recording gap (see docs/ARCHITECTURE.md 8.1)
 # columns: unix time [s], S1 collector, S2 store bottom, S3 store top, S4 solar flow, S5 solar return [deg C], relay_01 solar pump [%]
 unix_s,s1,s2,s3,s4,s5,relay
 1783548002,24.0,55.2,58.2,27.3,26.2,0

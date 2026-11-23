@@ -1,8 +1,8 @@
 # CoSTOS replay data, 2026-11-14 (local day, Europe/Berlin)
-# why this day: cold day: collector down to -2.1 C, no pump run
+# why this day: cold night: collector down to -2.1 C, then 4.6 h of winter sun with 2 starts
 # source: vbus2influx -> VictoriaMetrics, RESOL DeltaSol BX Plus, ~5 s samples
 # a row is written only when a value changes; hold the previous row until the next one
-# at least one row per 60 s is written, so rows more than 60 s apart mark a recording gap (see docs/ARCHITECTURE.md 8.1)
+# at least one row per 60 s is written (raw samples can be up to ~90 s apart), so rows more than 120 s apart mark a recording gap (see docs/ARCHITECTURE.md 8.1)
 # columns: unix time [s], S1 collector, S2 store bottom, S3 store top, S4 solar flow, S5 solar return [deg C], relay_01 solar pump [%]
 unix_s,s1,s2,s3,s4,s5,relay
 1794610803,1.7,25.0,25.3,19.2,18.7,0
