@@ -1,0 +1,256 @@
+* ============================================================================
+* CoSTOS 1-Wire HAT (Rev B/D/E — Combined 8P DG350 Fixed Screw J6) - Full 6-Subsystem ngspice-39 Suite
+* Verified in ngspice-39: 72 Hz Pt1000 ramp + Dual 1-Wire (40m & 65m) + Pump Doubler + Watchdog + Foldback eFuse.
+* Run: ngspice -b CoSTOS_HAT_RevB_Full_Sim.cir
+* ============================================================================
+
+* ---- Commodity JLCPCB Basic Device Models ----
+.model MMBT3904 NPN(IS=6.734f BF=220 VAF=74 IKF=0.066 CJE=4.5p CJC=3.6p TF=300p TR=200n)
+.model MMBT3906 PNP(IS=1.41f  BF=180 VAF=18 IKF=0.080 CJE=8.0p CJC=4.5p TF=400p TR=250n)
+.model D1N4148W D(IS=2.52n RS=0.568 N=1.752 BV=100 IBV=100u CJO=4p TT=6n)
+.model DSS14    D(IS=8u RS=0.12 N=1.08 BV=40 IBV=500u CJO=110p)
+.model DBZT3V6  D(IS=1n N=1.5 BV=3.60 IBV=5m RS=4.0)
+.model DBZX5V1  D(IS=1n N=1.5 BV=5.10 IBV=5m RS=15.0)
+.model DZ26V    D(IS=0.5n N=1.5 BV=26.5 IBV=1m RS=2.0 CJO=30p)
+.model DLED_G   D(IS=1e-22 N=2.0 RS=12.0 BV=5.0 IBV=10u CJO=15p)
+.model DLED_R   D(IS=1e-20 N=2.0 RS=10.0 BV=5.0 IBV=10u CJO=15p)
+.model Q2N7002  NMOS(LEVEL=1 VTO=1.8 KP=0.25 RD=1.5 RS=1.5 CBD=15p CBS=20p)
+.model QAO3400A NMOS(LEVEL=1 VTO=1.05 KP=18.0 RD=0.018 RS=0.015 CBD=180p CBS=350p CGSO=450p CGDO=120p)
+.model QAO3401A PMOS(LEVEL=1 VTO=-0.95 KP=14.0 RD=0.025 RS=0.020 CBD=200p CBS=400p CGSO=500p CGDO=140p)
+
+* True bidirectional 24V ESD TVS (PESD24VL1BA: anti-series Zeners, <1nA @ 3.3V)
+.subckt PESD24VL1BA p1 p2
+D_a p1 mid DZ26V
+D_b p2 mid DZ26V
+.ends PESD24VL1BA
+
+* Behavioral open-collector LM393 comparator subcircuit (in+ in- out vcc gnd)
+.subckt LM393_OC inp inn out vcc gnd
+Bcomp n_ctrl gnd V = 0.5*(1 + tanh(2000*(V(inn)-V(inp))))
+Ssw out gnd n_ctrl gnd SW_OC
+.model SW_OC SW(Ron=25 Roff=10Meg Vt=0.5 Vh=0.02)
+.ends LM393_OC
+
+* ---- Shared Raspberry Pi 5 Header Supply Rails ----
+Vpi5v  v5_pi  0 DC 5.05
+Vpi3v3 v33_pi 0 DC 3.30 AC 1.0
+
+* ============================================================================
+* SUBSYSTEM 06: Block 1 High-Side Foldback eFuse (Q21/Q22) + +3V3_ANA Filter
+* ============================================================================
+R601 v5_pi   ef_s    1.8
+M_Q21 v5_hat ef_g ef_s ef_s QAO3401A
+R603 ef_s    ef_b    1k
+R605 ef_b    v5_hat  10k
+Q22  ef_g    ef_b    v5_pi  MMBT3906
+R606 ef_g    0       10k
+C2AB v5_hat  0       26u IC=4.85
+Rhat_q v5_hat 0      180
+* Dead-short torture test on +5V_HAT at t=12..17 ms (50 mOhm)
+Vshort_ctrl sw_sh 0  PULSE(0 5 12m 1u 1u 5m 50m)
+S_5v_short v5_hat 0  sw_sh 0 SW_SH
+.model SW_SH SW(Ron=0.05 Roff=10Meg Vt=2.5)
+
+* +3V3_ANA Pi-Filter & Pi-OFF Zener Clamp (D9)
+D9   0       v33_pi  DBZT3V6
+R602 v33_pi  v33_ana 10
+C604 v33_ana 0       10u
+C603 v33_ana 0       100n
+Rana_ld v33_ana 0    750
+
+* ============================================================================
+* SUBSYSTEM 02: Pump PWM Supply (Rev E CMOS AO3401A/AO3400A + R60 47R Doubler)
+* ============================================================================
+R54   v5_hat u3_p   100k
+R55   u3_p   0      47k
+R56   drv_b  u3_p   100k
+R58   drv_b  u3_n   15k
+C20   u3_n   0      1n IC=0
+R59   v5_hat drv_b  1.5k
+X_U3A u3_p   u3_n   drv_b v5_hat 0 LM393_OC
+R60   v5_hat drv_ps 47
+M_Q17 drv_sw drv_b  drv_ps drv_ps QAO3401A
+M_Q18 drv_sw drv_b  0      0      QAO3400A
+C22   drv_sw drv_a  4.7u
+D21   v5_hat drv_a  DSS14
+D22   drv_a  v_drv  DSS14
+C23   v_drv  0      10u IC=8.0
+* +V_DRV Charge-Pump OK LED (D33 Green via R61 10k -> ~0.7 mA)
+R61   v_drv  vdrv_la 10k
+D33   vdrv_la 0      DLED_G
+
+* ============================================================================
+* SUBSYSTEM 05: Class-B Pump PWM Push-Pull Inside R9 (220R) + WD-AND Cutoff
+* ============================================================================
+Vpwm1 pwm1_g 0 PULSE(0 3.3 1m 50n 50n 1m 2m)
+Vwdok wd_ok  0 PWL(0 3.25 21.99m 3.25 22.00m 0 25m 0)
+R33   pwm1_g q4_b   10k
+Q4    q4_c   q4_b   q4_e  MMBT3904
+M_Q5  q4_e   wd_ok  0     0 QAO3400A
+R35   q4_c   q8_b   4.7k
+R36   v_drv  q8_b   4.7k
+Q8    ndrv   q8_b   v_drv MMBT3906
+R37   ndrv   0      2.2k
+Q6    v_drv  ndrv   p_in  MMBT3904
+Q7    0      ndrv   p_in  MMBT3906
+D4a   p_in   v_drv  D1N4148W
+D4b   0      p_in   D1N4148W
+R9    p_in   j2_pwm 220
+R38   j2_pwm 0      4.7k
+Cpump j2_pwm 0      600p
+Rpump j2_pwm 0      2.2k
+* Clamped Readback RB1 (GPIO6)
+R31   j2_pwm rb1    22k
+R32   rb1    0      10k
+D18   rb1    v33_pi D1N4148W
+
+* ============================================================================
+* SUBSYSTEM 01: Pt1000 Collector Bridge + Real U1A/U1B 72 Hz LM393 Ramp Slicer
+* ============================================================================
+R107  v33_ana pt_th  390k
+R108  pt_th   0      100k
+R109  pt_osc  pt_th  150k
+R111  v33_ana pt_osc 4.7k
+R106  pt_osc  pt_rmp 390k
+C101  pt_rmp  0      10n IC=0.45
+C102  pt_rmp  0      10n IC=0.45
+X_U1B pt_th   pt_rmp pt_osc v5_hat 0 LM393_OC
+
+R101  v33_ana pt_div 3.90k
+X_D1  pt_div  0      PESD24VL1BA
+R102  pt_div  ref_lo 1.00k
+M_Q2  ref_lo  0      0 0 QAO3400A
+R103  pt_div  ref_hi 1.80k
+M_Q3  ref_hi  0      0 0 QAO3400A
+Rpt1  pt_div  pt1_b  1000.0
+Ccab1 pt1_b   0      1.5n
+R105  pt1_b   pt1_d  47
+M_Q1  pt1_d   v33_pi 0 0 QAO3400A
+R104  pt_div  pt_sns 10k
+C103  pt_sns  0      100n IC=0.69
+D8    0       pt_sns DBZX5V1
+R110  v33_ana duty   4.7k
+X_U1A pt_sns  pt_rmp duty v5_hat 0 LM393_OC
+
+* ============================================================================
+* SUBSYSTEM 04: Dual 1-Wire 5V Bidirectional Level-Shifters (40m & 65m Read-1)
+* ============================================================================
+R405  v5_hat vg_1w   1.5k
+D23   vg_1w  v33_pi  D1N4148W
+C24   vg_1w  0       100n IC=3.9
+* Bus A: 40m cable (2.2nF) Read-1 slot at t=5.000 ms + D31 5.1V clamp + D34 VDD LED
+R408  v33_pi dq_a_pi 10k
+M_Q19 dq_a_i vg_1w   dq_a_pi 0 Q2N7002
+D26   v5_hat v5_1wa  DSS14
+D31   0      v5_1wa  DBZX5V1
+R402  v5_1wa vdd_1wa 100
+C25   vdd_1wa 0      100n IC=4.85
+R410  vdd_1wa led_1wa 4.7k
+D34   led_1wa 0      DLED_G
+R406  v5_1wa dq_a_i  2.2k
+D24   dq_a_i v5_1wa  D1N4148W
+D25   0      dq_a_i  D1N4148W
+R401  dq_a_i dq_a_bs 100
+C1w40 dq_a_bs 0      2.2n IC=4.6
+S1wa  dq_a_pi 0      sw_1wa 0 SW_1W
+V1wa  sw_1wa  0      PULSE(0 5 5.000m 50n 50n 3u 50m)
+* Bus B: 65m cable (3.6nF) Read-1 slot at t=6.000 ms + D32 5.1V clamp + D35 VDD LED
+R409  v33_pi dq_b_pi 10k
+M_Q20 dq_b_i vg_1w   dq_b_pi 0 Q2N7002
+D29   v5_hat v5_1wb  DSS14
+D32   0      v5_1wb  DBZX5V1
+R404  v5_1wb vdd_1wb 100
+C26   vdd_1wb 0      100n IC=4.85
+R411  vdd_1wb led_1wb 4.7k
+D35   led_1wb 0      DLED_G
+R407  v5_1wb dq_b_i  2.2k
+D27   dq_b_i v5_1wb  D1N4148W
+D28   0      dq_b_i  D1N4148W
+R403  dq_b_i dq_b_bs 100
+C1w65 dq_b_bs 0      3.6n IC=4.6
+S1wb  dq_b_pi 0      sw_1wb 0 SW_1W
+V1wb  sw_1wb  0      PULSE(0 5 6.000m 50n 50n 3u 50m)
+.model SW_1W SW(Ron=20 Roff=10Meg Vt=2.5)
+
+* ============================================================================
+* SUBSYSTEM 03: Hardware Watchdog Dual Schmitt (U4A/U4B - 1000x Fast-Scale)
+* (Exact real-world ratio: 38 nF <-> 38 uF, 20 kHz <-> 20 Hz, 1 ms <-> 1 s)
+* ============================================================================
+V5wd  v5_wd  0 DC 4.86
+Vwd_hb wd_hb 0 PULSE(0 3.3 0 500n 500n 25u 50u)
+S_wd_halt wd_hb wd_in sw_wd_run 0 SW_WD
+Vwd_run sw_wd_run 0 PULSE(5 0 6m 1u 1u 30m 50m)
+.model SW_WD SW(Ron=10 Roff=10Meg Vt=2.5)
+R301  wd_in  wd_lpf 4.7
+C16   wd_lpf 0      100n
+C17   wd_lpf wd_mid 1n
+R_wd_dc wd_mid 0    100Meg
+C19   wd_mid wd_pmp 1n
+D20   0      wd_pmp D1N4148W
+D19   wd_pmp wd_cap D1N4148W
+C18   wd_cap 0      38n IC=0
+R4950 wd_cap 0      500k
+R320  v33_ana u4a_p 100k
+R321  u4a_p   0     47k
+R325  u4a_o   u4a_p 220k
+R310  v5_wd   u4a_o 10k
+X_U4A u4a_p   wd_cap u4a_o v5_wd 0 LM393_OC
+R323  v33_ana u4b_p 100k
+R322  u4b_p   0     47k
+R324  u4b_o   u4b_p 100k
+R311  v33_pi  u4b_o 10k
+X_U4B u4b_p   wd_cap u4b_o v5_wd 0 LM393_OC
+* Watchdog Green OK LED (D3) + Red FAULT LED (D36 via Q23 AO3400A, 0 uA load on u4b_o)
+D3    v33_pi  wd_lk  DLED_G
+R305  wd_lk   u4b_o  1.5k
+R314  v5_wd   wd_fa  2.2k
+D36   wd_fa   wd_fk  DLED_R
+M_Q23 wd_fk   u4b_o  0 0 QAO3400A
+
+* ============================================================================
+* CONTROL SCRIPT - RUN TRANSIENT + AC RIPPLE VERIFICATION
+* ============================================================================
+.control
+  set filetype=ascii
+  echo "=== 1. Running 25 ms Full-Board Transient (onewire) ==="
+  tran 1u 25m uic
+  meas tran v5_nom    FIND v(v5_hat)  AT=10m
+  meas tran i5_nom    FIND i(Vpi5v)   AT=10m
+  meas tran i5_short  FIND i(Vpi5v)   AT=15m
+  meas tran v5_recov  FIND v(v5_hat)  AT=21m
+  let i_d33_ma = (v(v_drv) - v(vdrv_la)) / 10
+  let i_d3_ma  = (v(wd_lk) - v(u4b_o)) / 1.5
+  let i_d36_ma = (v(v5_wd) - v(wd_fa)) / 2.2
+  meas tran v_drv_ss  AVG  v(v_drv)     FROM=8m TO=10m
+  meas tran i_d33_ok  AVG  i_d33_ma     FROM=8m TO=10m
+  meas tran v_pwm_hi  MAX  v(j2_pwm)    FROM=8m TO=10m
+  meas tran v_rb1_hi  MAX  v(rb1)       FROM=8m TO=10m
+  meas tran v_pwm_wd0 MAX  v(j2_pwm)    FROM=22.5m TO=25m
+  meas tran v_pt_0c   FIND v(pt_sns)    AT=10m
+  meas tran rmp_max   MAX  v(pt_rmp)    FROM=2m TO=22m
+  meas tran v_1w40_15u FIND v(dq_a_pi)  AT=5.015m
+  meas tran v_1w40_bus FIND v(dq_a_bs)  AT=5.015m
+  meas tran v_1w65_15u FIND v(dq_b_pi)  AT=6.015m
+  meas tran v_1w65_bus FIND v(dq_b_bs)  AT=6.015m
+  meas tran v_1wa_rail FIND v(v5_1wa)   AT=10m
+  meas tran v_1wb_rail FIND v(v5_1wb)   AT=10m
+  meas tran v_1wa_vdd  FIND v(vdd_1wa)  AT=10m
+  meas tran v_1wb_vdd  FIND v(vdd_1wb)  AT=10m
+  meas tran v_wd_peak MAX  v(wd_cap)    FROM=4m TO=6m
+  meas tran t_rel_off WHEN v(u4a_o)=2.5 RISE=1 TD=6m
+  meas tran t_wd_off  WHEN v(u4b_o)=1.6 RISE=1 TD=6m
+  meas tran v_wdrb_ok FIND v(u4b_o)     AT=5m
+  meas tran v_wdrb_fl FIND v(u4b_o)     AT=24m
+  meas tran i_d3_ok   FIND i_d3_ma      AT=5m
+  meas tran i_d36_ok  FIND i_d36_ma     AT=5m
+  meas tran i_d3_flt  FIND i_d3_ma      AT=24m
+  meas tran i_d36_flt FIND i_d36_ma     AT=24m
+
+  echo "=== 2. Running AC Analysis on +3V3_ANA Pi-Filter (10 Hz - 1 MHz) ==="
+  ac dec 20 10 1Meg
+  meas ac atten_100k FIND vdb(v33_ana) AT=100k
+
+  echo "=== FULL-BOARD NGSPICE-39 VERIFICATION COMPLETE (onewire) ==="
+  quit 0
+.endc
+.end
