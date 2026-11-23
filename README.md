@@ -8,9 +8,10 @@ protect the store and the collector. It runs on a Linux single-board
 computer (Raspberry Pi 3, 4 or 5), is written in Rust, and is
 configured completely through a web interface.
 
-> **Status: planning.** There is no code yet, only the
-> [architecture draft](docs/ARCHITECTURE.md). Don't use this to control a
-> real system. When it is ready to be tested, this README will say so.
+> **Status: early development.** Milestone 1 has started: the control
+> core and the safety supervisor exist as tested Rust libraries, nothing
+> talks to hardware yet. Don't use this to control a real system. When it
+> is ready to be tested, this README will say so.
 
 ## Why
 
@@ -81,10 +82,28 @@ Mains wiring belongs in the hands of a qualified electrician.
   - [PT edition](docs/HAT-PT.md) (8 Pt1000 + one 1-Wire bus, for
     installations that keep their existing sensors).
 - [HAT development](docs/HAT-development.md): why the HAT is built this
-  way: decisions D1–D22, the alternatives that were dropped, the rev A
-  prototype and its bring-up and tests.
+  way: decisions D1–D25, the alternatives that were dropped, the
+  simulations, the rev A prototype and its bring-up and tests.
 - [Reference installation](docs/installation.md): the system CoSTOS is
   built to control first.
+
+## Code
+
+A Cargo workspace (layout: [ARCHITECTURE 6.1](docs/ARCHITECTURE.md#61-workspace-layout)).
+So far:
+
+| Crate | What it does | Status |
+|---|---|---|
+| `crates/costos-core` | Control logic, `no_std`: temperature, time, sensor and duty types (the rules of ARCHITECTURE 6.1), ΔT control with hysteresis, minimum run time, collector minimum and smoothing | 🟡 started |
+| `crates/costos-safety` | Safety supervisor, `no_std`: sensor unknown → off, collector and store emergency shutdown with hysteresis, minimum off time; can only reduce the request | 🟡 started |
+
+```sh
+cargo test --workspace                                   # unit and property tests
+cargo clippy --workspace --all-targets -- -D warnings    # lints as in CI
+```
+
+CI also builds both crates for a bare-metal RISC-V target, so they stay
+free of `std`.
 
 ## Related
 

@@ -1,6 +1,6 @@
 # CoSTOS architecture
 
-Status: **draft for discussion**. Nothing here is implemented yet.
+Status: **draft for discussion**. Implementation has started with milestone 1 (section 10): `costos-core` (types, ΔT control) and `costos-safety` (solar pump supervisor); everything else is still a plan.
 
 CoSTOS is an open-source controller for solar thermal systems. It runs on a
 Raspberry Pi 4 or 5 (a Pi 3 B / B+ should work too), is written in
