@@ -105,6 +105,13 @@ cargo clippy --workspace --all-targets -- -D warnings    # lints as in CI
 CI also builds both crates for a bare-metal RISC-V target, so they stay
 free of `std`.
 
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) first, whether you are a
+person or an AI assistant: the rules for the control and safety code
+(`no_std`, no panics, the supervisor only reduces), comments, tests,
+commits and docs.
+
 ## Related
 
 - [vbus2influx](https://github.com/isarrider/vbus2influx): reads a RESOL
