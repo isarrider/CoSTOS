@@ -15,28 +15,63 @@
 //!
 //! Speed control comes on top of this later; here the request is on or
 //! off.
+//!
+//! **How it fits together.** The daemon calls [`step`] once per second
+//! with the current readings and the state returned by the previous
+//! call. The result says whether the pump should run; the safety
+//! supervisor (`costos-safety`) then decides whether it may, and can only
+//! turn a "yes" into a "no". So this module is about *when solar heat is
+//! worth collecting*; protecting the system is the supervisor's job.
+//!
+//! **Behaviour as on the BX Plus.** On/off differences, the collector
+//! minimum and its 10 °C default follow the RESOL DeltaSol BX Plus, so
+//! the replay against recorded vbus2influx data (milestone 1) compares
+//! like with like.
 
 use crate::sensor::{Reading, SensorFault};
 use crate::temperature::{Celsius, Kelvin};
 use crate::time::Seconds;
 
 /// Number of control cycles (seconds) the ΔT is averaged over.
+///
+/// Five seconds is short against the minutes a collector takes to warm
+/// up or cool down, so it delays real changes by at most a few seconds,
+/// but long enough that a single noisy reading (a 1-Wire glitch that got
+/// through, an electrical spike on the Pt1000 cable) is diluted to a
+/// fifth. ARCHITECTURE 6.2: "a moving average over a few samples, as
+/// DiSoCon2 does".
 pub const SMOOTHING_SAMPLES: usize = 5;
 
 /// Settings of the ΔT control.
+///
+/// Validated by [`DeltaTConfig::validate`]; the config crate calls it
+/// before a setting is applied (ARCHITECTURE 7.3), so [`step`] can
+/// assume valid settings.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct DeltaTConfig {
-    /// Switch-on difference, collector minus store bottom.
+    /// Switch-on difference, collector minus store bottom, in K. Must be
+    /// above zero: a pump that starts at ΔT ≤ 0 would move heat from the
+    /// store to the collector.
     pub on: Kelvin,
-    /// Switch-off difference; must be below `on`.
+    /// Switch-off difference, in K; must be below `on`. The gap between
+    /// the two is the hysteresis that keeps the pump from toggling.
+    /// It may be zero or slightly negative (stop only once the collector
+    /// is no warmer than the store), but not above `on`.
     pub off: Kelvin,
-    /// Shortest time the pump runs once started.
+    /// Shortest time the pump runs once started. Protects the pump from
+    /// short cycles and gives the warm fluid in the collector time to
+    /// reach the store sensor: right after a start, cold fluid from the
+    /// pipes passes the collector sensor and ΔT drops for a while.
     pub min_run: Seconds,
-    /// No start while the collector is colder than this.
+    /// No start while the collector is colder than this; `None` disables
+    /// it. Without it, on a cold morning a collector at 8 °C above a
+    /// store at 0 °C (a store sensor in a cold cellar) would start the
+    /// pump for almost no usable heat.
     pub collector_min: Option<Celsius>,
 }
 
-/// Why a [`DeltaTConfig`] is not valid.
+/// Why a [`DeltaTConfig`] is not valid. Shown next to the field in the
+/// web interface (ARCHITECTURE 7.3).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DeltaTConfigError {
     /// The switch-on difference must be above zero.
@@ -46,8 +81,15 @@ pub enum DeltaTConfigError {
 }
 
 impl DeltaTConfig {
-    /// Defaults as in ARCHITECTURE 6.2: on at 6 K, off at 4 K, at least
-    /// 2 min run time, no start below a 10 °C collector.
+    /// Defaults: on at 6 K and off at 4 K (the examples in ARCHITECTURE
+    /// 6.2), at least 2 min run time, no start below a 10 °C collector
+    /// (the BX Plus default).
+    ///
+    /// The 2 min run time is a starting value, not from a manual: long
+    /// enough for the fluid to travel from the collector to the store in
+    /// a typical single-family loop, short enough not to pump for long
+    /// into a store that can't take more heat. To be checked against the
+    /// replay of the reference installation.
     pub const DEFAULT: Self = Self {
         on: Kelvin::from_const(6.0),
         off: Kelvin::from_const(4.0),
@@ -55,7 +97,9 @@ impl DeltaTConfig {
         collector_min: Some(Celsius::from_const(10.0)),
     };
 
-    /// Checks the settings.
+    /// Checks the settings. The order of the checks decides which error
+    /// is reported when several apply; `on` first, because `off` is
+    /// judged relative to it.
     pub fn validate(&self) -> Result<(), DeltaTConfigError> {
         if self.on <= Kelvin::from_const(0.0) {
             return Err(DeltaTConfigError::OnNotPositive);
@@ -74,12 +118,22 @@ impl Default for DeltaTConfig {
 }
 
 /// Moving mean over the last [`SMOOTHING_SAMPLES`] differences.
+///
+/// A fixed-size array, no heap (rule 1: the core may run without an
+/// allocator). `None` marks a slot that has not been filled since the
+/// last reset, so the mean right after a start or a sensor fault uses
+/// only the samples that exist instead of counting empty slots as 0 K.
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
 struct Window {
     samples: [Option<Kelvin>; SMOOTHING_SAMPLES],
 }
 
 impl Window {
+    /// Adds the newest sample and drops the oldest.
+    ///
+    /// Shifting the array instead of keeping a ring-buffer index avoids
+    /// index arithmetic altogether (rules 7 and 11: no wrap-around, no
+    /// out-of-range index). Five elements are nothing to shift.
     fn push(mut self, value: Kelvin) -> Self {
         self.samples.rotate_left(1);
         if let Some(last) = self.samples.last_mut() {
@@ -94,23 +148,37 @@ impl Window {
             .samples
             .iter()
             .flatten()
+            // `count` is a u8 with at most SMOOTHING_SAMPLES; saturating
+            // anyway, so the lint for unchecked arithmetic has nothing
+            // to find (rule 7).
             .fold((0.0_f32, 0_u8), |(sum, count), k| {
                 (sum + k.get(), count.saturating_add(1))
             });
         if count == 0 {
             None
         } else {
-            // The mean of valid differences is itself a valid difference.
+            // The mean of valid differences is itself a valid difference,
+            // so `Kelvin::new` can't fail here; it is checked anyway,
+            // because "can't fail" is exactly what NaN bugs rely on.
             Kelvin::new(sum / f32::from(count))
         }
     }
 }
 
 /// State carried from one control cycle to the next.
+///
+/// The daemon keeps it between calls; the core never stores anything
+/// itself (pure functions). The `Default` is "pump off, no history",
+/// which is also what a sensor fault resets it to.
+///
+/// Fields are private: only [`step`] may change them, so a caller can't
+/// e.g. pretend the pump has run long enough.
 #[derive(Clone, Copy, Debug, PartialEq, Default)]
 pub struct DeltaTState {
-    /// When the pump was started, while it runs.
+    /// When the pump was started, while it runs; `None` while off. The
+    /// minimum run time is measured from here.
     running_since: Option<Seconds>,
+    /// The last few differences for smoothing.
     window: Window,
 }
 
@@ -122,8 +190,12 @@ impl DeltaTState {
     }
 }
 
-/// Why the control decided as it did in this cycle. The daemon logs a
-/// change of status as an event (rule 3: no logging in the core).
+/// Why the control decided as it did in this cycle.
+///
+/// Returned every cycle, not only on changes; the daemon logs a *change*
+/// of status as an event and shows the current one in the web
+/// interface (rule 3: no logging in the core). That way "why is the pump
+/// off?" always has an answer.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum DeltaTStatus {
     /// Started in this cycle.
@@ -158,7 +230,17 @@ pub struct DeltaTOutput {
 /// One control cycle.
 ///
 /// `now` comes from the daemon (rule 2); `collector` and `store_bottom` are
-/// the current readings, already checked against their plausible ranges.
+/// the current readings, already checked against their plausible ranges
+/// ([`crate::sensor::PlausibleRange::check`]). `state` is what the
+/// previous call returned; the returned state goes into the next call.
+///
+/// The decision, in order:
+///
+/// 1. A sensor fault on either sensor → off at once, history cleared.
+/// 2. While running: keep running above `off`; at or below `off`, keep
+///    running until `min_run` is over, then stop.
+/// 3. While off: stay off below `on`; at or above `on`, start unless the
+///    collector is below `collector_min`.
 #[must_use]
 pub fn step(
     config: &DeltaTConfig,
@@ -167,8 +249,15 @@ pub fn step(
     collector: Reading,
     store_bottom: Reading,
 ) -> (DeltaTState, DeltaTOutput) {
+    // 1. Both readings must be valid. A fault never counts as cold or
+    //    warm (ARCHITECTURE 4.2): with an unknown temperature the ΔT is
+    //    unknown, so the pump stops, even during the minimum run time.
+    //    The history is cleared too, so the next valid readings start a
+    //    fresh mean instead of mixing values from before the fault.
     let (collector, store) = match (collector, store_bottom) {
         (Ok(c), Ok(s)) => (c, s),
+        // If both are faulty, the collector's fault is reported (it is
+        // matched first), which is the more important sensor.
         (Err(fault), _) | (_, Err(fault)) => {
             return (
                 DeltaTState::default(),
@@ -181,9 +270,12 @@ pub fn step(
         }
     };
 
+    // Smooth: add this cycle's ΔT and take the mean of the last few.
     let window = state.window.push(collector.minus(store));
     let Some(delta_t) = window.mean() else {
-        // Can't happen right after a push; treated as "unknown" anyway.
+        // Can't happen right after a push (the window holds at least the
+        // sample just added). Should it ever happen, the safe answer is
+        // the same as for a sensor fault: unknown → off.
         return (
             DeltaTState::default(),
             DeltaTOutput {
@@ -195,21 +287,35 @@ pub fn step(
     };
 
     let (running_since, status) = match state.running_since {
+        // 2. Pump running.
         Some(since) => {
+            // Still clearly warmer than the store: keep collecting. `>`
+            // and not `>=`, so reaching `off` exactly already counts as
+            // "off reached".
             if delta_t > config.off {
                 (Some(since), DeltaTStatus::Running)
+            // `off` reached, but the pump has not run long enough yet. Rule
+            // 17: `saturating_since` gives 0 if `since` lies in the future
+            // (restored state), so the minimum run time is then simply
+            // still running, never skipped by a wrap-around.
             } else if now.saturating_since(since) < config.min_run {
                 (Some(since), DeltaTStatus::HeldByMinRun)
             } else {
                 (None, DeltaTStatus::Stopped)
             }
         }
+        // 3. Pump off.
         None => {
+            // Not warm enough yet. `<`, so reaching `on` exactly starts.
             if delta_t < config.on {
                 (None, DeltaTStatus::Idle)
+            // Warm enough relative to the store, but the collector itself
+            // is too cold to be worth it (only checked before a start: a
+            // running pump is stopped by ΔT, as on the BX Plus).
             } else if config.collector_min.is_some_and(|min| collector < min) {
                 (None, DeltaTStatus::BelowCollectorMin)
             } else {
+                // Start, and remember when for the minimum run time.
                 (Some(now), DeltaTStatus::Started)
             }
         }
@@ -238,7 +344,9 @@ mod tests {
         Ok(Celsius::new(v).unwrap())
     }
 
-    /// Runs `seconds` cycles with constant readings, starting at `t0`.
+    /// Runs `seconds` cycles with constant readings, starting at `t0`,
+    /// one cycle per second as in the daemon. Returns the final state and
+    /// the output of the last cycle.
     fn run(
         config: &DeltaTConfig,
         mut state: DeltaTState,
@@ -256,11 +364,15 @@ mod tests {
         (state, out.unwrap())
     }
 
+    /// The shipped defaults must pass their own validation.
     #[test]
     fn defaults_are_valid() {
         assert_eq!(DeltaTConfig::DEFAULT.validate(), Ok(()));
     }
 
+    /// The two config mistakes `validate` exists for: no hysteresis
+    /// (off = on) and a switch-on difference that would pump heat out of
+    /// the store.
     #[test]
     fn invalid_settings_are_rejected() {
         let mut cfg = DeltaTConfig::DEFAULT;
@@ -270,6 +382,9 @@ mod tests {
         assert_eq!(cfg.validate(), Err(DeltaTConfigError::OnNotPositive));
     }
 
+    /// The normal day: the collector warms to 6 K above the store, the
+    /// pump starts; 5 K is inside the hysteresis band and keeps it
+    /// running; at 4 K, long after the minimum run time, it stops.
     #[test]
     fn starts_at_on_difference_and_stops_at_off_difference() {
         let cfg = DeltaTConfig::DEFAULT;
@@ -284,6 +399,8 @@ mod tests {
         assert!(!o.pump_on);
     }
 
+    /// Hysteresis works from below too: 5 K never starts the pump,
+    /// however long it lasts.
     #[test]
     fn does_not_start_inside_the_hysteresis_band() {
         let (_, o) = run(
@@ -297,6 +414,9 @@ mod tests {
         assert_eq!(o.status, DeltaTStatus::Idle);
     }
 
+    /// Right after a start, cold fluid from the pipes passes the
+    /// collector sensor and ΔT collapses. The minimum run time keeps the
+    /// pump on until 120 s, then lets it stop.
     #[test]
     fn minimum_run_time_holds_the_pump() {
         let cfg = DeltaTConfig::DEFAULT;
@@ -311,6 +431,8 @@ mod tests {
         assert!(!o.pump_on);
     }
 
+    /// A cold morning with the store sensor in a cold cellar: ΔT is met,
+    /// but an 8 °C collector isn't worth pumping.
     #[test]
     fn no_start_below_collector_minimum() {
         // Store at 0 °C, collector at 8 °C: ΔT 8 K, but below 10 °C.
@@ -326,6 +448,8 @@ mod tests {
         assert!(!o.pump_on);
     }
 
+    /// Smoothing: one spike that alone would exceed the switch-on value
+    /// is diluted by the mean and does not start the pump.
     #[test]
     fn single_noisy_reading_does_not_start_the_pump() {
         let cfg = DeltaTConfig::DEFAULT;
@@ -337,6 +461,8 @@ mod tests {
         assert!(!o.pump_on);
     }
 
+    /// ARCHITECTURE 4.2: a broken collector sensor stops the pump at once,
+    /// even inside the minimum run time, and clears the state.
     #[test]
     fn sensor_fault_stops_the_pump_at_once_even_during_min_run() {
         let cfg = DeltaTConfig::DEFAULT;
@@ -357,6 +483,8 @@ mod tests {
         assert!(!s.is_running());
     }
 
+    /// Rule 14: a strongly negative ΔT is just a number, not a
+    /// wrap-around that could look like a huge positive difference.
     #[test]
     fn frozen_collector_with_warm_store_stays_off() {
         // Rule 14: −20 °C collector, 45 °C store, ΔT −65 K.
@@ -372,6 +500,8 @@ mod tests {
         assert!(o.delta_t.unwrap() < Kelvin::from_const(-64.0));
     }
 
+    /// Rule 17: a restored state whose start time lies after "now" (clock
+    /// set back) neither panics nor ends the minimum run time early.
     #[test]
     fn time_going_backwards_does_not_panic_or_stop_early() {
         // Rule 17: a restored state with a start time in the future.
@@ -381,6 +511,8 @@ mod tests {
         assert_eq!(o.status, DeltaTStatus::HeldByMinRun);
     }
 
+    /// Rule 13: times near the end of `u64` behave like any other time,
+    /// so no counter limit is ever reached in practice.
     #[test]
     fn ten_years_of_cycles_near_the_end_of_u64() {
         let cfg = DeltaTConfig::DEFAULT;
