@@ -52,7 +52,7 @@ Section numbers in the decisions (4.1, 11.1, …) refer to
 | D23 | Can the relay supply switch and the watchdog be built from basic parts? | **Relay supply switch: yes**, an AO3401A P-MOSFET switched by an MMBT3904 from WD_OK (both JLCPCB basic parts) replaces the TPS22918: one loading fee less, ≈ €3 less for one controller on the 1-Wire and PT editions; it fails safe the same way. Watchdog: see D24. Section 8 of this page |
 | D24 | Which watchdog? | **A capacitor watchdog from basic parts** instead of the 74LVC1G123: the software toggles the heartbeat at about 20 Hz while the control loop is healthy; each edge pumps a little charge into a capacitor through two diodes, and the capacitor holds the gates of the MOSFETs that let the pump signal and the relay supply through. Heartbeat stops (or is stuck, too slow or too fast) → the capacitor empties → everything off within about 5–14 s, long on purpose: the watchdog only ever switches off, and nothing in a solar system turns dangerous within seconds. No single failed part leaves it on (two drain resistors in parallel, two coupling capacitors in series), and a readback on GPIO20 lets the self-test measure the timeout at every start. No fee, about €4 less for one on every edition, only 3.3 V, easy to explain. Simulated; rev A carries both, selected by 0 Ω. Section 8.2 of this page |
 | D25 | One 1-Wire build instead of normal and 1-Wire Lite? | **Yes**: the 12 V DC/DC (B0512S) is replaced by a **voltage doubler from basic parts** (two-transistor oscillator, push-pull pair, two diodes, three capacitors) that lifts the Pi's 5 V to about 7 V, and REL1 is fitted on every board (no fee part since D23). The pump sees 6–7 V (4 V needed), 5.2 V even in the worst case, against 4.1 V on the 1-Wire Lite. One set of values (R9 100 Ω, D4 SMBJ13A, R31 12 kΩ), no 0 Ω selection, and the last fee part apart from the measuring chip goes: ≈ €63 for one with everything the normal board had. The PT edition uses the same doubler. Simulated in ngspice. Section 9 of this page |
-| D26 | Which edition is built first? | **The PT edition, for the reference installation**: its eight Pt1000 sensors are already in place, and with the discrete pump driver, watchdog and doubler (D22–D25) the board is affordable (≈ €151.50 for one, ≈ €62 each in a group of 5). The 1-Wire edition stays fully documented and is ordered when someone needs it. To keep one unknown at a time on the first board, the bring-up (section 6) tests the shared parts (supply, doubler, watchdog, REL1, PUMP1) before the LTC2983 is used at all; the LTC2983 driver is the first measuring driver written (ARCHITECTURE 10, milestone 3) |
+| D26 | Which edition is built first, and with which measuring front end? | **The reference installation keeps its eight Pt1000 sensors, and the final board is built from cheap, discrete basic parts.** The LTC2983 PT edition (≈ €151.50 for one, ≈ €62 each in a group of 5) is too expensive for that, so **D13 is reopened**: a Pt1000 front end from basic parts (divider with a precision resistor, ADC, input protection) is being worked out (section 4). No PT board is ordered until it is decided. The bring-up (section 6) still tests the shared parts (supply, doubler, watchdog, REL1, PUMP1) before the measuring part |
 
 ## 2. Pump driver chain: alternatives (D22)
 
@@ -487,9 +487,10 @@ into 8.2.
 6. PWM output PUMP1 into a 1 kΩ dummy load, then the real pump (as in
    [Connecting the pump](HARDWARE.md#connecting-the-pump)).
 7. Pt1000 inputs with fixed resistors (1000 Ω = 0 °C, 1385 Ω ≈ 100 °C).
-   **PT edition** (built first, D26): the LTC2983 on all eight channels,
-   also an open and a shorted channel (fault codes), then the eight real
-   sensors on their cables, compared with the BX Plus readings over a day.
+   **PT edition** (D26): the Pt1000 front end on all eight channels, also
+   an open and a shorted channel (must be reported as faults), then the
+   eight real sensors on their cables, compared with the BX Plus readings
+   over a day.
    **1-Wire edition**: PT1 on the MAX31865, then the real collector sensor
    on its 2-wire cable.
 8. 1-Wire bus scan with one, then five DS18x20: on 1W-A on the PT
