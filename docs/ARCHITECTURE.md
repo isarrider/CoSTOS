@@ -536,15 +536,18 @@ coupling relay to sense pump mains, 18 TE enclosure) came to about
 | Fuse terminal 5×20, T 1 A | Phoenix PT 4-HESI | ≈ €4 |
 | **Total** | | **≈ €150–175, ≈ €180–235 with surge protector** |
 
-A 16 A interface relay with a 12 V coil (Finder 38.61) instead of the SSR
-would save about €35. Three slim options were compared instead:
+A 16 A relay with a **5 V** coil (for example Finder 40.61.7.005 on a DIN-rail
+socket, ≈ €15 together) instead of the SSR would save about €35. A 12 V coil
+doesn't work here: REL1 switches the HAT's 5 V supply (HAT-1wire 4.5). The
+5 V coil draws about 100 mA (50 Ω), right at REL1's limit, so the SSR with
+its 3–32 V DC input (under 20 mA) stays the recommended part for option C. Three slim options were compared instead:
 
 ![Three options for the 230 V side](img/ac-options.svg)
 
 | | A: no mains work | B: minimal DIN | C: B + cut-off relay |
 |---|---|---|---|
 | 5 V supply | Pi USB-C supply in a socket (most people already have one) | Mean Well HDR-60-5, USB-C lead to the Pi | as B |
-| Pump | Permanently on 230 V, plug cord in a socket | Permanently on 230 V, existing circuit | L through a 16 A relay, 12 V coil, driven by REL1 |
+| Pump | Permanently on 230 V, plug cord in a socket | Permanently on 230 V, existing circuit | L through an SSR (3–32 V DC input) or a 16 A relay with a 5 V coil, driven by REL1 |
 | Enclosure | Pi case | small DIN box, 4–6 TE | as B |
 | Electrician | not needed if the pump gets a plug cord | briefly | briefly |
 | Ways to stop the pump | 1: PWM low (watchdog-gated) | 1 | 2: PWM low + relay |
