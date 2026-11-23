@@ -1198,7 +1198,10 @@ come first.
    replay tool with seven recorded days. *Open:* speed control, store
    maximum.
 2. `costos-sim` and simulation tests in CI.
-3. HAL + Linux backend: LTC2983, MAX31865, 1-Wire, GPIO outputs, PWM, watchdog. Bench setup.
+3. HAL + Linux backend: GPIO outputs, PWM, watchdog, then the measuring
+   drivers in this order: LTC2983 (the PT edition is built first, HAT
+   D26), 1-Wire (the PT edition has one bus too), MAX31865 (1-Wire
+   edition only). Bench setup.
 4. `costosd` + `costos-config`: scheduler, systemd, config store with
    revisions, JSON API, VictoriaMetrics push with buffering.
 5. Web interface: overview, setup wizard, all settings pages, users/login,
