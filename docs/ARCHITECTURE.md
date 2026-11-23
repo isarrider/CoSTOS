@@ -1061,6 +1061,63 @@ The interface can switch pumps, so changes need login:
    in place of the pumps. Test the watchdog by killing the process and
    unplugging the SBC.
 
+### 8.1 Replay data and what it shows about the BX Plus
+
+**Source.** vbus2influx has written the BX Plus values to VictoriaMetrics
+since 1 July 2026. The full export (1 July – 22 November 2026, 147 days) was
+analysed once; six days are kept in the repository as test data.
+
+**Series mapping.** vbus2influx field numbers, S-numbers as in
+[installation.md](installation.md):
+
+| VictoriaMetrics series | Sensor | Used for |
+|---|---|---|
+| `vbus2influx_temperature_01` | S1 collector | ΔT on and off |
+| `vbus2influx_temperature_02` | S2 store bottom | ΔT on and off |
+| `vbus2influx_temperature_03` | S3 store top | Display, store maximum |
+| `vbus2influx_temperature_04` | S4 solar flow (at the store) | Second off condition (below) |
+| `vbus2influx_temperature_05` | S5 solar return (at the store) | Second off condition (below) |
+| `vbus2influx_relay_01` | R1 solar pump | The decision to compare against |
+
+**Files.** `tests/replay/<date>.csv`, one local day (Europe/Berlin) each.
+Comment lines start with `#` and say why the day was picked. Columns:
+`unix_s,s1,s2,s3,s4,s5,relay`, temperatures in °C with one decimal, relay in
+percent. A row is written whenever a value changes, and at least once every
+60 s; so rows more than 60 s apart are a **recording gap**, not a quiet
+period.
+
+| Day | Why it is kept |
+|---|---|
+| 2026-07-09 | Sunny, one 9.5 h run; shows the second off condition (pump on for 36 min after S1 − S2 < 2 K) |
+| 2026-07-13 | Hottest day: collector 91.3 °C, store top 83.0 °C |
+| 2026-08-03 | Morning cycling: short runs that end at S1 − S2 = 2 K |
+| 2026-08-17 | Most starts in one day (7) |
+| 2026-09-16 | Most recording gaps (4) |
+| 2026-11-14 | Cold: collector down to −2.1 °C, no pump run |
+
+**What the data shows.**
+
+| Finding | Detail | Consequence for CoSTOS |
+|---|---|---|
+| 🟢 Samples about every 5 s | The core runs a 1 s cycle | The replay tool holds each row until the next one, so the core sees 5 identical cycles |
+| 🟡 The pump is only switched **0 % or 100 %** | No speed control in use on the BX Plus here | Speed control can't be compared by replay; only on/off decisions are. The PI controller is checked by unit and simulation tests |
+| 🟢 Switch-on at **S1 − S2 ≥ 5 K** | 227 starts, median 4.9 K at the last sample before the start, p10 4.8 K | ΔT_on = 5 K here (the core's example default is 6 K) |
+| 🟡 Switch-off needs **both** S1 − S2 ≤ 2 K **and** S4 − S5 ≤ 2 K | Long runs end at S4 − S5 = 2.1 K (p10 2.1, p90 2.4) while S1 − S2 is often far below zero (−18 K on 2026-07-09); short morning runs end at S1 − S2 = 2.1 K while S4 − S5 is negative (the store's cold coil contents pass S5 first) | A plain S1 − S2 rule stops the pump too early on a sunny evening, while S4 − S5 shows the loop still delivers about 10 K. A simulation of "on at S1 − S2 ≥ 4.9 K, off when S1 − S2 ≤ 2.1 K and S4 − S5 ≤ 2.1 K" matches the relay in **99.95 %** of the samples, and 789 h of pump time against 788 h. Which BX Plus setting does this is still to be confirmed (section 11) |
+| 🟡 25 mismatches longer than 1 min | Mostly the BX stopping at S1 − S2 = 2 K while S4 − S5 was still 2.4–4.9 K, and a few starts the sample rate missed | The rule above is close, not exact; replay reports these as differences to look at, not as failures |
+| 🟢 Four 10–15 s runs at about 14:57 | On 07-01, 07-07, 07-08, 07-26, days with no earlier run | The BX Plus blocking protection (anti-seize run); the BX clock or its setting differs from the manual default of 12:00 |
+| 🟡 **No stagnation** in the record | Collector maximum 91.3 °C, store top maximum 83.0 °C | Emergency shutdown and store maximum can't be checked by replay; they stay with unit and simulation tests |
+| 🟢 17 days without a pump run | Autumn and November | Cold-collector and sensor-range behaviour gets real data |
+
+**What counts as "decided differently".** The replay tool steps the core
+with the recorded S1 and S2 (and S4/S5 once the second off condition
+exists), compares `pump_on` with `relay > 0` and lists every stretch where
+they differ, with its start, length and the temperatures at its start.
+Differences shorter than one sample interval (5 s) are not listed: the
+recording can't place a switch event more precisely than that. A recording
+gap ends the comparison and restarts it after the gap with a fresh state,
+because CoSTOS would have seen stale sensors there (section 5.1) and the
+recording doesn't show what the BX did.
+
 ---
 
 ## 9. Migration from the DeltaSol BX Plus
@@ -1166,6 +1223,12 @@ from `tokei crates/`).
 
 ## 11. Open questions
 
+- **BX Plus switch-off rule**: the replay data (8.1) shows the pump stops
+  only when both S1 − S2 ≤ 2 K and S4 − S5 ≤ 2 K. Which BX Plus setting
+  does this (a second ΔT function on flow and return, or an option such as
+  the heat-exchanger or tube-collector logic) and the configured ΔT_on,
+  ΔT_off and blocking-protection time need reading off the controller's
+  menu. CoSTOS then gets the matching off condition as an option.
 - **Installation details**: the remaining open points in
   [installation.md](installation.md#open-points).
 - Settled: custom HAT ([HAT.md](HAT.md)); 1-Wire via kernel `w1-gpio` on
