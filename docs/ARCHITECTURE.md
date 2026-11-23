@@ -123,7 +123,11 @@ control core and the outputs. It can only **reduce** what the core asks for
   the main case where "pump ON" is the dangerous state, which is why the
   safe state is defined per output and not as "everything off".
 - Both emergencies **latch** and release only after cooling by a
-  hysteresis (10 K by default).
+  hysteresis (10 K by default). **After a start or restart of the
+  daemon both start latched**, and a cool system releases them in the
+  first cycle. So a restart while the collector is still cooling down
+  from stagnation (inside the hysteresis band) can't restart the pump
+  early, without having to store the latch on disk.
 - **Output-specific safe states** from config (normally OFF).
 - **Minimum off time** and **switching rate limits**, to protect relays
   and pumps.

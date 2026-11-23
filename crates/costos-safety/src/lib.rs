@@ -132,11 +132,19 @@ impl Default for SafetyConfig {
 
 /// State carried from one cycle to the next.
 ///
-/// The `Default` is "no emergency latched, never stopped, output 0 %".
-/// After a restart of the daemon the latches therefore start released;
-/// a collector that is still hot latches again in the first cycle,
-/// because the limit check comes before any release.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+/// The `Default` (the state at a start or restart of the daemon) is
+/// "**both emergencies latched**, never stopped, output 0 %".
+///
+/// Why start latched (ARCHITECTURE 4.2): the latches are not stored on
+/// disk. If they started released, a restart while the collector is
+/// still cooling down from stagnation (say 125 °C, inside the hysteresis
+/// band below 130 °C) would let the pump start again at once, which is
+/// exactly what the hysteresis is there to prevent. Starting latched
+/// costs nothing in the normal case: a cool collector and store release
+/// both latches in the very first cycle, because they are below the
+/// release point. And with a sensor still unknown at start-up, the pump
+/// is off anyway, and the latch waits for a real reading.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SupervisorState {
     /// Collector emergency active: set at the limit, released only after
     /// cooling by the hysteresis.
@@ -147,6 +155,24 @@ pub struct SupervisorState {
     stopped_at: Option<Seconds>,
     /// The output of the previous cycle, to detect the moment of a stop.
     last_output: Duty,
+}
+
+impl Default for SupervisorState {
+    /// The state at a start or restart: both emergencies latched (see
+    /// the type's documentation for why), no stop recorded, output off.
+    fn default() -> Self {
+        Self {
+            collector_latched: true,
+            store_latched: true,
+            // No stop recorded: the minimum off time does not apply to
+            // the first start. The pump was either off already, or it
+            // was running when the daemon stopped and the hardware
+            // watchdog has switched it off since; in both cases it is
+            // off for at least the restart time.
+            stopped_at: None,
+            last_output: Duty::OFF,
+        }
+    }
 }
 
 /// The readings the supervisor looks at in one cycle.
@@ -431,6 +457,47 @@ mod tests {
         );
         let (s, _, _) = sup(s, &inputs(1, Duty::FULL, Err(SensorFault::Stale), c(60.0)));
         let (_, out, why) = sup(s, &inputs(2, Duty::FULL, c(126.0), c(60.0)));
+        assert_eq!(out, Duty::OFF);
+        assert!(why.collector_emergency);
+    }
+
+    /// Restart while the collector cools down from stagnation: the new
+    /// state starts latched, so at 125 °C (inside the hysteresis band)
+    /// the pump stays off; at 120 °C it may run.
+    #[test]
+    fn restart_inside_the_hysteresis_band_keeps_the_pump_off() {
+        let s = SupervisorState::default();
+        let (s, out, why) = sup(s, &inputs(0, Duty::FULL, c(125.0), c(60.0)));
+        assert_eq!(out, Duty::OFF);
+        assert!(why.collector_emergency);
+        let (_, out, why) = sup(s, &inputs(1, Duty::FULL, c(120.0), c(60.0)));
+        assert_eq!(out, Duty::FULL);
+        assert!(!why.collector_emergency);
+    }
+
+    /// Same for the store: restart with the store at 90 °C, inside the
+    /// band below 95 °C, keeps the pump off until 85 °C.
+    #[test]
+    fn restart_with_a_hot_store_keeps_the_pump_off() {
+        let s = SupervisorState::default();
+        let (s, out, why) = sup(s, &inputs(0, Duty::FULL, c(100.0), c(90.0)));
+        assert_eq!(out, Duty::OFF);
+        assert!(why.store_emergency);
+        let (_, out, _) = sup(s, &inputs(1, Duty::FULL, c(100.0), c(85.0)));
+        assert_eq!(out, Duty::FULL);
+    }
+
+    /// A restart with a sensor still unknown: off, and the latch is not
+    /// released by the missing value; the first real reading decides.
+    #[test]
+    fn restart_with_an_unknown_sensor_waits_for_a_reading() {
+        let s = SupervisorState::default();
+        let (s, out, _) = sup(
+            s,
+            &inputs(0, Duty::FULL, Err(SensorFault::Missing), c(60.0)),
+        );
+        assert_eq!(out, Duty::OFF);
+        let (_, out, why) = sup(s, &inputs(1, Duty::FULL, c(126.0), c(60.0)));
         assert_eq!(out, Duty::OFF);
         assert!(why.collector_emergency);
     }
