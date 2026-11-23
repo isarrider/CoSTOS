@@ -1102,7 +1102,7 @@ period.
 | 🟢 Samples about every 5 s | The core runs a 1 s cycle | The replay tool holds each row until the next one, so the core sees 5 identical cycles |
 | 🟡 The pump is only switched **0 % or 100 %** | No speed control in use on the BX Plus here | Speed control can't be compared by replay; only on/off decisions are. The PI controller is checked by unit and simulation tests |
 | 🟢 Switch-on at **S1 − S2 ≥ 5 K** | 227 starts, median 4.9 K at the last sample before the start, p10 4.8 K | ΔT_on = 5 K here (the core's example default is 6 K) |
-| 🟡 Switch-off needs **both** S1 − S2 ≤ 2 K **and** S4 − S5 ≤ 2 K | Long runs end at S4 − S5 = 2.1 K (p10 2.1, p90 2.4) while S1 − S2 is often far below zero (−18 K on 2026-07-09); short morning runs end at S1 − S2 = 2.1 K while S4 − S5 is negative (the store's cold coil contents pass S5 first) | A plain S1 − S2 rule stops the pump too early on a sunny evening, while S4 − S5 shows the loop still delivers about 10 K. A simulation of "on at S1 − S2 ≥ 4.9 K, off when S1 − S2 ≤ 2.1 K and S4 − S5 ≤ 2.1 K" matches the relay in **99.95 %** of the samples, and 789 h of pump time against 788 h. Which BX Plus setting does this is still to be confirmed (section 11) |
+| 🟡 Switch-off needs **both** S1 − S2 ≤ 2 K **and** S4 − S5 ≤ 2 K | Long runs end at S4 − S5 = 2.1 K (p10 2.1, p90 2.4) while S1 − S2 is often far below zero (−18 K on 2026-07-09); short morning runs end at S1 − S2 = 2.1 K while S4 − S5 is negative (the store's cold coil contents pass S5 first) | A plain S1 − S2 rule stops the pump too early on a sunny evening, while S4 − S5 shows the loop still delivers about 10 K. A simulation of "on at S1 − S2 ≥ 4.9 K, off when S1 − S2 ≤ 2.1 K and S4 − S5 ≤ 2.1 K" matches the relay in **99.95 %** of the samples, and 789 h of pump time against 788 h. This matches the BX Plus option **flow and return sensor** (manual 8.5, Solar / Expert: *Vorlaufsensor*, *Rücklaufsensor*): with both enabled, the controller uses them for the switch-off condition. The setting on the controller is still to be confirmed (section 11) |
 | 🟡 25 mismatches longer than 1 min | Mostly the BX stopping at S1 − S2 = 2 K while S4 − S5 was still 2.4–4.9 K, and a few starts the sample rate missed | The rule above is close, not exact; replay reports these as differences to look at, not as failures |
 | 🟢 Four 10–15 s runs at about 14:57 | On 07-01, 07-07, 07-08, 07-26, days with no earlier run | The BX Plus blocking protection (anti-seize run); the BX clock or its setting differs from the manual default of 12:00 |
 | 🟡 **No stagnation** in the record | Collector maximum 91.3 °C, store top maximum 83.0 °C | Emergency shutdown and store maximum can't be checked by replay; they stay with unit and simulation tests |
@@ -1224,11 +1224,15 @@ from `tokei crates/`).
 ## 11. Open questions
 
 - **BX Plus switch-off rule**: the replay data (8.1) shows the pump stops
-  only when both S1 − S2 ≤ 2 K and S4 − S5 ≤ 2 K. Which BX Plus setting
-  does this (a second ΔT function on flow and return, or an option such as
-  the heat-exchanger or tube-collector logic) and the configured ΔT_on,
-  ΔT_off and blocking-protection time need reading off the controller's
-  menu. CoSTOS then gets the matching off condition as an option.
+  only when both S1 − S2 ≤ 2 K and S4 − S5 ≤ 2 K. The BX Plus manual
+  (8.5, Solar / Expert) has a flow and return sensor option that the
+  controller then uses for the switch-off condition; the manual doesn't
+  give the threshold. To read off the controller (installer code needed):
+  Solar / Expert flow sensor and return sensor (expected: yes, S4 and
+  S5), Solar / Basic setting ΔTon and ΔToff (expected 5 K and 2 K),
+  Basic settings / Blocking protection start time and run time (manual
+  default 12:00 and 10 s; the data suggests about 14:57) and the
+  controller clock. CoSTOS then gets the same off condition as an option.
 - **Installation details**: the remaining open points in
   [installation.md](installation.md#open-points).
 - Settled: custom HAT ([HAT.md](HAT.md)); 1-Wire via kernel `w1-gpio` on
