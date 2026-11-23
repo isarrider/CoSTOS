@@ -1,11 +1,1 @@
-# Rust build output
-/target/
-
-# Editors and OS
-.idea/
-.vscode/
-*.swp
-.DS_Store
-
-# Python
-__pycache__/
+/target

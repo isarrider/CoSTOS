@@ -1,0 +1,35 @@
+[workspace]
+resolver = "3"
+members = ["crates/costos-core", "crates/costos-safety"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/isarrider/CoSTOS"
+rust-version = "1.85"
+
+[workspace.dependencies]
+costos-core = { path = "crates/costos-core" }
+proptest = { version = "1", default-features = false, features = ["std"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+# ARCHITECTURE 6.1 rule 11: `.get(i)` instead of `[i]`
+indexing_slicing = "warn"
+# rule 7 / 17: no silent wrap-around
+arithmetic_side_effects = "warn"
+float_cmp = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+
+# ARCHITECTURE 6.1 rule 9: overflow checks also in release builds of the
+# two crates that decide what the pumps do.
+[profile.release.package.costos-core]
+overflow-checks = true
+
+[profile.release.package.costos-safety]
+overflow-checks = true

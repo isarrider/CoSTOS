@@ -1,0 +1,16 @@
+[package]
+name = "costos-core"
+description = "CoSTOS control logic: pure, no I/O, no clock (time is an input)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true
