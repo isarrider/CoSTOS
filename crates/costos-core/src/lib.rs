@@ -30,6 +30,7 @@
 // `std` only for tests (rule 1): tests may use proptest, which needs it.
 #![cfg_attr(not(test), no_std)]
 
+pub mod anti_seize;
 pub mod delta_t;
 pub mod output;
 pub mod sensor;
@@ -41,4 +42,4 @@ pub mod time;
 pub use output::Duty;
 pub use sensor::{PlausibleRange, Reading, SensorFault};
 pub use temperature::{Celsius, Kelvin};
-pub use time::Seconds;
+pub use time::{Seconds, TimeOfDay};
