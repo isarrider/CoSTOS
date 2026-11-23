@@ -112,19 +112,35 @@ The **safety supervisor** is a separate module that sits between the
 control core and the outputs. It can only **reduce** what the core asks for
 (force OFF, cap speed). It can never switch something on. It enforces:
 
-- **Sensor plausibility**: Pt1000 open circuit or short circuit, values
-  outside the physical range, a rate of change that is too high, stale
-  readings. A faulty sensor counts as *unknown*, never as "cold".
-- **Store maximum** (for example 60–85 °C, configurable) and an **emergency
-  store shutdown** (for example 95 °C, not configurable above a hard limit).
-- **Collector emergency shutdown**: above about 130 °C the solar pump is
-  forced OFF. Pumping into a stagnating collector can flash the fluid to
-  steam and damage the system. This is the main case where "pump ON" is the
-  dangerous state, which is why the safe state is defined per output and
-  not as "everything off".
+- **Unknown sensor → safe state**: a sensor without a valid value counts
+  as *unknown*, never as "cold", and the outputs that depend on it go to
+  their safe state.
+- **Emergency store shutdown** (95 °C, configurable only lower), checked
+  against the hottest store sensor.
+- **Collector emergency shutdown**: at about 130 °C (configurable only
+  lower) the solar pump is forced OFF. Pumping into a stagnating
+  collector can flash the fluid to steam and damage the system. This is
+  the main case where "pump ON" is the dangerous state, which is why the
+  safe state is defined per output and not as "everything off".
+- Both emergencies **latch** and release only after cooling by a
+  hysteresis (10 K by default).
 - **Output-specific safe states** from config (normally OFF).
-- **Minimum on/off times** and **switching rate limits**, to protect relays
+- **Minimum off time** and **switching rate limits**, to protect relays
   and pumps.
+
+Not everything that protects the system can sit in the supervisor,
+because it may only switch off. Who does what:
+
+| Protection | Where | Why there |
+|---|---|---|
+| Open, short, CRC error, power-on value, stale, jump (5.1) | Hardware layer (`costos-hw-linux`) and daemon | Only they see the chip's fault bits and the reading times; they hand the core a fault instead of a value |
+| Plausible range per sensor role (6.1 rule 18) | Core (`PlausibleRange`), applied before any function sees a reading | One place, the same for control and supervisor |
+| Unknown sensor → off | Control functions **and** supervisor | Defence in depth: either one alone stops the pump |
+| Store maximum (60–85 °C) | Control function (6.2) | Stops *loading*; an ordinary limit, not an emergency |
+| Store and collector emergency | Supervisor | Must hold whatever the control logic does |
+| Minimum **run** time | Control function | Keeping a pump *on* is not a reduction, so the supervisor can't enforce it |
+| Minimum **off** time, switching rate | Supervisor | Holding a pump *off* is a reduction |
+| Process hangs or crashes | Hardware watchdog on the HAT (4.1) | Software can't protect against itself |
 
 If the supervisor itself panics, the process exits, the heartbeat stops and
 the hardware layer turns everything off.
