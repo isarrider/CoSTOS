@@ -691,7 +691,7 @@ config:
 |---|---|
 | **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. **Collector minimum temperature** (optional, default on, 10 °C as on the BX Plus): no start below it, even when ΔT is met. The control loop uses a lightly smoothed ΔT (moving average over a few samples, as DiSoCon2 does) so single noisy readings don't toggle the pump; raw values still go to VictoriaMetrics. |
 | **Speed control** | While on, a PI controller drives the PWM duty to keep ΔT around a setpoint (for example 10 K), between min and max speed. **Start profile** per output: *kick* (default: 100 % for a short purge, then control) or *ramp* (soft start from minimum speed in steps of, say, 10 %/s, as DiSoCon2 does), for pumps or hydraulics that dislike a hard start. Optional **BX-compatible mode**: speed steps up or down by one step each time ΔT moves by the "rise value" (BX Plus default 2 K) around the setpoint, so shadow mode can compare like with like. |
-| **Anti-seize run** | Runs each pump once a day for a short time (BX Plus "blocking protection": 12:00, 10 s; time and duration configurable), so it doesn't seize. Skipped if the pump has already run that day. |
+| **Anti-seize run and full-speed purge** | Two parts, both configurable. **Anti-seize:** if a pump has been idle for more than 24 h, it runs for 10 s at 100 %, started at midday (12:00 local time, never at night). This replaces the BX Plus "blocking protection" (daily at 12:00 for 10 s, skipped if the pump already ran that day), which in 147 days of replay data ran only 4 times. **Full-speed purge:** with speed control a pump rarely reaches 100 %, which is what flushes air and deposits out. If a pump hasn't been at 100 % for 7 days, its next normal start begins with 60 s at 100 % (the *kick* start profile, extended). It only happens while there is solar gain anyway, so it costs no heat; a timed weekly 100 % run was rejected because in winter it would move store heat out to the cold collector. |
 | **Store maximum** | Stops loading at T(store) ≥ T_max. Emergency stop at the hard limit (enforced by the supervisor as well). |
 | **Collector emergency shutdown** | Enforced in the supervisor (section 4.2). |
 | **Collector cooling / recooling** | Optional: lets the store take extra heat to keep the collector out of stagnation, and cools the store back down at night. |
@@ -1104,7 +1104,7 @@ period.
 | 🟢 Switch-on at **S1 − S2 ≥ 5 K** | 227 starts, median 4.9 K at the last sample before the start, p10 4.8 K | ΔT_on = 5 K here (the core's example default is 6 K) |
 | 🟡 Switch-off needs **both** S1 − S2 ≤ 2 K **and** S4 − S5 ≤ 2 K | Long runs end at S4 − S5 = 2.1 K (p10 2.1, p90 2.4) while S1 − S2 is often far below zero (−18 K on 2026-07-09); short morning runs end at S1 − S2 = 2.1 K while S4 − S5 is negative (the store's cold coil contents pass S5 first) | A plain S1 − S2 rule stops the pump too early on a sunny evening, while S4 − S5 shows the loop still delivers about 10 K. A simulation of "on at S1 − S2 ≥ 4.9 K, off when S1 − S2 ≤ 2.1 K and S4 − S5 ≤ 2.1 K" matches the relay in **99.95 %** of the samples, and 789 h of pump time against 788 h. This matches the BX Plus option **flow and return sensor** (manual 8.5, Solar / Expert: *Vorlaufsensor*, *Rücklaufsensor*): with both enabled, the controller uses them for the switch-off condition. Confirmed on the controller: flow sensor S4 and return sensor S5 are enabled, ΔTon 5 K and ΔToff 2 K |
 | 🟡 25 mismatches longer than 1 min | Mostly the BX stopping at S1 − S2 = 2 K while S4 − S5 was still 2.4–4.9 K, and a few starts the sample rate missed | The rule above is close, not exact; replay reports these as differences to look at, not as failures |
-| 🟢 Four 10–15 s runs at about 14:57 | On 07-01, 07-07, 07-08, 07-26, days with no earlier run | The BX Plus blocking protection (anti-seize run, manual default 12:00, 10 s). The BX clock is known to be off, which explains the time. Replay compares in Unix time and ignores the BX clock; CoSTOS takes its time from NTP |
+| 🟢 Four 10–15 s runs at about 14:57 | On 07-01, 07-07, 07-08, 07-26, days with no earlier run | The BX Plus blocking protection (anti-seize run, manual default 12:00, 10 s). The BX clock is known to be off, which explains the time. Replay compares in Unix time and ignores the BX clock; CoSTOS takes its time from NTP and uses its own anti-seize logic (6.2), so replay lists runs shorter than 30 s separately instead of as differences |
 | 🟡 **No stagnation** in the record | Collector maximum 91.3 °C, store top maximum 83.0 °C | Emergency shutdown and store maximum can't be checked by replay; they stay with unit and simulation tests |
 | 🟢 17 days without a pump run | Autumn and November | Cold-collector and sensor-range behaviour gets real data |
 
@@ -1223,9 +1223,6 @@ from `tokei crates/`).
 
 ## 11. Open questions
 
-- **BX Plus blocking protection setting**: start time and run time still to
-  read off the controller (Basic settings / Blocking protection). Minor:
-  the BX clock is off, and CoSTOS will use its own anti-seize logic (6.2).
 - Settled: the BX Plus switch-off rule is its flow and return sensor option
   (Solar / Expert, S4 and S5 enabled, ΔTon 5 K, ΔToff 2 K), see 8.1.
 - **Installation details**: the remaining open points in
