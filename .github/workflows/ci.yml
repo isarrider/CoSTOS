@@ -20,6 +20,11 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      # The comments are part of the review (ARCHITECTURE 6.1, comments
+      # rule): broken links or malformed doc comments fail the build.
+      - run: cargo doc --no-deps --workspace --document-private-items
+        env:
+          RUSTDOCFLAGS: -D warnings
 
   bare-metal:
     # ARCHITECTURE 6.1 rule 12: costos-core and costos-safety must build
