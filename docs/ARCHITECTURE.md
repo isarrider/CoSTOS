@@ -642,6 +642,26 @@ the pump feedback duty from edge timestamps (75 Hz signal) and hands the
 core a percentage, and the VictoriaMetrics protocol takes millisecond
 timestamps, which the daemon makes from the cycle's second.
 
+#### Comments (decided, all crates)
+
+The code is meant to be reviewed by people and by AI tools, so it is
+commented **a lot and in detail**. A reviewer should be able to check a
+function against the spec without reconstructing why it is written the
+way it is.
+
+| What | Comment it with | Example |
+|---|---|---|
+| Every module | What it is for, what it decides, and the section of ARCHITECTURE (or HAT-development) it implements | "ΔT control (ARCHITECTURE 6.2) …" |
+| Every public item | What it means, its unit, its valid range, what `None` / an error means | "Shortest time the pump stays off after stopping, in s" |
+| Every decision branch | **Why** this branch exists and which rule it serves, not what the code does | "A fault never counts as cold: unknown → off (4.2)" |
+| Every number | Where it comes from: the spec, the BX Plus manual, a datasheet, a simulation | "130 °C: collector emergency limit, 4.2" |
+| Every safety-relevant line | What would go wrong without it | "Without this, a stale reading keeps the pump running" |
+| Every rule from the table above | The rule number where it is applied | "rule 17: saturating, a restored state may lie in the future" |
+| Every test | The situation it stands for and why it matters | "−20 °C collector, 45 °C store: rule 14" |
+
+Comments are kept true: a change to the code updates its comments in the
+same commit. A comment that disagrees with the code counts as a bug.
+
 ### 6.2 Control functions (first version)
 
 Each function is a small state machine wired to sensors and outputs in
