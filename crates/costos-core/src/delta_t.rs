@@ -12,6 +12,13 @@
 //!   the pump.
 //! - **Sensor fault**: pump off at once, smoothing restarts. A fault never
 //!   counts as "cold" or "warm".
+//! - **Flow/return switch-off** (optional, ARCHITECTURE 8.1): with a flow
+//!   and a return sensor, a running pump is only stopped once *both*
+//!   differences have fallen to `off`: collector minus store bottom, and
+//!   solar flow minus solar return. The second one shows whether the loop
+//!   still carries heat into the store, which the collector sensor alone
+//!   can miss. Without the option the switch-off uses the collector
+//!   difference only.
 //!
 //! Speed control comes on top of this later; here the request is on or
 //! off.
@@ -117,6 +124,34 @@ impl Default for DeltaTConfig {
     }
 }
 
+/// Readings of the optional solar flow and return sensors, for the
+/// flow/return switch-off (ARCHITECTURE 8.1).
+///
+/// **Why this exists.** The 147 days of BX Plus data from the reference
+/// installation show the pump on a sunny evening running for another
+/// 36 minutes after collector minus store bottom fell below 2 K, and
+/// stopping only once flow minus return fell to 2 K too. In that time
+/// the collector sensor read up to 18 K *below* the store, while the
+/// flow, measured at the store, was still about 10 K warmer than the
+/// return: the loop was still delivering heat. The BX Plus calls this the
+/// "flow sensor" and "return sensor" options (manual 8.5, Solar /
+/// Expert). A plain collector-minus-store rule would stop the pump early
+/// on every sunny evening.
+///
+/// **Which sensors.** In the reference installation the flow sensor is
+/// S4 and the return sensor S5, both on the pipes at the store. The
+/// config decides which inputs they are; this module only sees the two
+/// readings.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct FlowReturn {
+    /// Solar flow: the fluid coming down from the collector, measured
+    /// where it enters the store's heat exchanger.
+    pub flow: Reading,
+    /// Solar return: the fluid going back up to the collector, measured
+    /// where it leaves the store's heat exchanger.
+    pub ret: Reading,
+}
+
 /// Moving mean over the last [`SMOOTHING_SAMPLES`] differences.
 ///
 /// A fixed-size array, no heap (rule 1: the core may run without an
@@ -180,6 +215,10 @@ pub struct DeltaTState {
     running_since: Option<Seconds>,
     /// The last few differences for smoothing.
     window: Window,
+    /// The last few flow-minus-return differences, smoothed the same
+    /// way. Stays empty while the flow/return option is off, and is
+    /// cleared when one of those two sensors fails.
+    loop_window: Window,
 }
 
 impl DeltaTState {
@@ -202,6 +241,11 @@ pub enum DeltaTStatus {
     Started,
     /// Running, difference still above the switch-off value.
     Running,
+    /// Collector difference at or below the switch-off value, but flow
+    /// minus return is still above it: the loop still carries heat into
+    /// the store, so the pump keeps running (flow/return switch-off,
+    /// [`FlowReturn`]).
+    HeldByFlowReturn,
     /// Difference at or below the switch-off value, but the minimum run
     /// time is not over yet.
     HeldByMinRun,
@@ -223,6 +267,17 @@ pub struct DeltaTOutput {
     pub pump_on: bool,
     /// The smoothed difference the decision was based on, if known.
     pub delta_t: Option<Kelvin>,
+    /// The smoothed flow-minus-return difference, if the flow/return
+    /// option is in use and both sensors are valid.
+    pub loop_delta_t: Option<Kelvin>,
+    /// A fault on the flow or return sensor, if any.
+    ///
+    /// Such a fault does **not** stop the pump: the flow/return condition
+    /// can only *extend* a run, so without it the control simply falls
+    /// back to the plain collector difference, which stops the pump
+    /// earlier, never later. That is the safe side. The daemon raises an
+    /// alarm from this field, so the fault doesn't go unnoticed.
+    pub flow_return_fault: Option<SensorFault>,
     /// Why.
     pub status: DeltaTStatus,
 }
@@ -231,14 +286,20 @@ pub struct DeltaTOutput {
 ///
 /// `now` comes from the daemon (rule 2); `collector` and `store_bottom` are
 /// the current readings, already checked against their plausible ranges
-/// ([`crate::sensor::PlausibleRange::check`]). `state` is what the
-/// previous call returned; the returned state goes into the next call.
+/// ([`crate::sensor::PlausibleRange::check`]). `flow_return` is `Some`
+/// when the flow/return switch-off is configured, `None` otherwise.
+/// `state` is what the previous call returned; the returned state goes
+/// into the next call.
 ///
 /// The decision, in order:
 ///
-/// 1. A sensor fault on either sensor → off at once, history cleared.
-/// 2. While running: keep running above `off`; at or below `off`, keep
-///    running until `min_run` is over, then stop.
+/// 1. A sensor fault on the collector or store bottom → off at once,
+///    history cleared. (A fault on flow or return only switches the
+///    flow/return condition off, see [`DeltaTOutput::flow_return_fault`].)
+/// 2. While running: keep running while the collector difference is
+///    above `off`, or while flow minus return is above `off`; once both
+///    are at or below `off`, keep running until `min_run` is over, then
+///    stop.
 /// 3. While off: stay off below `on`; at or above `on`, start unless the
 ///    collector is below `collector_min`.
 #[must_use]
@@ -248,6 +309,7 @@ pub fn step(
     now: Seconds,
     collector: Reading,
     store_bottom: Reading,
+    flow_return: Option<FlowReturn>,
 ) -> (DeltaTState, DeltaTOutput) {
     // 1. Both readings must be valid. A fault never counts as cold or
     //    warm (ARCHITECTURE 4.2): with an unknown temperature the ΔT is
@@ -264,6 +326,8 @@ pub fn step(
                 DeltaTOutput {
                     pump_on: false,
                     delta_t: None,
+                    loop_delta_t: None,
+                    flow_return_fault: None,
                     status: DeltaTStatus::SensorFault(fault),
                 },
             );
@@ -281,9 +345,38 @@ pub fn step(
             DeltaTOutput {
                 pump_on: false,
                 delta_t: None,
+                loop_delta_t: None,
+                flow_return_fault: None,
                 status: DeltaTStatus::SensorFault(SensorFault::ReadError),
             },
         );
+    };
+
+    // The optional flow/return difference, smoothed like the main one.
+    //
+    // It is updated every cycle, also while the pump is off. While off it
+    // is meaningless (no flow, both pipes just cool down), but it is only
+    // *used* while the pump runs, and keeping it current means the mean
+    // is already filled when it's needed. Right after a start it reflects
+    // the cold coil contents passing the return sensor first and goes
+    // negative (seen in the replay data); that can only shorten a run,
+    // never extend it.
+    let (loop_window, loop_delta_t, flow_return_fault) = match flow_return {
+        // Option not configured: nothing to track.
+        None => (Window::default(), None, None),
+        Some(FlowReturn {
+            flow: Ok(flow),
+            ret: Ok(ret),
+        }) => {
+            let loop_window = state.loop_window.push(flow.minus(ret));
+            (loop_window, loop_window.mean(), None)
+        }
+        // At least one of the two has failed. The history is cleared so
+        // the mean restarts cleanly once the sensor is back, and the
+        // condition is simply not used meanwhile (see
+        // `DeltaTOutput::flow_return_fault` for why that is safe). If both
+        // failed, the flow sensor's fault is reported.
+        Some(FlowReturn { flow, ret }) => (Window::default(), None, flow.err().or(ret.err())),
     };
 
     let (running_since, status) = match state.running_since {
@@ -294,6 +387,13 @@ pub fn step(
             // "off reached".
             if delta_t > config.off {
                 (Some(since), DeltaTStatus::Running)
+            // The collector difference says stop, but the loop still
+            // carries heat into the store: flow minus return above `off`
+            // (the same threshold, as on the BX Plus, where the replay
+            // shows both ending at 2 K). Unknown counts as "no", so a
+            // missing or faulty flow/return pair can't keep a pump on.
+            } else if loop_delta_t.is_some_and(|d| d > config.off) {
+                (Some(since), DeltaTStatus::HeldByFlowReturn)
             // `off` reached, but the pump has not run long enough yet. Rule
             // 17: `saturating_since` gives 0 if `since` lies in the future
             // (restored state), so the minimum run time is then simply
@@ -325,10 +425,13 @@ pub fn step(
         DeltaTState {
             running_since,
             window,
+            loop_window,
         },
         DeltaTOutput {
             pump_on: running_since.is_some(),
             delta_t: Some(delta_t),
+            loop_delta_t,
+            flow_return_fault,
             status,
         },
     )
@@ -357,7 +460,7 @@ mod tests {
     ) -> (DeltaTState, DeltaTOutput) {
         let mut out = None;
         for t in t0..t0 + seconds {
-            let (s, o) = step(config, state, Seconds::new(t), collector, store);
+            let (s, o) = step(config, state, Seconds::new(t), collector, store, None);
             state = s;
             out = Some(o);
         }
@@ -455,9 +558,9 @@ mod tests {
         let cfg = DeltaTConfig::DEFAULT;
         let (s, _) = run(&cfg, DeltaTState::default(), 0, 10, c(42.0), c(40.0));
         // One spike of 15 K among 2 K readings: mean (4·2 + 15)/5 = 4.6 K.
-        let (s, o) = step(&cfg, s, Seconds::new(10), c(55.0), c(40.0));
+        let (s, o) = step(&cfg, s, Seconds::new(10), c(55.0), c(40.0), None);
         assert!(!o.pump_on);
-        let (_, o) = step(&cfg, s, Seconds::new(11), c(42.0), c(40.0));
+        let (_, o) = step(&cfg, s, Seconds::new(11), c(42.0), c(40.0), None);
         assert!(!o.pump_on);
     }
 
@@ -474,6 +577,7 @@ mod tests {
             Seconds::new(6),
             Err(SensorFault::OpenCircuit),
             c(40.0),
+            None,
         );
         assert!(!o.pump_on);
         assert_eq!(
@@ -523,6 +627,170 @@ mod tests {
         assert!(!o.pump_on);
     }
 
+    /// Like `run`, with flow and return readings: `seconds` cycles at
+    /// constant values.
+    #[allow(clippy::too_many_arguments)]
+    fn run_fr(
+        config: &DeltaTConfig,
+        mut state: DeltaTState,
+        t0: u64,
+        seconds: u64,
+        collector: Reading,
+        store: Reading,
+        flow: Reading,
+        ret: Reading,
+    ) -> (DeltaTState, DeltaTOutput) {
+        let mut out = None;
+        for t in t0..t0 + seconds {
+            let fr = Some(FlowReturn { flow, ret });
+            let (s, o) = step(config, state, Seconds::new(t), collector, store, fr);
+            state = s;
+            out = Some(o);
+        }
+        (state, out.unwrap())
+    }
+
+    /// The BX Plus settings of the reference installation (ARCHITECTURE
+    /// 8.1): on at 5 K, off at 2 K. Minimum run time 0, because the BX
+    /// data shows none.
+    fn bx() -> DeltaTConfig {
+        DeltaTConfig {
+            on: Kelvin::from_const(5.0),
+            off: Kelvin::from_const(2.0),
+            min_run: Seconds::ZERO,
+            collector_min: Some(Celsius::from_const(10.0)),
+        }
+    }
+
+    /// The sunny evening of 2026-07-09 (replay data), simplified: the
+    /// collector sensor falls far below the store, but flow minus return
+    /// is still 10 K, so the pump keeps running; it stops once flow minus
+    /// return reaches 2 K.
+    #[test]
+    fn flow_return_keeps_the_pump_on_while_the_loop_delivers_heat() {
+        let cfg = bx();
+        // Running in the afternoon: collector 72, store 65, flow 76, return 56.
+        let (s, o) = run_fr(
+            &cfg,
+            DeltaTState::default(),
+            0,
+            60,
+            c(72.0),
+            c(65.0),
+            c(76.0),
+            c(56.0),
+        );
+        assert_eq!(o.status, DeltaTStatus::Running);
+        // Evening: collector 18 K below the store, loop still 10 K.
+        let (s, o) = run_fr(&cfg, s, 60, 600, c(47.0), c(65.0), c(64.0), c(54.0));
+        assert!(o.pump_on);
+        assert_eq!(o.status, DeltaTStatus::HeldByFlowReturn);
+        // Flow minus return down to 2 K: both conditions met, off.
+        let (_, o) = run_fr(&cfg, s, 660, 10, c(47.0), c(65.0), c(59.0), c(57.0));
+        assert!(!o.pump_on);
+    }
+
+    /// The short morning runs of 2026-08-03: right after the start the
+    /// cold contents of the store's coil pass the return sensor, so flow
+    /// minus return is strongly negative; the run ends when the collector
+    /// difference reaches 2 K, as on the BX.
+    #[test]
+    fn flow_return_does_not_hold_a_pump_while_the_loop_is_negative() {
+        let cfg = bx();
+        let (s, o) = run_fr(
+            &cfg,
+            DeltaTState::default(),
+            0,
+            30,
+            c(61.0),
+            c(54.0),
+            c(25.0),
+            c(45.0),
+        );
+        assert!(o.pump_on);
+        let (_, o) = run_fr(&cfg, s, 30, 10, c(56.0), c(54.0), c(39.0), c(48.0));
+        // Stopped a few cycles in (once the mean has caught up) and idle
+        // since; the point is that the negative loop difference didn't
+        // hold it.
+        assert!(!o.pump_on);
+        assert_eq!(o.status, DeltaTStatus::Idle);
+    }
+
+    /// The flow/return condition can only keep a running pump on; it never
+    /// starts one, however warm the flow is.
+    #[test]
+    fn flow_return_never_starts_the_pump() {
+        let (_, o) = run_fr(
+            &bx(),
+            DeltaTState::default(),
+            0,
+            60,
+            c(50.0),
+            c(50.0),
+            c(80.0),
+            c(40.0),
+        );
+        assert!(!o.pump_on);
+        assert_eq!(o.status, DeltaTStatus::Idle);
+    }
+
+    /// A broken flow sensor doesn't stop the pump: the control falls back
+    /// to the plain collector difference and reports the fault. With the
+    /// collector difference low, that means the pump stops, which is the
+    /// safe side.
+    #[test]
+    fn flow_return_fault_falls_back_to_the_collector_difference() {
+        let cfg = bx();
+        let (s, _) = run_fr(
+            &cfg,
+            DeltaTState::default(),
+            0,
+            60,
+            c(72.0),
+            c(65.0),
+            c(76.0),
+            c(56.0),
+        );
+        // Collector still clearly warmer: running, fault only reported.
+        let (s, o) = run_fr(
+            &cfg,
+            s,
+            60,
+            10,
+            c(72.0),
+            c(65.0),
+            Err(SensorFault::OpenCircuit),
+            c(56.0),
+        );
+        assert!(o.pump_on);
+        assert_eq!(o.flow_return_fault, Some(SensorFault::OpenCircuit));
+        assert_eq!(o.loop_delta_t, None);
+        // Collector difference gone: off, although the (unknown) loop might
+        // still deliver.
+        let (_, o) = run_fr(
+            &cfg,
+            s,
+            70,
+            10,
+            c(47.0),
+            c(65.0),
+            Err(SensorFault::OpenCircuit),
+            c(56.0),
+        );
+        assert!(!o.pump_on);
+    }
+
+    /// Without the option nothing changes: the same evening stops the
+    /// pump as soon as the collector difference is gone.
+    #[test]
+    fn without_flow_return_the_evening_run_stops_early() {
+        let cfg = bx();
+        let (s, _) = run(&cfg, DeltaTState::default(), 0, 60, c(72.0), c(65.0));
+        let (_, o) = run(&cfg, s, 60, 10, c(47.0), c(65.0));
+        assert!(!o.pump_on);
+        assert_eq!(o.loop_delta_t, None);
+    }
+
     proptest! {
         /// Whatever the readings, a fault on either sensor means "off".
         #[test]
@@ -537,7 +805,7 @@ mod tests {
             } else {
                 DeltaTState::default()
             };
-            let (_, o) = step(&cfg, state, Seconds::new(ts), Err(SensorFault::Stale), c(store));
+            let (_, o) = step(&cfg, state, Seconds::new(ts), Err(SensorFault::Stale), c(store), None);
             prop_assert!(!o.pump_on);
         }
 
@@ -548,7 +816,7 @@ mod tests {
             store in 0.0_f32..110.0,
         ) {
             let cfg = DeltaTConfig::DEFAULT;
-            let (_, o) = step(&cfg, DeltaTState::default(), Seconds::ZERO, c(collector), c(store));
+            let (_, o) = step(&cfg, DeltaTState::default(), Seconds::ZERO, c(collector), c(store), None);
             if collector - store < cfg.on.get() {
                 prop_assert!(!o.pump_on);
             }
