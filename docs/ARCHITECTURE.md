@@ -1075,6 +1075,53 @@ come first.
    during shadow mode, so it can move earlier.
 10. Optional: MQTT + Home Assistant discovery (off by default).
 
+### 10.1 Expected size
+
+An estimate made before any code exists (November 2026), from the scope
+in this document and experience with similar Rust projects; take it as
+±30 %. Lines of Rust without blank lines;
+vendored htmx and uPlot, CI configuration and `Cargo.toml` files are not
+counted. 🟢 small, 🟡 medium, 🔴 large.
+
+| Crate / part | What's in it | Code (lines) | Tests (lines) |
+|---|---|---|---|
+| `costos-web` | All pages (7.1): overview with server-rendered SVG system and store drawing, history (uPlot), manual mode, events, settings, the setup wizard, backup with diff, diagnostics; forms built from the config definitions; login (Argon2, sessions, CSRF, rate limit, tokens); SSE; JSON API with OpenAPI | 🔴 7,000–10,000 | 1,000–2,000 |
+| `costos-core` | The control functions and function checks (6.2), plausibility and smoothing, the rule types of 6.1 (finite `f32`, `Option`, `u64` counters) | 🟡 3,500–5,000 | 🔴 3,000–5,000 (property tests, 10-year runs, the edge cases of 6.1 rule 13) |
+| `costos-hw-linux` | gpio-cdev, spidev, sysfs PWM, w1/DS18x20, DS2482, MAX31865, LTC2983, edge-timestamp duty for pump feedback and output readback, the 20 Hz heartbeat and the watchdog self-test, hwmon under-voltage | 🟡 3,000–4,500 | 800–1,200 |
+| `costos-config` | Schema with names, units, ranges and help texts, cross-field validation, version migrations, revision store with diff and rollback | 🟡 2,500–4,000 | 1,000–2,000 |
+| `costosd` | Scheduler and tasks, VictoriaMetrics push with disk buffer (6.5), persistence, systemd, logging, recovery command, MQTT with Home Assistant discovery, e-mail (6.7) | 🟡 3,000–4,500 | 800–1,200 |
+| `costos-sim` | Thermal model of collector, pipes and store; weather days; fault injection | 🟢 1,000–2,000 | 300–600 |
+| `costos-safety` | Supervisor (4.2): emergency shutdown, absolute limits, stale data; can only reduce outputs | 🟢 600–1,000 | 800–1,200 |
+| `costos-hal` | Traits for inputs, outputs, PWM, pulses, watchdog | 🟢 300–500 | — |
+| Replay tool | vbus2influx history through the core, list of differing decisions | 🟢 500–1,000 | 200–400 |
+| CSS and JS glue | One stylesheet, the uPlot wiring | 🟢 700–1,200 | — |
+| **Total** | | **≈ 22,000–33,000** | **≈ 8,000–14,000** |
+
+So roughly **30,000–47,000 lines including tests**. By milestone, code
+without tests, as a running total:
+
+| Milestone | Adds | Running total |
+|---|---|---|
+| 1. Core + safety + replay tool | ≈ 5,000 | ≈ 5,000 |
+| 2. Simulation | ≈ 1,500 | ≈ 6,500 |
+| 3. HAL + Linux drivers, bench | ≈ 4,000 | ≈ 10,500 |
+| 4. Daemon + config + VictoriaMetrics | ≈ 6,000 | ≈ 16,500 |
+| 5. Web interface | ≈ 8,500 | ≈ 25,000 |
+| 6–8. Shadow mode, optional functions, switch-over | ≈ 2,000 (mostly in the core) | ≈ 27,000 |
+| 9–10. E-mail, MQTT | ≈ 1,500 | ≈ 28,500 |
+
+What drives the size:
+
+- **The web interface is about a third of the code.** That is the price
+  of "everything is configured in the browser, nobody edits a file"
+  (section 7). A read-only overview with a config file would bring
+  milestones 1–4 to about 15,000 lines, but goes against that principle.
+- **Core and safety are small but carry the most tests**, on purpose:
+  they decide what the pumps do.
+
+Update this section with the real numbers once code exists (for example
+from `tokei crates/`).
+
 ---
 
 ## 11. Open questions
