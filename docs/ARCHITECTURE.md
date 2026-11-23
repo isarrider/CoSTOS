@@ -1107,7 +1107,7 @@ gap**; none of the kept days has one.
 | Finding | Detail | Consequence for CoSTOS |
 |---|---|---|
 | 🟢 Samples about every 5 s | The core runs a 1 s cycle | The replay tool holds each row until the next one, so the core sees 5 identical cycles |
-| 🟡 The pump is only switched **0 % or 100 %** | No speed control in use on the BX Plus here | Speed control can't be compared by replay; only on/off decisions are. The PI controller is checked by unit and simulation tests |
+| 🟡 The relay is only **0 % or 100 %** | R1 only switches the pump's mains on and off. The speed comes from the BX's PWM A output (`PWM_0_10V_A`, PWM2 profile, minimum 30 % since 2026-09-16), which was not in the export | On/off decisions can be compared by replay now. Speed control can be compared once the PWM A series is exported too (10.2); until then the PI controller is checked by unit and simulation tests |
 | 🟢 Switch-on at **S1 − S2 ≥ 5 K** | 227 starts, median 4.9 K at the last sample before the start, p10 4.8 K | ΔT_on = 5 K here (the core's example default is 6 K) |
 | 🟡 Switch-off needs **both** S1 − S2 ≤ 2 K **and** S4 − S5 ≤ 2 K | Long runs end at S4 − S5 = 2.1 K (p10 2.1, p90 2.4) while S1 − S2 is often far below zero (−18 K on 2026-07-09); short morning runs end at S1 − S2 = 2.1 K while S4 − S5 is negative (the store's cold coil contents pass S5 first) | A plain S1 − S2 rule stops the pump too early on a sunny evening, while S4 − S5 shows the loop still delivers about 10 K. A simulation of "on at S1 − S2 ≥ 4.9 K, off when S1 − S2 ≤ 2.1 K and S4 − S5 ≤ 2.1 K" matches the relay in **99.95 %** of the samples, and 789 h of pump time against 788 h. This matches the BX Plus option **flow and return sensor** (manual 8.5, Solar / Expert: *Vorlaufsensor*, *Rücklaufsensor*): with both enabled, the controller uses them for the switch-off condition. Confirmed on the controller: flow sensor S4 and return sensor S5 are enabled, ΔTon 5 K and ΔToff 2 K |
 | 🟡 25 mismatches longer than 1 min | Mostly the BX stopping at S1 − S2 = 2 K while S4 − S5 was still 2.4–4.9 K, and a few starts the sample rate missed | The rule above is close, not exact; replay reports these as differences to look at, not as failures |
@@ -1273,6 +1273,25 @@ Update this section with the real numbers once code exists (for example
 from `tokei crates/`).
 
 ---
+
+### 10.2 Open work
+
+Everything that is known to be still to do, so nothing gets lost between
+sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
+
+| # | Topic | What is open | Depends on | Effort | Rating |
+|---|---|---|---|---|---|
+| H1 | Pt1000 front end from basic parts (HAT D13 reopened, D26) | Circuit (for example 8 dividers with 0.1 % reference resistors, a 74HC4051 multiplexer and one ADS1115, measured ratiometrically), input protection, simulation, parts list from JLCPCB basic parts, new comparison table in HAT-development 4 | — | 1–2 sessions | 🔴 no PT board is ordered before it |
+| H2 | The 1-Wire edition's single Pt1000 input | Replace the MAX31865 with one divider channel from H1? | H1 | small | 🟡 |
+| H3 | Real prices for both editions | From the new parts lists | H1 | small | 🟡 |
+| H4 | Re-review of the HAT pull request #2 | Waiting for the fixes | — | 1 session | 🟡 |
+| S1 | Speed control (PI) | Milestone 1 | — | 1 session | 🟡 |
+| S2 | Store maximum | Milestone 1 | — | small | 🟡 |
+| S3 | The 14 early BX stops (8.1) | Test both hypotheses in the replay: flow/return only after some minutes of running; a daily re-check at 12:00 BX time | — | small | 🟢 |
+| S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
+| S5 | Start profiles and the purge | Which start profiles a pump can have, and how the full-speed purge follows them (6.2) | decision | tiny | 🟢 |
+| S6 | Export the BX PWM A series | One more VictoriaMetrics export with `PWM_0_10V_A` (if vbus2influx records it), so the replay can compare speed control too | — | tiny | 🟡 |
+| D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
 
