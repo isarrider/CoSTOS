@@ -7,6 +7,7 @@
 //! whole seconds, saturating counters.
 #![cfg_attr(not(test), no_std)]
 
+pub mod delta_t;
 pub mod output;
 pub mod sensor;
 pub mod temperature;
