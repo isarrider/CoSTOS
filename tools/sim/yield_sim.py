@@ -26,7 +26,7 @@ Model (all assumptions marked; to be calibrated once the flow table exists):
 - Collector manifold + fluid: 15 kJ/K (assumed).
 - Pipes: DN 16 twin stainless corrugated solar pipe, 2 × 25 m, of which
   about 3 m outdoors (owner); 0.22 W/(m·K) per pipe with the standard
-  insulation, 0.23 l/m, indoor part at 15 °C (assumed).
+  insulation, inner diameter 15 mm (0.20 l/m with the corrugation), indoor part at 15 °C.
 - Incidence angle (optional, IAM): beam light on the tubes is weighted with
   a transversal and a longitudinal incidence angle modifier for evacuated
   tubes (tubes along the slope); BEAM_SHARE sets how much of G(i) is
@@ -36,22 +36,23 @@ Model (all assumptions marked; to be calibrated once the flow table exists):
   the month's typical morning temperature (from the recorded data for
   Jul-Nov, guessed for the other months), so each day starts like a real
   one in that month and the result is "heat into the store that day".
-- Flow: from the pump curve (Yonos PARA ST 15/7: 7.3 m, 3.3 m³/h) and a
-  system curve whose lumped resistance is calibrated so that 30 % PWM gives
-  2.5 l/min, the flow implied by the measured transport delay at pump
-  starts (about 200 s for ~6.6 l of DN 16 flow pipe and station). Table
-  FLOW_TABLE below, scaled by FMAX/5.9 for the sensitivity cases.
-- Control like the BX Plus: on at S1-S2 >= 5 K; off when S1-S2 <= 2 K and
-  flow-return <= 2 K; start at 30 %, then ±1 % every 30 s to hold S1-S2 at
-  ΔTset ± 1 K, 30–100 %.
+- Flow: the table FLOW_TABLE below, calibrated from the store's energy
+  balance on 67 summer days (ARCHITECTURE 8.4): about 0.45 times the
+  first estimate from the transport delay, 1.13 l/min at 30 % and
+  2.66 l/min at 100 %. Scaled by FMAX/FLOW_TABLE[10] for the sensitivity
+  cases (FMAX = flow at 100 %).
 """
 import numpy as np, numba, sys, csv
 
 RHO_C = 3650.0  # J/(l K), solar fluid
 
-# Flow in l/min at PWM 0, 10, ..., 100 % (ARCHITECTURE 8.2). 10 % stands for
-# the PWM2 minimum band (7-15 %): minimum speed, 1.5 l/min.
-FLOW_TABLE = np.array([0.0, 1.5, 1.8, 2.5, 3.2, 3.7, 4.0, 4.5, 5.1, 5.6, 5.9])
+# Flow in l/min at PWM 0, 10, ..., 100 % (ARCHITECTURE 8.4). 10 % stands for
+# the PWM2 minimum band (7-15 %): minimum speed.
+# Store water around the lower coil is colder than at S2 (ARCHITECTURE 8.4):
+# the coil exchanges with water SINK kelvin below the lower node.
+SINK = 0.0
+
+FLOW_TABLE = np.array([0.0, 0.68, 0.81, 1.13, 1.44, 1.67, 1.80, 2.03, 2.30, 2.52, 2.66])
 DT = 5.0
 
 # Incidence angle modifiers for evacuated tubes (generic curves, as in
@@ -192,7 +193,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
     # per-collector fit P = P0*G/1000 - k1*dT - k2*dT^2, k1=4.68 W/K, k2=0.0483 W/K²
     scale = 2.0 * 58.0 / 60.0
     p0, k1, k2 = 2037.0 * scale, 4.68 * scale, 0.0483 * scale
-    c_pipe = (pipe_len * 0.23 * RHO_C) + pipe_len * 0.15 * 500.0
+    c_pipe = (pipe_len * 0.20 * RHO_C) + pipe_len * 0.15 * 500.0
     ua_pipe = pipe_len * 0.22
     c_node = 400.0 * 4180.0
     tc = 10.0; tf = 20.0; tr = 20.0; tlo = 40.0; thi = 42.0
@@ -217,8 +218,8 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                 q = -1.0 * d
             # control (sensors: S1 = tc, S2 = tlo, S4 = tf, S5 = coil outlet)
             if on:
-                w = flow(pwm) * fmax / 5.9 / 60.0 * RHO_C
-                tout = tlo + (tf - tlo) * np.exp(-ua_coil / w)
+                w = flow(pwm) * fmax / FLOW_TABLE[10] / 60.0 * RHO_C
+                tout = (tlo - SINK) + (tf - (tlo - SINK)) * np.exp(-ua_coil / w)
             else:
                 w = 0.0
                 tout = tr
@@ -249,8 +250,8 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                         elif d12 < ds - 1.0 and pwm > pmin:
                             pwm -= 1.0
             if on:
-                w = flow(pwm) * fmax / 5.9 / 60.0 * RHO_C
-                tout = tlo + (tf - tlo) * np.exp(-ua_coil / w)
+                w = flow(pwm) * fmax / FLOW_TABLE[10] / 60.0 * RHO_C
+                tout = (tlo - SINK) + (tf - (tlo - SINK)) * np.exp(-ua_coil / w)
                 qcoil = w * (tf - tout)
                 run_s += DT
             else:
@@ -284,7 +285,7 @@ def main():
         for h in (0.0, 15.0, 20.0, 25.0, 30.0, 35.0):
             f, _ = shade_factor(ts, beam, (h, 135.0, 225.0))
             out = np.zeros((13, 4))
-            run(gi * f, ta, months, hours, 10.0, 5.9, 650.0, 15000.0, 25.0, out)
+            run(gi * f, ta, months, hours, 10.0, 2.66, 650.0, 15000.0, 25.0, out)
             out /= 4.0
             err = np.mean([abs(out[m, 1] - r) / r for m, r in rec.items()])
             print(f"trees {h:4.0f}°: {out[:,0].sum():6.0f} kWh/yr  pump hours Jul-Nov "
@@ -301,7 +302,7 @@ def main():
                            (-2.0, "hot store: 12 K, else 6 K"), (-3.0, "strong sun > 600 W/m²: 6 K, else 12 K"),
                            (-4.0, "strong sun: 12 K, else 6 K")]:
             out = np.zeros((13, 4))
-            run(gi, ta, months, hours, code, 5.9, 650.0, 15000.0, 25.0, out)
+            run(gi, ta, months, hours, code, 2.66, 650.0, 15000.0, 25.0, out)
             res[name] = out / 4.0
         ref = res["fixed 10 K"]
         for name, o in res.items():
@@ -311,7 +312,7 @@ def main():
         fixed = {}
         for d in (4, 6, 8, 10, 12, 14, 16):
             out = np.zeros((13, 4))
-            run(gi, ta, months, hours, float(d), 5.9, 650.0, 15000.0, 25.0, out)
+            run(gi, ta, months, hours, float(d), 2.66, 650.0, 15000.0, 25.0, out)
             fixed[d] = out / 4.0
         best = 0.0
         for m in range(1, 13):
@@ -323,7 +324,7 @@ def main():
         for pmin in (15.0, 20.0, 30.0, 40.0, 50.0, 60.0):
             for dts in (8.0, 10.0, 12.0):
                 out = np.zeros((13, 4))
-                run(g, ta, months, hours, dts, 5.9, 650.0, 15000.0, 25.0, out, 5.0, 2.0, pmin)
+                run(g, ta, months, hours, dts, 2.66, 650.0, 15000.0, 25.0, out, 5.0, 2.0, pmin)
                 out /= 4.0
                 print(f"min {pmin:4.0f} % dTset {dts:4.1f}: {out[:,0].sum():6.0f} kWh/yr  pump {out[:,1].sum():5.0f} h"
                       f"  {out[:,2].sum():5.1f} kWh_el  mean pwm {out[:,3].sum()/out[:,1].sum():4.1f}")
@@ -336,18 +337,18 @@ def main():
             gi = g * iam_factor(ts, beam_share=share)
             for dts in (6.0, 8.0, 10.0):
                 out = np.zeros((13, 4))
-                run(gi, ta, months, hours, dts, 5.9, 650.0, 15000.0, 25.0, out)
+                run(gi, ta, months, hours, dts, 2.66, 650.0, 15000.0, 25.0, out)
                 out /= 4.0
                 print(f"beam share {name:22s} dTset {dts:4.1f}: {out[:,0].sum():6.0f} kWh/yr  {out[:,2].sum():5.1f} kWh_el")
         return
     years = 4.0
-    cases = [("base", 5.9, 650.0, 15000.0, 25.0), ("flow -40 %", 3.5, 650.0, 15000.0, 25.0),
-             ("flow +50 %", 8.9, 650.0, 15000.0, 25.0), ("coil UA 400", 5.9, 400.0, 15000.0, 25.0),
-             ("coil UA 1000", 5.9, 1000.0, 15000.0, 25.0), ("pipes 15 m", 5.9, 650.0, 15000.0, 15.0)]
+    cases = [("base", 2.66, 650.0, 15000.0, 25.0), ("flow -40 %", 1.6, 650.0, 15000.0, 25.0),
+             ("flow +50 %", 4.0, 650.0, 15000.0, 25.0), ("coil UA 400", 2.66, 400.0, 15000.0, 25.0),
+             ("coil UA 1000", 2.66, 1000.0, 15000.0, 25.0), ("pipes 15 m", 2.66, 650.0, 15000.0, 15.0)]
     if len(sys.argv) > 2 and sys.argv[2] == "onoff":
         for don, doff in [(3, 1), (4, 1.5), (5, 2), (6, 3), (8, 4)]:
             out = np.zeros((13, 4))
-            run(g, ta, months, hours, 8.0, 5.9, 650.0, 15000.0, 25.0, out, float(don), float(doff))
+            run(g, ta, months, hours, 8.0, 2.66, 650.0, 15000.0, 25.0, out, float(don), float(doff))
             out /= years
             print(f"on {don} off {doff}: {out[:,0].sum():6.0f} kWh/yr  pump {out[:,1].sum():5.0f} h  {out[:,2].sum():5.1f} kWh_el")
         return

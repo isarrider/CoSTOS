@@ -36,7 +36,7 @@ plt.rcParams.update({
 })
 
 
-def case(g, ta, mo, hr, dtset, fmax=5.9, ua=650.0, pipe=25.0, don=5.0, doff=2.0, pmin=30.0):
+def case(g, ta, mo, hr, dtset, fmax=2.66, ua=650.0, pipe=25.0, don=5.0, doff=2.0, pmin=30.0):
     out = np.zeros((13, 4))
     ys.run(g, ta, mo, hr, float(dtset), fmax, ua, 15000.0, pipe, out, don, doff, pmin)
     return out / 4.0
@@ -101,8 +101,8 @@ def main():
 
     # 3. Sensitivity of the net result to the flow estimate.
     fig, ax = plt.subplots(figsize=(8, 3.6))
-    for name, fmax, col in [("flow −40 %", 3.5, ORANGE), ("base flow", 5.9, BLUE),
-                            ("flow +50 %", 8.9, AQUA)]:
+    for name, fmax, col in [("flow −40 %", 1.6, ORANGE), ("base flow", 2.66, BLUE),
+                            ("flow +50 %", 4.0, AQUA)]:
         r = {s: case(g, ta, mo, hr, s, fmax=fmax) for s in SETS}
         h = np.array([r[s][:, 0].sum() for s in SETS])
         e = np.array([r[s][:, 2].sum() for s in SETS])
@@ -123,8 +123,8 @@ def main():
     variants.append(("pipes 15 m", case(g, ta, mo, hr, 10, pipe=15.0)[:, 0].sum()))
     variants.append(("coil UA 400 W/K", case(g, ta, mo, hr, 10, ua=400.0)[:, 0].sum()))
     variants.append(("coil UA 1000 W/K", case(g, ta, mo, hr, 10, ua=1000.0)[:, 0].sum()))
-    variants.append(("flow −40 %", case(g, ta, mo, hr, 10, fmax=3.5)[:, 0].sum()))
-    variants.append(("flow +50 %", case(g, ta, mo, hr, 10, fmax=8.9)[:, 0].sum()))
+    variants.append(("flow −40 %", case(g, ta, mo, hr, 10, fmax=1.6)[:, 0].sum()))
+    variants.append(("flow +50 %", case(g, ta, mo, hr, 10, fmax=4.0)[:, 0].sum()))
     for share in (0.5, 0.8):
         gi = g * ys.iam_factor(ts, beam_share=share)
         variants.append((f"incidence angle, beam {share:.0%}", case(gi, ta, mo, hr, 10)[:, 0].sum()))
@@ -179,12 +179,12 @@ def main():
     pw = np.arange(0, 101, 10)
     fig, ax = plt.subplots(figsize=(6, 3.2))
     ax.plot(pw[1:], ys.FLOW_TABLE[1:], color=BLUE, lw=2, marker="o", ms=6)
-    ax.annotate("2.5 l/min at 30 %:\nfrom the 198 s transport delay", (30, 2.5),
+    ax.annotate("1.13 l/min at 30 %:\nfrom the store's energy balance", (30, 1.13),
                 textcoords="offset points", xytext=(12, -28), fontsize=8, color=INK2,
                 arrowprops={"arrowstyle": "-", "color": INK2, "lw": 0.8})
     ax.set_xlabel("PWM [%]")
-    ax.set_title("Estimated solar flow [l/min] (±30 %)", loc="left", fontsize=11)
-    ax.set_ylim(0, 7)
+    ax.set_title("Estimated solar flow [l/min] (about ±20 %)", loc="left", fontsize=11)
+    ax.set_ylim(0, 3.2)
     save(fig, "sim-flow.svg")
 
     # 6. Incidence angle modifiers used.
