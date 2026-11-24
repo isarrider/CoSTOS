@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/costos-core", "crates/costos-safety", "crates/costos-replay", "crates/costos-sim"]
+members = ["crates/costos-core", "crates/costos-safety", "crates/costos-replay", "crates/costos-sim", "crates/costos-cycle"]
 
 [workspace.package]
 version = "0.1.0"
@@ -12,6 +12,7 @@ rust-version = "1.85"
 [workspace.dependencies]
 costos-core = { path = "crates/costos-core" }
 costos-safety = { path = "crates/costos-safety" }
+costos-cycle = { path = "crates/costos-cycle" }
 proptest = { version = "1", default-features = false, features = ["std"] }
 
 [workspace.lints.rust]
@@ -33,4 +34,8 @@ expect_used = "warn"
 overflow-checks = true
 
 [profile.release.package.costos-safety]
+overflow-checks = true
+
+# costos-cycle runs the chain above every second: same rule.
+[profile.release.package.costos-cycle]
 overflow-checks = true

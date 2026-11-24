@@ -1,0 +1,15 @@
+[package]
+name = "costos-cycle"
+description = "One control second of CoSTOS: sensor corrections, control chain, safety supervisor, plausibility checks and heat counter in one place"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+costos-core.workspace = true
+costos-safety.workspace = true
+
+[lints]
+workspace = true

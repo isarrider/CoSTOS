@@ -27,7 +27,7 @@ jobs:
           RUSTDOCFLAGS: -D warnings
 
   bare-metal:
-    # ARCHITECTURE 6.1 rule 12: costos-core and costos-safety must build
+    # ARCHITECTURE 6.1 rule 12: costos-core, costos-safety and costos-cycle must build
     # without std, so std can't creep back in unnoticed.
     name: no_std build (riscv32imafc)
     runs-on: ubuntu-latest
@@ -36,4 +36,4 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: riscv32imafc-unknown-none-elf
-      - run: cargo build -p costos-core -p costos-safety --target riscv32imafc-unknown-none-elf --release
+      - run: cargo build -p costos-core -p costos-safety -p costos-cycle --target riscv32imafc-unknown-none-elf --release

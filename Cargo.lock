@@ -28,6 +28,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "costos-cycle"
+version = "0.1.0"
+dependencies = [
+ "costos-core",
+ "costos-safety",
+]
+
+[[package]]
 name = "costos-replay"
 version = "0.1.0"
 dependencies = [
