@@ -1082,12 +1082,13 @@ analysed once; six days are kept in the repository as test data.
 | `vbus2influx_temperature_03` | S3 store top | Display, store maximum |
 | `vbus2influx_temperature_04` | S4 solar flow (at the store) | Second off condition (below) |
 | `vbus2influx_temperature_05` | S5 solar return (at the store) | Second off condition (below) |
-| `vbus2influx_relay_01` | R1 solar pump | The decision to compare against |
+| `vbus2influx_relay_01` | R1 solar pump mains | The on/off decision to compare against |
+| `vbus2influx_PWM_0_10V_A` | PWM A solar pump speed (PWM2) | The speed, for comparing the speed control once it exists |
 
 **Files.** `tests/replay/<date>.csv`, one local day (Europe/Berlin) each.
 Comment lines start with `#` and say why the day was picked. Columns:
-`unix_s,s1,s2,s3,s4,s5,relay`, temperatures in °C with one decimal, relay in
-percent. A row is written whenever a value changes, and at least once every
+`unix_s,s1,s2,s3,s4,s5,relay,pwm`, temperatures in °C with one decimal, relay
+and PWM in percent. A row is written whenever a value changes, and at least once every
 60 s. The raw samples are sometimes up to about 90 s apart (a few skipped
 telegrams), so only rows more than **120 s** apart count as a **recording
 gap**; none of the kept days has one.
@@ -1107,7 +1108,10 @@ gap**; none of the kept days has one.
 | Finding | Detail | Consequence for CoSTOS |
 |---|---|---|
 | 🟢 Samples about every 5 s | The core runs a 1 s cycle | The replay tool holds each row until the next one, so the core sees 5 identical cycles |
-| 🟡 The relay is only **0 % or 100 %** | R1 only switches the pump's mains on and off. The speed comes from the BX's PWM A output (`PWM_0_10V_A`, PWM2 profile, minimum 30 % since 2026-09-16), which was not in the export | On/off decisions can be compared by replay now. Speed control can be compared once the PWM A series is exported too (10.2); until then the PI controller is checked by unit and simulation tests |
+| 🟢 The relay is only **0 % or 100 %** | R1 only switches the pump's mains on and off; the speed comes from PWM A | Replay compares on/off now and the speed once the speed control exists |
+| 🟢 The BX **speed-controls** the pump | Each run starts at the minimum speed (20 %, 30 % since 2026-09-16), with no kick, then moves in steps of 1 % every 10–170 s (median 39 s). Median speed by S1 − S2: 26–30 % below 8 K, 34 % at 8–10 K, 41 % at 10–12 K, 51 % at 12–15 K. So it holds S1 − S2 around 8–10 K | CoSTOS's speed control (10.2, S1) gets a target to compare against. The BX's ΔTset is still to be read off the controller (RESOL default 10 K) |
+| 🟡 The pump **almost never runs fast** | Outside the pulses below, the speed stayed between 20 % and 47 %; ≥ 60 % in only 0.03 % of the running time | Confirms the full-speed purge (6.2): without it the pump would hardly ever flush the loop |
+| 🟢 Daily 100 % pulse during runs | Until 2026-09-16 the blocking protection also set 100 % for about 10 s once a day while the pump was running | The BX's own form of a purge; CoSTOS's purge replaces it |
 | 🟢 Switch-on at **S1 − S2 ≥ 5 K** | 227 starts, median 4.9 K at the last sample before the start, p10 4.8 K | ΔT_on = 5 K here (the core's example default is 6 K) |
 | 🟡 Switch-off needs **both** S1 − S2 ≤ 2 K **and** S4 − S5 ≤ 2 K | Long runs end at S4 − S5 = 2.1 K (p10 2.1, p90 2.4) while S1 − S2 is often far below zero (−18 K on 2026-07-09); short morning runs end at S1 − S2 = 2.1 K while S4 − S5 is negative (the store's cold coil contents pass S5 first) | A plain S1 − S2 rule stops the pump too early on a sunny evening, while S4 − S5 shows the loop still delivers about 10 K. A simulation of "on at S1 − S2 ≥ 4.9 K, off when S1 − S2 ≤ 2.1 K and S4 − S5 ≤ 2.1 K" matches the relay in **99.95 %** of the samples, and 789 h of pump time against 788 h. This matches the BX Plus option **flow and return sensor** (manual 8.5, Solar / Expert: *Vorlaufsensor*, *Rücklaufsensor*): with both enabled, the controller uses them for the switch-off condition. Confirmed on the controller: flow sensor S4 and return sensor S5 are enabled, ΔTon 5 K and ΔToff 2 K |
 | 🟡 25 mismatches longer than 1 min | Mostly the BX stopping at S1 − S2 = 2 K while S4 − S5 was still 2.4–4.9 K, and a few starts the sample rate missed | The rule above is close, not exact; replay reports these as differences to look at, not as failures |
@@ -1290,7 +1294,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S3 | The 14 early BX stops (8.1) | Test both hypotheses in the replay: flow/return only after some minutes of running; a daily re-check at 12:00 BX time | — | small | 🟢 |
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
-| S6 | Export the BX PWM A series | One more VictoriaMetrics export with `PWM_0_10V_A` (if vbus2influx records it), so the replay can compare speed control too | — | tiny | 🟡 |
+| S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
 | D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
