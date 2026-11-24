@@ -1060,7 +1060,7 @@ The interface can switch pumps, so changes need login:
    differently. This is the main tool for checking the behaviour against the
    reference controller.
 3. **Simulation tests** with `costos-sim`: sunny day, cloudy day, store
-   overheating, stagnation, sensor faults, stuck pump.
+   overheating, stagnation, sensor faults, stuck pump (8.3).
 4. **Hardware-in-the-loop on the bench**: SBC plus sensor boards with
    resistors (or a decade box) in place of the Pt1000 sensors, LEDs or lamps
    in place of the pumps. Test the watchdog by killing the process and
@@ -1450,6 +1450,64 @@ installation is about **1900 kWh** of solar heat into the store (trees
 included). Still open (10.2, S7): the rest of the November gap, and a check
 of the spring figures once there is spring data.
 
+### 8.3 Simulation tests (`costos-sim`)
+
+**Why.** Unit tests check each function on fixed inputs; replay checks the
+on/off decisions against the BX but is open loop (8.1). What only shows in
+a closed loop (a speed control holding ΔT, a store maximum stopping a
+heating store, an emergency latch releasing after the collector cools, a
+restart in the middle of all that) needs a model whose temperatures react
+to what CoSTOS does.
+
+**What runs, every simulated second:** the plant gives S1–S5 → a simulated
+sensor layer turns them into readings (with injected faults, range-checked
+as the daemon will) → `costos-core::solar::step`, the same control chain
+the daemon will run (ΔT control AND store maximum → speed control →
+anti-seize/purge) → `costos-safety::supervise_solar_pump` → the resulting
+flow goes back into the plant.
+
+**The plant** is the Python yield model of 8.2 in Rust, same nodes and
+numbers: data-sheet collector with heat pipes as thermal diodes, DN 16
+pipes 2 × 25 m, lower coil UA 650 W/K, two store nodes of 400 l, the
+estimated flow table. One change: the collector's heat capacity is
+**40 kJ/K** instead of 15 kJ/K. It barely matters for the yield (under
+1 %), but a lot for the control: with 15 kJ/K a clear summer morning gave
+about 20 starts, because the cold fluid from 25 m of pipe kept cooling the
+small collector node below the switch-off difference; the recording shows
+one to three starts on clear days. 58 heat pipes with absorbers, the
+manifold and its fluid come to roughly 35–45 kJ/K. The weather is a
+clear-sky formula with scripted clouds and the trees to the south, so CI
+needs no data files.
+
+**The scenarios** (`crates/costos-sim/tests/scenarios.rs`, about one second
+for all of them in `cargo test --workspace`):
+
+| Scenario | What must hold | Result | Rating |
+|---|---|---|---|
+| Clear summer day | ΔT at the 10 K setpoint while controlling (mean within 0.5 K, 95 % within ±1.5 K), at most 10 starts, 14–22 kWh | ΔT held, 8 starts, 18.2 kWh, collector below 75 °C | 🟢 |
+| Passing clouds (every 20 min) | Still follows the sun; minimum off time (60 s) after every stop; at most 12 starts in any hour | Holds | 🟢 |
+| Full store, then stagnation | Store bottom never above 90.5 °C (store maximum 90 °C); pump off whenever the collector is at 130 °C or more; the latch holds down to 120 °C and is released below | Holds; the collector peaks around 147 °C | 🟢 |
+| Collector sensor open for 2 min | Off in the same second, `sensor unknown`, running again afterwards | Holds | 🟢 |
+| Collector sensor open for 30 min at noon | Without flow the collector stagnates within about 20 min; when the sensor is back at > 130 °C, the emergency latch keeps the pump off for the rest of the day | Holds: **safe, but the day's heat is lost** | 🟡 see below |
+| Store sensor shorted for 10 min | Off during the fault, running again after | Holds | 🟢 |
+| Collector sensor stops updating | Pump off once the reading is stale (10 s) and from then on | Holds | 🟢 |
+| Pump stuck (signal, no flow) from 11:00 | The collector heats up and the emergency stop still cuts the signal at 130 °C | Holds; the stuck pump itself is **not detected** | 🟡 see below |
+| Restart at 14:00 in normal operation | Pump back within a minute, no protection trips | Holds | 🟢 |
+| Restart while the collector cools through 125 °C | Starts latched (4.2): no start into the hot collector while above 120 °C | Holds | 🟢 |
+| Overcast winter day behind the trees | No solar run; exactly one anti-seize run, 10 s at 100 % between 12:00 and 13:00 | Holds | 🟢 |
+
+**What the scenarios taught:**
+
+- **A sensor fault at noon has a deadline.** Without flow the collector
+  reaches stagnation in about 20 minutes on a clear day, and after that the
+  latch (correctly) keeps the pump off until the evening. So a collector or
+  store sensor fault must raise its alarm at once (6.3), and the e-mail
+  notification (6.7, milestone 9) is worth having early, already in shadow
+  mode.
+- **A stuck pump is only caught by its consequence**, the collector
+  emergency. The pump feedback (5.4) will detect it directly; until then
+  the supervisor's emergency stop is the protection, and it works.
+
 ---
 
 ## 9. Migration from the DeltaSol BX Plus
@@ -1495,7 +1553,9 @@ come first.
    replay tool with seven recorded days, store maximum. *All functions of
    milestone 1 exist*; they are wired into one control cycle for the
    simulation tests (milestone 2) and later the daemon (milestone 4).
-2. `costos-sim` and simulation tests in CI.
+2. `costos-sim` and simulation tests in CI. *Done*: the control cycle
+   (`costos-core::solar`), the plant model, fault injection and eleven
+   closed-loop scenarios (8.3).
 3. HAL + Linux backend: GPIO outputs, PWM, watchdog, then the measuring
    drivers in this order: the Pt1000 front end of the PT edition (the
    reference installation keeps its Pt1000 sensors; which chip is open
