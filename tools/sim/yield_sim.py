@@ -7,6 +7,7 @@ Run:
     python3 tools/sim/yield_sim.py pvgis.csv          # all sensitivity cases
     python3 tools/sim/yield_sim.py pvgis.csv base     # base case only
     python3 tools/sim/yield_sim.py pvgis.csv onoff    # ΔTon/ΔToff sweep at ΔTset 8 K
+    python3 tools/sim/yield_sim.py pvgis.csv iam      # with incidence angle modifiers
 
 The PVGIS file is not in the repository: it is the EU's data (PVGIS ©
 European Union) and one command fetches it.
@@ -20,8 +21,13 @@ Model (all assumptions marked; to be calibrated once the flow table exists):
   and ΔT 0/30/50 K, scaled to 58 of 60 tubes. Heat pipes are thermal
   diodes, so without sun the manifold only loses a little (1 W/K).
 - Collector manifold + fluid: 15 kJ/K (assumed).
-- Pipes: 2 × 25 m 22 mm copper (length from the owner, size assumed),
-  0.25 W/(m·K), half outside (assumed).
+- Pipes: DN 16 twin stainless corrugated solar pipe, 2 × 25 m, of which
+  about 3 m outdoors (owner); 0.22 W/(m·K) per pipe with the standard
+  insulation, 0.23 l/m, indoor part at 15 °C (assumed).
+- Incidence angle (optional, IAM): beam light on the tubes is weighted with
+  a transversal and a longitudinal incidence angle modifier for evacuated
+  tubes (tubes along the slope); BEAM_SHARE sets how much of G(i) is
+  treated as beam, because the PVGIS file has no beam/diffuse split.
 - Lower coil: UA 650 W/K (2.6 m², assumed 250 W/m²K).
 - Store: two nodes of 400 l; every morning at 05:00 UTC both are reset to
   the month's typical morning temperature (from the recorded data for
@@ -29,9 +35,9 @@ Model (all assumptions marked; to be calibrated once the flow table exists):
   one in that month and the result is "heat into the store that day".
 - Flow: from the pump curve (Yonos PARA ST 15/7: 7.3 m, 3.3 m³/h) and a
   system curve whose lumped resistance is calibrated so that 30 % PWM gives
-  3.4 l/min, the flow implied by the measured transport delay at pump
-  starts (about 200 s for ~9 l of flow pipe). Table FLOW_TABLE below, scaled
-  by FMAX/7.9 for the sensitivity cases.
+  2.5 l/min, the flow implied by the measured transport delay at pump
+  starts (about 200 s for ~6.6 l of DN 16 flow pipe and station). Table
+  FLOW_TABLE below, scaled by FMAX/5.9 for the sensitivity cases.
 - Control like the BX Plus: on at S1-S2 >= 5 K; off when S1-S2 <= 2 K and
   flow-return <= 2 K; start at 30 %, then ±1 % every 30 s to hold S1-S2 at
   ΔTset ± 1 K, 30–100 %.
@@ -42,8 +48,55 @@ RHO_C = 3650.0  # J/(l K), solar fluid
 
 # Flow in l/min at PWM 0, 10, ..., 100 % (ARCHITECTURE 8.2). Below 15 % the
 # pump is in its minimum band (PWM2), so the 20 % value is held down to 15 %.
-FLOW_TABLE = np.array([0.0, 2.6, 2.6, 3.4, 4.2, 4.8, 5.4, 6.1, 6.8, 7.5, 7.9])
+FLOW_TABLE = np.array([0.0, 1.8, 1.8, 2.5, 3.2, 3.7, 4.0, 4.5, 5.1, 5.6, 5.9])
 DT = 5.0
+
+# Incidence angle modifiers for evacuated tubes (generic curves, as in
+# Quaschning, Regenerative Energiesysteme, Bild 3.25): angle in degrees.
+IAM_ANG = np.array([0, 10, 20, 30, 40, 50, 60, 70, 80, 85, 90], float)
+IAM_T = np.array([1.0, 1.0, 1.02, 1.07, 1.12, 1.16, 1.19, 1.2, 1.17, 0.6, 0.0])
+IAM_L = np.array([1.0, 1.0, 0.99, 0.98, 0.96, 0.92, 0.85, 0.7, 0.42, 0.2, 0.0])
+
+
+def iam_factor(ts, lat=48.14, lon=11.58, tilt=30.0, aspect=80.0, beam_share=0.5):
+    """Per-hour factor on G(i): 1 - beam_share + beam_share * K_t * K_l.
+
+    Sun position from a simple solar-geometry formula (good to ~1°);
+    PVGIS stamps are UTC at hh:10. aspect 0 = south, 90 = west.
+    """
+    import datetime as _dt
+    f = np.ones(len(ts))
+    tr, ar, lr = np.radians(tilt), np.radians(aspect), np.radians(lat)
+    # collector frame in (east, north, up)
+    az_n = np.radians(180.0 + aspect)
+    n = np.array([np.sin(tr) * np.sin(az_n), np.sin(tr) * np.cos(az_n), np.cos(tr)])
+    a = np.array([-np.cos(tr) * np.sin(az_n), -np.cos(tr) * np.cos(az_n), np.sin(tr)])  # up the slope
+    tv = np.cross(n, a)
+    for i, s in enumerate(ts):
+        t = _dt.datetime(int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[9:11]), int(s[11:13]))
+        doy = t.timetuple().tm_yday
+        g = 2 * np.pi / 365 * (doy - 1 + (t.hour + t.minute / 60 - 12) / 24)
+        decl = 0.006918 - 0.399912 * np.cos(g) + 0.070257 * np.sin(g) - 0.006758 * np.cos(2 * g) + 0.000907 * np.sin(2 * g)
+        eqt = 229.18 * (0.000075 + 0.001868 * np.cos(g) - 0.032077 * np.sin(g) - 0.014615 * np.cos(2 * g) - 0.040849 * np.sin(2 * g))
+        solar_min = t.hour * 60 + t.minute + eqt + 4 * lon
+        ha = np.radians(solar_min / 4 - 180)
+        cz = np.sin(lr) * np.sin(decl) + np.cos(lr) * np.cos(decl) * np.cos(ha)
+        if cz <= 0:
+            continue
+        # sun vector (east, north, up)
+        sv = np.array([-np.cos(decl) * np.sin(ha),
+                       np.sin(decl) * np.cos(lr) - np.cos(decl) * np.cos(ha) * np.sin(lr),
+                       cz])
+        sn = sv @ n
+        if sn <= 0:
+            f[i] = 1 - beam_share
+            continue
+        th_t = np.degrees(np.arctan2(abs(sv @ tv), sn))
+        th_l = np.degrees(np.arctan2(abs(sv @ a), sn))
+        k = np.interp(th_t, IAM_ANG, IAM_T) * np.interp(th_l, IAM_ANG, IAM_L)
+        f[i] = 1 - beam_share + beam_share * k
+    return f
+
 
 def load_pvgis(path):
     g, ta, ts = [], [], []
@@ -53,7 +106,7 @@ def load_pvgis(path):
                 p = line.strip().split(",")
                 ts.append(p[0]); g.append(float(p[1])); ta.append(float(p[3]))
     months = np.array([int(s[4:6]) for s in ts]); hours = np.array([int(s[9:11]) for s in ts])
-    return np.array(g), np.array(ta), months, hours
+    return np.array(g), np.array(ta), months, hours, ts
 
 # Typical store-bottom temperature at 06:00 local per month (index = month).
 # Jul-Nov: medians of the recorded data 2026; the other months are guesses.
@@ -73,8 +126,8 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
     # per-collector fit P = P0*G/1000 - k1*dT - k2*dT^2, k1=4.68 W/K, k2=0.0483 W/K²
     scale = 2.0 * 58.0 / 60.0
     p0, k1, k2 = 2037.0 * scale, 4.68 * scale, 0.0483 * scale
-    c_pipe = (pipe_len * 0.31 * RHO_C) + pipe_len * 0.37 * 385.0
-    ua_pipe = pipe_len * 0.25
+    c_pipe = (pipe_len * 0.23 * RHO_C) + pipe_len * 0.15 * 500.0
+    ua_pipe = pipe_len * 0.22
     c_node = 400.0 * 4180.0
     tc = 10.0; tf = 20.0; tr = 20.0; tlo = 40.0; thi = 42.0
     on = False; pwm = 0.0; tick = 0.0
@@ -89,7 +142,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
             f = s / steps
             G = g[h] * (1 - f) + g[h + 1] * f
             Ta = ta[h] * (1 - f) + ta[h + 1] * f
-            tenv = 0.5 * Ta + 0.5 * 18.0
+            tenv = 0.12 * Ta + 0.88 * 15.0
             d = tc - Ta
             q = p0 * G / 1000.0 - k1 * d - k2 * d * d
             # heat pipes are thermal diodes: once the absorber can't deliver,
@@ -98,7 +151,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                 q = -1.0 * d
             # control (sensors: S1 = tc, S2 = tlo, S4 = tf, S5 = coil outlet)
             if on:
-                w = flow(pwm) * fmax / 7.9 / 60.0 * RHO_C
+                w = flow(pwm) * fmax / 5.9 / 60.0 * RHO_C
                 tout = tlo + (tf - tlo) * np.exp(-ua_coil / w)
             else:
                 w = 0.0
@@ -119,7 +172,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                         elif d12 < dtset - 1.0 and pwm > 30.0:
                             pwm -= 1.0
             if on:
-                w = flow(pwm) * fmax / 7.9 / 60.0 * RHO_C
+                w = flow(pwm) * fmax / 5.9 / 60.0 * RHO_C
                 tout = tlo + (tf - tlo) * np.exp(-ua_coil / w)
                 qcoil = w * (tf - tout)
                 run_s += DT
@@ -144,15 +197,24 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
 
 
 def main():
-    g, ta, months, hours = load_pvgis(sys.argv[1])
+    g, ta, months, hours, ts = load_pvgis(sys.argv[1])
+    if len(sys.argv) > 2 and sys.argv[2] == "iam":
+        for share in (0.0, 0.5, 0.8):
+            gi = g * iam_factor(ts, beam_share=share)
+            for dts in (6.0, 8.0, 10.0):
+                out = np.zeros((13, 4))
+                run(gi, ta, months, hours, dts, 5.9, 650.0, 15000.0, 25.0, out)
+                out /= 4.0
+                print(f"beam share {share:.1f} dTset {dts:4.1f}: {out[:,0].sum():6.0f} kWh/yr  {out[:,2].sum():5.1f} kWh_el")
+        return
     years = 4.0
-    cases = [("base", 7.9, 650.0, 15000.0, 25.0), ("flow -40 %", 4.7, 650.0, 15000.0, 25.0),
-             ("flow +50 %", 11.9, 650.0, 15000.0, 25.0), ("coil UA 400", 7.9, 400.0, 15000.0, 25.0),
-             ("coil UA 1000", 7.9, 1000.0, 15000.0, 25.0), ("pipes 15 m", 7.9, 650.0, 15000.0, 15.0)]
+    cases = [("base", 5.9, 650.0, 15000.0, 25.0), ("flow -40 %", 3.5, 650.0, 15000.0, 25.0),
+             ("flow +50 %", 8.9, 650.0, 15000.0, 25.0), ("coil UA 400", 5.9, 400.0, 15000.0, 25.0),
+             ("coil UA 1000", 5.9, 1000.0, 15000.0, 25.0), ("pipes 15 m", 5.9, 650.0, 15000.0, 15.0)]
     if len(sys.argv) > 2 and sys.argv[2] == "onoff":
         for don, doff in [(3, 1), (4, 1.5), (5, 2), (6, 3), (8, 4)]:
             out = np.zeros((13, 4))
-            run(g, ta, months, hours, 8.0, 7.9, 650.0, 15000.0, 25.0, out, float(don), float(doff))
+            run(g, ta, months, hours, 8.0, 5.9, 650.0, 15000.0, 25.0, out, float(don), float(doff))
             out /= years
             print(f"on {don} off {doff}: {out[:,0].sum():6.0f} kWh/yr  pump {out[:,1].sum():5.0f} h  {out[:,2].sum():5.1f} kWh_el")
         return
