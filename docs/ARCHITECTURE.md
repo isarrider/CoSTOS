@@ -702,8 +702,8 @@ config:
 | **Collector cooling / recooling** | Optional: lets the store take extra heat to keep the collector out of stagnation, and cools the store back down at night. |
 | **Tube collector function** | Optional: short periodic pump runs so a sensor in an evacuated tube collector sees the real temperature. |
 | **Frost protection** | Optional. Only needed without glycol. |
-| **Heat quantity** | From V40 pulses (or a configured fixed flow) × ΔT(flow, return) × fluid properties (glycol percentage in config). Persisted. |
-| **Statistics** | Per pump: operating hours, starts, last run time and **electrical energy**: measured from the pump's PWM feedback where it reports power (Grundfos: 1 W per %), otherwise estimated from rated power × duty. From that, a **solar yield ratio** (heat delivered ÷ pump electricity) per day and month. Collector time above a threshold (for example 80 °C) per day and month, a stagnation indicator. Persisted with the heat quantity counters. |
+| **Heat quantity** | From V40 pulses (or a configured fixed flow, or a flow table per PWM duty) × ΔT(flow, return) × the fluid's volumetric heat capacity (by glycol share: water 4180, 40 % 3650 J/(l·K)). Heat into the store and heat the other way are separate `u64` Wh counters that only grow (rule 16). Persisted. Implemented (`costos-core::heat`); in the simulation the counter agrees with the model's true heat within 3 %. **Caution:** for the reference installation the flow table is probably about **2× too high**, see 8.4 |
+| **Statistics** | Per pump: operating hours, starts, last run time and **electrical energy**: measured from the pump's PWM feedback where it reports power (Grundfos: 1 W per %), otherwise estimated from rated power × duty. From that, a **solar yield ratio** (heat delivered ÷ pump electricity) per day and month. Collector time above a threshold (for example 80 °C) per day and month, a stagnation indicator. Persisted with the heat quantity counters. Implemented so far (`costos-core::heat`): pump seconds, starts, estimated pump energy (3 W + 42 W × duty², until the feedback reports power), collector seconds above 80 °C; the yield ratio is computed from the counters (about 90 on a clear simulated day) |
 | **Standby mode** | A global *automatic / standby* switch in the web interface (DiSoCon2 "Centralina in Automatico"): standby stops all control functions and keeps the outputs off, for filling, flushing and maintenance. The safety supervisor and logging keep running; it shows prominently on every page and is logged as an event. |
 | **Multi-store priority** | Later, if the installation uses it (BX Plus supports 2–3 stores). |
 | **Back-up heating suppression** | Optional, later. Publishes "solar is charging" and a forecast of the store top temperature, so an external heat source can hold back its hot-water run while solar will do the job. The BX Plus switches a relay for this; CoSTOS offers it through the HTTP API and, when enabled, MQTT. In the reference installation, Home Assistant would use it to delay the heat pump's hot-water heating. |
@@ -1510,6 +1510,46 @@ for all of them in `cargo test --workspace`):
   temperatures alone, within 10 minutes of a start or two windows of a
   mid-run stop; the pump feedback (5.4) will add a direct check later.
 
+### 8.4 The flow estimate doesn't add up (open)
+
+Applying the heat counter to the recording with the estimated flow table
+(8.2) gives **2,033 kWh for July to November 2026**, 795 kWh in July alone.
+That can't be right: the collector's data sheet allows at most about
+20 kWh on a perfect clear day (the simulation: 18.2 kWh), so 25.6 kWh a day
+on average over July is impossible. A day-by-day check with the store's own
+energy balance (summer, heat pump off, so the store is heated by the sun
+alone):
+
+| Day | Flow-table estimate | Store warmed by (800 l) | Plus losses and hot-water use (rough) | Ratio estimate ÷ store | Mean S4 − S5 while on | Mean PWM |
+|---|---|---|---|---|---|---|
+| 2026-07-09 | 31.7 kWh | +12.3 K = 11.4 kWh | ≈ 15–17 kWh | ≈ 2.0 | 20.7 K | 31 % |
+| 2026-07-13 | 29.9 kWh | +10.4 K = 9.7 kWh | ≈ 13–15 kWh | ≈ 2.1 | 23.5 K | 33 % |
+
+So the real flow is about **half** the table: about 1.3 l/min at 30 %
+instead of 2.5. What fits:
+
+- **S4 − S5 is large** (about 20 K at 30 % PWM, against about 9 K in the
+  model at the same power). With 1.3 l/min, 20 K is 1.6 kW, which over
+  9.5 h is the 15 kWh the store took. The coil outlet S5 leaves well below
+  S2 (8.2, the coil check): the store under the S2 sensor is much colder.
+- **The transport delay** then means a flow pipe of about 3.5 l, not 6.6 l:
+  either **12.5 m one way** (25 m being the twin pipe's total), or a
+  narrower inner diameter than DN 16's 16 mm (the invoice also says
+  14 mm).
+- **The model's mean pump speed** (36 % at ΔTset 10 K vs about 30 % on the
+  BX) pointed the same way: with less flow per percent, the speed needed
+  to hold ΔT would be higher, which in turn suggests the model's
+  collector sees a little more sun than the real one (trees, dirt,
+  shading by the roof itself).
+
+**What it changes:** the heat counter's reference table, `costos-sim`'s and
+the yield simulation's flow table, and the minimum-speed sweep (with less
+flow, a higher minimum may win). **What it doesn't change:** the ΔTset
+result (8.2: with 40 % less flow the best is still 8–10 K, 10 K slightly
+ahead), the speed control, and all safety behaviour. To settle: the pipe
+length one way and the inner diameter (open question, 11), then
+recalibrate the table from the store balance on several summer days.
+
 ---
 
 ## 9. Migration from the DeltaSol BX Plus
@@ -1642,10 +1682,15 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
 | S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset default **10 K**, minimum speed **30 %**, ΔTon/ΔToff 5 / 2 K; the coil is no bottleneck; incidence angle +3.8 %; trees about 30° high to the south fitted to the recorded hours, realistic year about **1900 kWh**. Open: the rest of the November gap (frost, fog, collector start), spring check next year | spring data | small | 🟢 |
 | S8 | "Flow/return swapped" check | Define it from recorded starts: in normal operation S5 responds first (the coil contents), so the rule must look at something else, for example which sensor approaches the collector temperature first | — | small | 🟢 |
+| S9 | Recalibrate the flow table | From the store's energy balance on several summer days (heat pump off), then update `costos-core::heat` (reference table), `costos-sim`, the yield simulation, installation.md, and rerun the minimum-speed sweep (8.2, 8.4) | pipe length and diameter (11) | small | 🔴 the heat counter is ~2× too high until then |
 | D1 | ~~`AGENTS.md` / `GEMINI.md`~~ | **Done**: both point AI tools to CONTRIBUTING.md | — | — | 🟢 |
 
 ## 11. Open questions
 
+- **Solar pipe: 25 m one way or in total, and the inner diameter?** The
+  store's energy balance says the real flow is about half the estimated
+  table (8.4); a shorter or narrower pipe than assumed would explain the
+  transport delay with that flow.
 - Settled: the BX store maximum is set to **95 °C** (owner), which is why
   the recording reached 81.6 °C at S2 without a stop. CoSTOS allows at
   most 90 °C (`store_max`): 95 °C is the store's own rating and the
