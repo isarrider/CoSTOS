@@ -8,11 +8,11 @@
 //! ```
 //!
 //! with the flow from a fixed value or from the pump's calibration table
-//! (flow per PWM duty; for the reference installation the table estimated
-//! from the recording, ARCHITECTURE 8.2), and ρc the volumetric heat
-//! capacity of the solar fluid for its glycol share. Without a flow meter
-//! this is an **estimate** (the flow table is good to about ±30 %); with a
-//! V40 flow meter (later) the flow becomes a measurement.
+//! (flow per PWM duty; for the reference installation the table calibrated
+//! from the store's energy balance, ARCHITECTURE 8.4), and ρc the
+//! volumetric heat capacity of the solar fluid for its glycol share.
+//! Without a flow meter this is an **estimate** (the table is good to about
+//! ±20 %); with a V40 flow meter (later) the flow becomes a measurement.
 //!
 //! **Counters only grow** (ARCHITECTURE 6.1 rule 16). Heat into the store
 //! goes into [`Counters::heat_wh`]; heat flowing the other way (return
@@ -48,11 +48,13 @@ pub enum FlowSource {
 }
 
 impl FlowSource {
-    /// The reference installation's table (installation.md, estimated from
-    /// the transport delay after pump starts): 1.5 l/min in the minimum
-    /// band, 2.5 l/min at 30 %, 5.9 l/min at 100 %.
-    pub const REFERENCE: Self =
-        Self::Table([0.0, 1.5, 1.8, 2.5, 3.2, 3.7, 4.0, 4.5, 5.1, 5.6, 5.9]);
+    /// The reference installation's table (installation.md), calibrated from
+    /// the store's energy balance on 67 summer days (ARCHITECTURE 8.4):
+    /// 0.68 l/min in the minimum band, 1.13 l/min at 30 %, 2.66 l/min at
+    /// 100 %. Good to about ±20 %.
+    pub const REFERENCE: Self = Self::Table([
+        0.0, 0.68, 0.81, 1.13, 1.44, 1.67, 1.80, 2.03, 2.30, 2.52, 2.66,
+    ]);
 
     /// Flow in l/min at this duty; 0 when off.
     #[must_use]
@@ -122,7 +124,7 @@ pub struct HeatConfig {
 }
 
 impl HeatConfig {
-    /// The reference installation: estimated flow table, 40 % glycol, Wilo
+    /// The reference installation: flow table calibrated from the store balance, 40 % glycol, Wilo
     /// Yonos PARA about 3 W + 42 W × duty², hot above 80 °C.
     pub const REFERENCE: Self = Self {
         flow: FlowSource::REFERENCE,
@@ -235,10 +237,10 @@ mod tests {
     fn flow_table_interpolates() {
         let f = FlowSource::REFERENCE;
         assert!(f.flow(Duty::OFF) <= 0.0);
-        assert!((f.flow(Duty::clamped(5)) - 1.5).abs() < 1e-6);
-        assert!((f.flow(Duty::clamped(30)) - 2.5).abs() < 1e-6);
-        assert!((f.flow(Duty::clamped(35)) - 2.85).abs() < 1e-4);
-        assert!((f.flow(Duty::FULL) - 5.9).abs() < 1e-6);
+        assert!((f.flow(Duty::clamped(5)) - 0.68).abs() < 1e-6);
+        assert!((f.flow(Duty::clamped(30)) - 1.13).abs() < 1e-6);
+        assert!((f.flow(Duty::clamped(35)) - 1.285).abs() < 1e-4);
+        assert!((f.flow(Duty::FULL) - 2.66).abs() < 1e-6);
         assert!((FlowSource::Fixed(4.0).flow(Duty::clamped(1)) - 4.0).abs() < 1e-6);
     }
 
@@ -250,12 +252,15 @@ mod tests {
         assert!((rho_c(99.0) - 3350.0).abs() < 1e-3);
     }
 
-    /// One hour at 30 % (2.5 l/min) with flow 10 K above return, 40 %
+    /// One hour at a fixed 2.5 l/min with flow 10 K above return, 40 %
     /// glycol: 2.5/60 · 3650 · 10 = 1520.8 W, so 1520 Wh, the remainder
-    /// carried. Pump: 3 + 42 · 0.09 = 6.78 W → 6 Wh. One start.
+    /// carried. Pump at 30 %: 3 + 42 · 0.09 = 6.78 W → 6 Wh. One start.
     #[test]
     fn one_hour_of_heat() {
-        let cfg = HeatConfig::REFERENCE;
+        let cfg = HeatConfig {
+            flow: FlowSource::Fixed(2.5),
+            ..HeatConfig::REFERENCE
+        };
         let mut s = HeatState::default();
         for _ in 0..3600 {
             s = step(
@@ -284,9 +289,9 @@ mod tests {
             s = step(&cfg, s, Duty::FULL, c(0.0), Some(c(20.0)), Some(c(30.0)));
         }
         assert_eq!(s.counters.heat_wh, 0);
-        // 5.9/60 · 3650 · 10 = 3589 W → 3589 Wh in an hour.
+        // 2.66/60 · 3650 · 10 = 1618.2 W → 1618 Wh in an hour.
         assert!(
-            (3585..=3590).contains(&s.counters.heat_loss_wh),
+            (1615..=1619).contains(&s.counters.heat_loss_wh),
             "{}",
             s.counters.heat_loss_wh
         );
