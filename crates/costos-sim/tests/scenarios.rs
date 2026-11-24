@@ -9,7 +9,11 @@
 // Test code: indexing into a run's samples and plain arithmetic on
 // simulated seconds can't overflow here, and a panic is just a failed
 // test (the same exceptions clippy.toml makes for unit tests).
-#![allow(clippy::indexing_slicing, clippy::arithmetic_side_effects, clippy::unwrap_used)]
+#![allow(
+    clippy::indexing_slicing,
+    clippy::arithmetic_side_effects,
+    clippy::unwrap_used
+)]
 
 use costos_sim::faults::{Fault, Kind, STALE_AFTER, Target};
 use costos_sim::weather::{Clouds, Day};
