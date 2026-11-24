@@ -5,7 +5,10 @@
 //!
 //! 1. Loads the settings from the revision store (`costos-config`) in the
 //!    state directory. On a first start it saves the reference
-//!    installation's settings as revision 1. If the newest revision is
+//!    installation's settings as revision 1. That is a simulator
+//!    convenience: with the hardware backend a missing configuration will
+//!    keep every output off and open the setup wizard instead
+//!    (ARCHITECTURE 6.3, 7.2). If the newest revision is
 //!    damaged it falls back to the newest good one and says which it
 //!    skipped.
 //! 2. Loads the counters (`counters.json`); a damaged file stops the

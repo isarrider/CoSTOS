@@ -97,16 +97,21 @@ So far:
 | `crates/costos-core` | Control logic, `no_std`: temperature, time, sensor and duty types (the rules of ARCHITECTURE 6.1); ΔT control with the flow/return switch-off, store maximum, speed control (PI or BX-like steps), start profiles, anti-seize run and full-speed purge, and the control cycle that chains them | 🟢 milestone 1 done |
 | `crates/costos-safety` | Safety supervisor, `no_std`: sensor unknown → off, collector and store emergency shutdown with hysteresis and latch, minimum off time; can only reduce the request | 🟢 milestone 1 done |
 | `crates/costos-replay` | PC tool: replays recorded BX Plus days (`tests/replay`) through the control and lists where CoSTOS decides differently | 🟢 |
-| `crates/costos-sim` | Thermal model of the reference solar loop and closed-loop scenario tests of the whole control chain (sunny, cloudy, stagnation, sensor faults, stuck pump, restarts) | 🟢 milestone 2 done |
+| `crates/costos-cycle` | One control second, `no_std`: sensor offsets, plausible ranges, control chain, inhibit, safety supervisor, plausibility checks, heat counter. The daemon and the simulation both call it | 🟢 |
+| `crates/costos-sim` | Thermal model of the reference solar loop and closed-loop scenario tests of the whole control second (sunny, cloudy, stagnation, sensor faults and offsets, stuck pump, restarts) | 🟢 milestone 2 done |
+| `crates/costos-config` | The settings document (strict JSON, validated by the control crates' own checks), generic and reference defaults ([`reference.json`](crates/costos-config/reference.json)), revision store with atomic writes, restore and fallback | 🟡 milestone 4 started |
+| `crates/costosd` | The daemon: settings and counters from the state directory, the control loop against a backend (for now the simulator, real time or accelerated), status lines, logged interventions and alarms | 🟡 skeleton, simulator only |
 | `tools/sim` | ngspice circuit simulations of the HAT, and the Python yield simulation (ARCHITECTURE 8.2) | 🟢 |
 
 ```sh
 cargo test --workspace                                   # unit, property, replay and simulation tests
 cargo clippy --workspace --all-targets -- -D warnings    # lints as in CI
+cargo run --release -p costosd -- --state-dir /tmp/costos --days 3 --status-every 3600
+                                                         # three simulated days through the daemon
 ```
 
-CI also builds both crates for a bare-metal RISC-V target, so they stay
-free of `std`.
+CI also builds `costos-core`, `costos-safety` and `costos-cycle` for a
+bare-metal RISC-V target, so they stay free of `std`.
 
 ## Contributing
 

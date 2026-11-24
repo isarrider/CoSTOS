@@ -608,11 +608,12 @@ costos/
 ├─ crates/
 │  ├─ costos-core/       # control logic: pure, no I/O, no async, no clock (time is an input)
 │  ├─ costos-safety/     # safety supervisor: pure, can only reduce outputs
+│  ├─ costos-cycle/      # one control second: offsets → ranges → core → inhibit → supervisor → monitor → heat (no_std)
 │  ├─ costos-replay/     # PC tool: replays recorded BX days (tests/replay) through the core, lists differences (8.1)
 │  ├─ costos-hal/        # traits: TemperatureInput, SwitchOutput, PwmOutput, PulseInput, Watchdog
 │  ├─ costos-hw-linux/   # HAL implementation: gpio-cdev, spidev, i2c, sysfs PWM, w1; LTC2983, MAX31865, DS18x20, DS2482 drivers
 │  ├─ costos-sim/        # thermal model of collector + store, used for tests and dry runs
-│  ├─ costos-config/     # config schema, validation, migrations between schema versions, revision store
+│  ├─ costos-config/     # settings document (JSON), validation into the core configs, revision store; later schema metadata and migrations
 │  ├─ costos-web/        # web interface: server-rendered pages (maud), htmx handlers, SSE streams
 │  └─ costosd/           # daemon: scheduler, tasks, HTTP API, MQTT, VictoriaMetrics push + buffer, systemd
 ├─ assets/               # vendored htmx, htmx SSE extension, uPlot, CSS, icons (embedded in the binary)
@@ -621,7 +622,9 @@ costos/
 ```
 
 `costos-core` and `costos-safety` contain everything that decides what the
-pumps do. Because they are pure functions of `(config, inputs, time,
+pumps do; `costos-cycle` puts them together in the one order the daemon and
+the simulation both run, so the simulation tests exactly what runs on the
+Pi (it follows the same `no_std` rules and is in the bare-metal CI build). Because they are pure functions of `(config, inputs, time,
 previous state) → (outputs, new state, events)`, they can be:
 
 - unit- and property-tested (for example "the supervisor never switches
@@ -776,6 +779,25 @@ From its ESPHome configuration (`Software/hardware/interval.yaml` and friends):
   means outputs stay OFF and the web interface opens the setup wizard.
 - **Persistent state** (heat quantity counters, operating hours): small file
   written atomically, at most every few minutes, to spare the SD card or eMMC.
+
+**Implemented so far** (`costosd`, `costos-config`; milestone 4, first part):
+
+| Part | How it works now | Still to come |
+|---|---|---|
+| Control loop | One `costos_cycle::step` per second against a `Backend` (`tick`, `read`, `apply`); the simulator backend runs the reference loop on clear days through the year, real time or accelerated (`--speed`) | Hardware backend with the watchdog (milestone 3), `tokio` tasks around the loop |
+| Settings | Strict JSON document (`format` 1; °C, K, s, `"HH:MM"`; unknown or missing fields rejected), validated by the control crates' own checks before use; [`reference.json`](../crates/costos-config/reference.json) is the reference installation | Live apply at a cycle boundary, schema metadata (names, help texts) for the web interface, migrations when `format` changes |
+| Revisions | `settings/rev-NNNNNN.json`, each with number, time and note; written atomically (temp file, fsync, rename, directory fsync); only valid documents are saved; restore saves an old revision as a new one; the newest 50 are kept; loading falls back past damaged revisions and reports them | Author, draft → review → apply, concurrent-edit check (7.3) |
+| First start | Simulator: the reference installation is saved as revision 1. If revisions exist but none is usable, the daemon refuses to start rather than replacing them | Hardware: outputs off and the setup wizard (7.2) |
+| Counters | `counters.json`, atomic, every 10 min and at the end; a damaged file stops the start, so the statistics are never silently reset | Latched alarms persisted with them |
+| Logging | Status line every N seconds; every change of the supervisor's interventions and of the alarms logged | `tracing` to journald, metrics push (6.5) |
+
+```sh
+cargo run --release -p costosd -- --state-dir /tmp/costos --days 3 --status-every 3600
+```
+
+A clear July day from 40 °C gives about 16.8 kWh into the store, then
+14.5 kWh on the second day from the warmer store; the counter agrees with
+the model's heat to the Wh because both use the calibrated flow table.
 - **Manual mode**: per output OFF / AUTO / ON (with timeout), through the API.
   The safety supervisor still applies in manual mode.
 
@@ -983,6 +1005,7 @@ Config changes can switch pumps, so they are applied carefully:
   review step.
 - **Revisions**: every applied config is kept as a numbered revision with
   author, time and an optional comment. Any revision can be restored.
+  *Implemented in `costos-config::store`* (6.3), still without the author.
 - **Concurrent edits**: each change carries the revision it was based on. If
   someone else applied a change in the meantime, the interface asks to
   reload instead of silently overwriting it.
@@ -1467,11 +1490,25 @@ restart in the middle of all that) needs a model whose temperatures react
 to what CoSTOS does.
 
 **What runs, every simulated second:** the plant gives S1–S5 → a simulated
-sensor layer turns them into readings (with injected faults, range-checked
-as the daemon will) → `costos-core::solar::step`, the same control chain
-the daemon will run (ΔT control AND store maximum → speed control →
-anti-seize/purge) → `costos-safety::supervise_solar_pump` → the resulting
-flow goes back into the plant.
+sensor layer turns them into readings (with injected faults) →
+**`costos_cycle::step`, the very function the daemon calls**: sensor
+offsets, plausible ranges, the control chain `costos-core::solar` (ΔT
+control AND store maximum → speed control → anti-seize/purge), the
+monitor's inhibit, `costos-safety::supervise_solar_pump`, the
+plausibility checks and the heat counter → the resulting flow goes back
+into the plant.
+
+```mermaid
+flowchart LR
+    P[plant model] --> F[fault injection] --> C
+    subgraph C [costos_cycle::step, same in costosd]
+        O[offsets] --> R[plausible ranges] --> S[solar chain] --> I[inhibit] --> V[supervisor]
+        V --> M[monitor]
+        V --> H[heat counter]
+    end
+    V -- duty --> P
+    M -. inhibit next second .-> I
+```
 
 **The plant** is the Python yield model of 8.2 in Rust, same nodes:
 data-sheet collector with heat pipes as thermal diodes, corrugated pipes
@@ -1505,6 +1542,7 @@ for all of them in `cargo test --workspace`):
 | Restart at 14:00 in normal operation | Pump back within a minute, no protection trips | Holds | 🟢 |
 | Restart while the collector cools through 125 °C | Starts latched (4.2): no start into the hot collector while above 120 °C | Holds | 🟢 |
 | Overcast winter day behind the trees | No solar run; exactly one anti-seize run, 10 s at 100 % between 12:00 and 13:00 | Holds | 🟢 |
+| Stagnation with the S1 offset +8 K | The offset is applied before the supervisor, so the emergency stop acts at a real 130 °C, i.e. while the sensor itself reads only about 122 °C (without the offset: at a real 138 °C) | Holds | 🟢 |
 
 **What the scenarios taught:**
 
@@ -1665,7 +1703,7 @@ come first.
    milestone 1 exist*; they are wired into one control cycle for the
    simulation tests (milestone 2) and later the daemon (milestone 4).
 2. `costos-sim` and simulation tests in CI. *Done*: the control cycle
-   (`costos-core::solar`), the plant model, fault injection and twelve
+   (`costos-core::solar`), the plant model, fault injection and thirteen
    closed-loop scenarios (8.3), plus the plausibility checks
    (`costos-core::monitor`) run in them.
 3. HAL + Linux backend: GPIO outputs, PWM, watchdog, then the measuring
@@ -1673,7 +1711,11 @@ come first.
    reference installation keeps its Pt1000 sensors; which chip is open
    again, HAT D26), 1-Wire, MAX31865 (1-Wire edition only). Bench setup.
 4. `costosd` + `costos-config`: scheduler, systemd, config store with
-   revisions, JSON API, VictoriaMetrics push with buffering.
+   revisions, JSON API, VictoriaMetrics push with buffering. *Started*:
+   `costos-cycle` (one control second, shared with the simulation),
+   `costos-config` (settings document, validation, revision store) and a
+   `costosd` skeleton running against the simulator with persisted
+   counters (6.3). Open: M1–M4 in 10.2.
 5. Web interface: overview, setup wizard, all settings pages, users/login,
    manual mode.
 6. Shadow mode on the real system.
@@ -1746,7 +1788,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S1 | ~~Speed control (PI)~~ | **Done**: `costos-core::speed`, PI (default) or BX-like steps, setpoint 10 K, minimum 30 %, start profiles; replay runs it and reports speeds | — | — | 🟢 |
 | S2 | ~~Store maximum~~ | **Done**: `costos-core::store_max`, 60 °C / 2 K by default. The reference installation's BX value is still to be read off (section 11) | — | — | 🟢 |
 | S3 | The 14 early BX stops (8.1) | Test both hypotheses in the replay: flow/return only after some minutes of running; a daily re-check at 12:00 BX time | — | small | 🟢 |
-| S4 | Offset calibration per sensor | One offset per channel, applied before the control **and** the supervisor see the value; set against the recorded BX readings (2-wire cables, especially with H1) or from known effects (S1 reads about 8 K low, 8.4). Fits with the configuration (milestone 4) | — | small | 🟡 |
+| S4 | ~~Offset calibration per sensor~~ | **Done**: one offset per sensor in `costos-cycle`, applied before control **and** supervisor (scenario in 8.3), set in the settings document (at most ±20 K); the reference installation has S1 +8 K. Open only: offsets for the other sensors from the recorded BX readings once the new board measures (H1) | H1 | small | 🟢 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
 | S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset default **10 K**, minimum speed **30 %**, ΔTon/ΔToff 5 / 2 K; the coil is no bottleneck; incidence angle +3.8 %; trees about 30° high to the south fitted to the recorded hours, realistic year about **1900 kWh**. Open: the rest of the November gap (frost, fog, collector start), spring check next year | spring data | small | 🟢 |
@@ -1754,6 +1796,10 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S9 | ~~Recalibrate the flow table~~ | **Done** (8.4): 0.45 × the first table, from the store balance on 67 summer days; heat counter, `costos-sim` and the yield model use it | — | — | 🟢 |
 | S10 | Recalibrate the yield model and rerun 8.2 | Give `tools/sim/yield_sim.py` the same calibration as `costos-sim` (collector sensor 8 K low, coil surroundings 7 K colder than S2, 90 % of the data sheet), check it against the recording's monthly store balance, rerun the ΔTset, minimum-speed and other sweeps and redraw the charts. The rankings may move towards a lower ΔTset and a higher minimum speed (8.4) | — | 1 session | 🟡 |
 | D1 | ~~`AGENTS.md` / `GEMINI.md`~~ | **Done**: both point AI tools to CONTRIBUTING.md | — | — | 🟢 |
+| M1 | Live settings in `costosd` | Apply a new revision at a cycle boundary without a restart; draft → review → apply with diff and author (7.3) | — | 1 session | 🟡 |
+| M2 | Persist the latched alarms | Save them with the counters, so a restart keeps "no circulation" and its inhibit (the simulation already models it that way) | — | small | 🟡 |
+| M3 | Runtime around the loop | `tokio`, systemd unit, SIGTERM saves the counters, `tracing` to journald, VictoriaMetrics push with buffer (6.5) | — | 1–2 sessions | 🟡 |
+| M4 | Hardware backend | `costos-hal` traits and the Linux implementation, the watchdog heartbeat (milestone 3) | H1 for the PT edition | large | 🔴 for shadow mode |
 
 ## 11. Open questions
 

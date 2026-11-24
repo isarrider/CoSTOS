@@ -14,7 +14,7 @@ only reading them makes them obvious.
 
 | Rule | Why | Checked by |
 |---|---|---|
-| `costos-core` and `costos-safety` stay **`no_std`**: no heap, no clock, no files, no logging, no threads | They decide what the pumps do; pure functions can be tested, replayed against the BX Plus and later run on a microcontroller ([ARCHITECTURE 6.1](docs/ARCHITECTURE.md#61-workspace-layout), rules 1–3) | CI bare-metal build (riscv32) |
+| `costos-core`, `costos-safety` and `costos-cycle` stay **`no_std`**: no heap, no clock, no files, no logging, no threads | They decide what the pumps do; pure functions can be tested, replayed against the BX Plus and later run on a microcontroller ([ARCHITECTURE 6.1](docs/ARCHITECTURE.md#61-workspace-layout), rules 1–3) | CI bare-metal build (riscv32) |
 | No `unsafe`, no `unwrap`/`expect`, no `[i]` indexing, no unchecked arithmetic in those two crates | A panic or a wrap-around in the control loop is a stuck pump (rules 7–11, 17) | Workspace lints, `clippy -D warnings` |
 | The supervisor in `costos-safety` can only **reduce** what the control asks for, never raise it | One place that can't be argued with ([ARCHITECTURE 4.2](docs/ARCHITECTURE.md#42-software-layer)) | Property tests |
 | A sensor fault never counts as "cold" or "warm": unknown means pump off | ([ARCHITECTURE 4.2](docs/ARCHITECTURE.md#42-software-layer)) | Unit and property tests |
