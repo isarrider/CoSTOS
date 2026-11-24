@@ -1576,7 +1576,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
 | S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset default **10 K**, minimum speed **30 %**, ΔTon/ΔToff 5 / 2 K; the coil is no bottleneck; incidence angle +3.8 %; trees about 30° high to the south fitted to the recorded hours, realistic year about **1900 kWh**. Open: the rest of the November gap (frost, fog, collector start), spring check next year | spring data | small | 🟢 |
-| D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
+| D1 | ~~`AGENTS.md` / `GEMINI.md`~~ | **Done**: both point AI tools to CONTRIBUTING.md | — | — | 🟢 |
 
 ## 11. Open questions
 
