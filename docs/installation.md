@@ -200,6 +200,7 @@ tubes are in place.
 | | per collector | installation |
 |---|---|---|
 | Tubes | 30, Ø 58 mm, borosilicate glass | 58 in place |
+| Site and orientation | | Munich; facing **west, turned 10° towards south** (azimuth 80° in PVGIS terms, where 0° = south and 90° = west), tilt about **30°** |
 | Gross area | 4.58 m² | 9.16 m² |
 | Output (data sheet, 1000 W/m², ΔT 0 / 30 / 50 K) | 2037 / 1853 / 1682 W | about 3.9 / 3.6 / 3.3 kW with 58 tubes |
 | Size (H × W × D) | 1980 × 2370 × 125 mm, 103 kg | |
