@@ -1194,7 +1194,7 @@ azimuth 80° (west, turned 10° south).
 | Lower coil | UA 650 W/K (2.6 m²) | Assumed, checked against the recording (below): at least about 550–600 W/K | 🟢 sensitivity 400–1000 |
 | Store | Two nodes of 400 l (lower with the solar coil, upper), mixing when the lower gets warmer, 2.5 W/K standing loss each; reset every morning to the month's typical store-bottom temperature (Jul–Nov from the recording: 68 / 57 / 58 / 40 / 21 °C; Dec–Jun guessed: 21 / 21 / 22 / 30 / 40 / 50 / 60 °C) | Recording + guesses | 🟡 good in summer, optimistic in autumn and winter |
 | Flow | From the pump curve and a calibrated system curve, see below: 1.8 / 2.5 / 3.7 / 5.1 / 5.9 l/min at 20 / 30 / 50 / 80 / 100 % | Estimated from the data | 🟡 sensitivity −40 % / +50 % |
-| Incidence angle | Optional (`iam` mode): beam light weighted with transversal × longitudinal incidence angle modifiers for evacuated tubes (transversal up to 1.2 at 60–70°, as in Quaschning, *Regenerative Energiesysteme*, Bild 3.25), tubes along the slope; the beam share of G(i) is assumed (0 / 50 / 80 %) because the PVGIS file has no beam/diffuse split | Literature | 🟡 |
+| Incidence angle | Optional (`iam` mode): beam light weighted with transversal × longitudinal incidence angle modifiers for evacuated tubes (transversal up to 1.2 at 60–70°, as in Quaschning, *Regenerative Energiesysteme*, Bild 3.25), tubes along the slope; beam share per hour from PVGIS (`&components=1`: Gb, Gd, Gr), 53 % of the year's in-plane irradiation is beam | Literature + PVGIS | 🟢 |
 | Pump power | 3 W + 42 W × PWM² | Rough | 🟡 |
 | Control | BX-like: on at ΔTon 5 K, off when S1 − S2 and S4 − S5 are both ≤ 2 K, start at 30 %, ±1 % every 30 s around ΔTset ± 1 K, 30–100 % | Replay data 8.1 | 🟢 |
 
@@ -1248,13 +1248,48 @@ store during the day, which the model doesn't know: the store stays
 cooler in the model than in reality, so the collector looks better and the
 pump runs longer than recorded (November: 122 h simulated, 46 h recorded).
 
+**The heat pump and the store in the heating season, from S6–S8.** S6
+(heating water into the upper coil), S7 (out of it, to the house) and S8
+(back from the house) were exported for July to November 2026:
+
+| Month | What S6–S8 show | Effect on the store |
+|---|---|---|
+| Jul–Sep | All three at 20–28 °C, a few kelvin apart: pipes at room temperature, no heating | None: the store is heated by the sun alone |
+| October | The same until the end of the month | None worth modelling |
+| November | The heat pump runs in the **daytime**, roughly **10:00–16:00**: S6 rises to about 42 °C, S3 (store top) follows from about 21 to 42 °C; in the evening and at night S7 is about 0.5–1.5 K above S6, so the store gives a little heat back to the heating | The heat pump warms the **top** of the store only. **S2 (store bottom) stays at about 21 °C** unless the sun heats it |
+
+So the heat pump does **not** raise the store bottom, and the store bottom
+is what the solar loop works against. The model's November reset to 21 °C
+is right, and the heat pump is **not** the reason for the autumn
+overestimate (below).
+
 **Plausibility.** About 2100 kWh/year (≈ 230 kWh per m² gross) without the
 incidence angle effect, 2150–2200 kWh with it: sensible for 9 m² of tubes
 facing west with 25 m of pipe. Pump hours per month Jul–Nov: simulated
 214 / 205 / 174 / 143 / 122 h, recorded in 2026: 242 / 201 / 186 / 112 /
-46 h. Summer fits; autumn is **overestimated**, November by far: the model
-doesn't know the heat pump warms the store during the day, nor how cloudy
-November 2026 was. Treat the autumn figures as optimistic.
+46 h (November only up to the 24th). Summer fits; autumn is
+**overestimated**, and the gap grows as the sun gets lower (Jul −12 %,
+Aug +2 %, Sep −6 %, Oct +28 %, Nov well over +100 %). What it is *not*:
+
+- **Not the heat pump**: it only warms the store top (above), the store
+  bottom stays at the model's 21 °C.
+- **Not the weather of 2026**, at least for October: October 2026 had
+  about 12 % more sunshine than usual in Germany (weather summaries of the
+  DWD figures), so a real October should beat the PVGIS average, not fall
+  30 % short of it.
+
+What it might be, in order of likelihood:
+
+| Candidate | Why it fits | How to check | Rating |
+|---|---|---|---|
+| **Shading at low sun** (trees, buildings, roof parts to the south-west and west) | The gap grows exactly as the sun gets lower; PVGIS only knows the terrain horizon, not buildings or trees | The owner knows the surroundings; a horizon profile can be given to PVGIS (`userhorizon=`) | 🔴 most likely |
+| Frost, dew or snow on the tubes | Evacuated tubes don't melt snow or frost off themselves; mornings in Oct/Nov | Compare mornings with frost against others | 🟡 |
+| Collector behaviour at low irradiance (heat pipes need a little heat to start, the manifold has to warm up) | Matters most on weak days | A start threshold in the model | 🟡 |
+| Fog or high fog in the Munich area in November | Local, not in the satellite data | — | 🟡 |
+
+Until that is known, **treat the October to February figures as
+optimistic**. The ranking of ΔTset and of the minimum speed doesn't
+depend on them: it is the same in every month.
 
 **Results, base case (per year, mean of 2020–2023, without incidence
 angle effect):**
@@ -1295,9 +1330,10 @@ everything above 10 K is the same.*
   months gain most is not confirmed by this model.
 - **Incidence angle:** tubes catch slanting light better than a flat plate
   (transversal modifier up to 1.2), which matters for a west-facing roof.
-  With 50 % beam share it adds about **+2.6 %** (2156 instead of 2102 kWh
-  at 10 K), with 80 % about +4.4 %. It changes the totals, not the ranking
-  of ΔTset.
+  With PVGIS's own beam/diffuse split per hour (53 % beam over the year)
+  it adds **+3.8 %** (2181 instead of 2102 kWh at 10 K); the earlier
+  assumed shares of 50 % and 80 % gave +2.6 % and +4.4 %. It changes the
+  totals, not the ranking of ΔTset (6 / 8 / 10 K: 2237 / 2210 / 2181 kWh).
 - **ΔTon/ΔToff** (at ΔTset 8 K): 3 / 1 K gives +14 kWh (+0.7 %) over 5 / 2 K
   with 180 more pump hours; 8 / 4 K gives −35 kWh (−1.6 %). Small.
 - **The biggest lever is the pipes**, not the control: 25 m instead of
@@ -1365,9 +1401,9 @@ minute.
 **Conclusion.** The default ΔTset for CoSTOS's speed control is **10 K**:
 as good as 8 K for the yield, the RESOL default, and the same as the BX, so
 shadow mode compares like with like. Configurable. ΔTon/ΔToff stay at the
-BX's 5 / 2 K, the minimum pump speed at 30 %. Still open (10.2, S7): a
-store model that knows the heat pump (autumn and winter) and a
-beam/diffuse split for the incidence angle effect.
+BX's 5 / 2 K, the minimum pump speed at 30 %. Still open (10.2, S7): why
+autumn is overestimated (most likely shading at low sun), and a check of
+the spring figures once there is spring data.
 
 ---
 
@@ -1495,7 +1531,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
-| S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset 8 and 10 K equal, default **10 K**; minimum speed 30–50 % equal, default **30 %**; ΔTon/ΔToff matter little; the coil is no bottleneck (checked against the recording); the pipes matter most. Open: beam/diffuse split from PVGIS components, a store model that knows the heat pump (S6–S8 export), spring check next year | PVGIS components file, S6–S8 export | small | 🟢 |
+| S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset 8 and 10 K equal, default **10 K**; minimum speed 30–50 % equal, default **30 %**; ΔTon/ΔToff matter little; the coil is no bottleneck; incidence angle +3.8 % with the real PVGIS split; the heat pump only warms the store top. Open: the autumn overestimate (most likely shading at low sun: horizon profile), spring check next year | shading to the south-west and west | small | 🟢 |
 | D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
