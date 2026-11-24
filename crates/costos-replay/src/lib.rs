@@ -59,8 +59,14 @@ pub struct Row {
     /// S1 collector, S2 store bottom, S3 store top, S4 solar flow, S5 solar
     /// return, in °C, as recorded (one decimal).
     pub s: [f32; 5],
-    /// Solar pump relay R1 in percent (the BX here only uses 0 or 100).
+    /// Solar pump relay R1 in percent. The BX only uses 0 or 100: R1
+    /// switches the pump's mains on and off.
     pub relay: u8,
+    /// Solar pump speed, the BX's PWM A output in percent (PWM2 profile).
+    /// The BX starts at its minimum speed (20 %, 30 % since 2026-09-16)
+    /// and moves in steps of about 1 %. Not compared yet: CoSTOS's speed
+    /// control is still to be written (ARCHITECTURE 10.2, S1).
+    pub pwm: u8,
 }
 
 /// The BX Plus settings of the reference installation, read off the
@@ -78,7 +84,7 @@ pub fn bx_reference_config() -> DeltaTConfig {
 }
 
 /// Reads a replay file: `#` lines are comments, the first other line is
-/// the header `unix_s,s1,s2,s3,s4,s5,relay`, then one row per line.
+/// the header `unix_s,s1,s2,s3,s4,s5,relay,pwm`, then one row per line.
 ///
 /// Returns the line number (1-based) and a short reason on the first line
 /// that can't be read; a broken file should fail loudly, not replay half a
@@ -93,15 +99,15 @@ pub fn parse(text: &str) -> Result<Vec<Row>, String> {
             continue;
         }
         if !header_seen {
-            if line != "unix_s,s1,s2,s3,s4,s5,relay" {
+            if line != "unix_s,s1,s2,s3,s4,s5,relay,pwm" {
                 return Err(format!("line {number}: unexpected header {line:?}"));
             }
             header_seen = true;
             continue;
         }
         let fields: Vec<&str> = line.split(',').collect();
-        let [t, s1, s2, s3, s4, s5, relay] = fields.as_slice() else {
-            return Err(format!("line {number}: expected 7 fields"));
+        let [t, s1, s2, s3, s4, s5, relay, pwm] = fields.as_slice() else {
+            return Err(format!("line {number}: expected 8 fields"));
         };
         let temp = |v: &str| {
             v.parse::<f32>()
@@ -114,6 +120,9 @@ pub fn parse(text: &str) -> Result<Vec<Row>, String> {
             relay: relay
                 .parse()
                 .map_err(|e| format!("line {number}: relay {relay:?}: {e}"))?,
+            pwm: pwm
+                .parse()
+                .map_err(|e| format!("line {number}: pwm {pwm:?}: {e}"))?,
         };
         // Rows must move forward in time, or "hold until the next row"
         // means nothing.
@@ -157,6 +166,17 @@ pub struct Report {
     pub bx_anti_seize: Vec<(u64, u64)>,
     /// Every stretch of at least [`MIN_DIFFERENCE`] where they differ.
     pub differences: Vec<Difference>,
+    /// Lowest and highest BX pump speed (PWM A, %) while the BX pump ran,
+    /// anti-seize runs left out; `None` if it never ran. Shown for
+    /// information until the speed control can be compared.
+    ///
+    /// Two quirks of the recording: the first sample of a run often still
+    /// shows 0 % (PWM A and the relay are separate series with their own
+    /// timestamps), so 0 % while running is left out; and until
+    /// 2026-09-16 the BX's blocking protection also set 100 % for about
+    /// 10 s once a day *while the pump was running*, so the maximum on
+    /// such days is 100 % (ARCHITECTURE 8.1).
+    pub bx_pwm_range: Option<(u8, u8)>,
 }
 
 impl Report {
@@ -298,6 +318,12 @@ pub fn replay(rows: &[Row], config: &DeltaTConfig, flow_return: bool) -> Report 
         if bx_on {
             report.on_seconds.0 = report.on_seconds.0.saturating_add(1);
         }
+        if bx_on && row.pwm > 0 {
+            report.bx_pwm_range = Some(match report.bx_pwm_range {
+                None => (row.pwm, row.pwm),
+                Some((lo, hi)) => (lo.min(row.pwm), hi.max(row.pwm)),
+            });
+        }
         report.compared = report.compared.saturating_add(1);
         if bx_on == ours {
             report.agreed = report.agreed.saturating_add(1);
@@ -397,6 +423,18 @@ mod tests {
         let report = replay(&day("2026-11-06"), &bx_reference_config(), true);
         assert_eq!(report.on_seconds, (0, 0));
         assert_eq!(report.starts, (0, 0));
+        assert_eq!(report.bx_pwm_range, None);
+    }
+
+    /// The BX speed range: its minimum was 20 % before 2026-09-16 and
+    /// 30 % after; the maximum on 07-09 is the daily 100 % blocking
+    /// protection pulse during the run.
+    #[test]
+    fn bx_speed_range_is_recorded() {
+        let summer = replay(&day("2026-07-09"), &bx_reference_config(), true);
+        assert_eq!(summer.bx_pwm_range, Some((20, 100)));
+        let autumn = replay(&day("2026-11-14"), &bx_reference_config(), true);
+        assert_eq!(autumn.bx_pwm_range.map(|r| r.0), Some(30));
     }
 
     /// A real gap (none of the replay days has one, so it is made up here):
@@ -405,15 +443,15 @@ mod tests {
     /// about.
     #[test]
     fn gaps_are_reported_and_skipped() {
-        let mut text = String::from("unix_s,s1,s2,s3,s4,s5,relay\n");
+        let mut text = String::from("unix_s,s1,s2,s3,s4,s5,relay,pwm\n");
         // Running before the gap: collector 10 K above the store.
         for i in 0..10 {
-            text.push_str(&format!("{},60,50,55,62,52,100\n", 1000 + i * 5));
+            text.push_str(&format!("{},60,50,55,62,52,100,30\n", 1000 + i * 5));
         }
         // 10 minutes without data, then only 3 K: CoSTOS can't know the
         // pump was running and doesn't start at 3 K; the BX keeps running.
         for i in 0..10 {
-            text.push_str(&format!("{},53,50,55,52,52,100\n", 1645 + i * 5));
+            text.push_str(&format!("{},53,50,55,52,52,100,30\n", 1645 + i * 5));
         }
         let report = replay(&parse(&text).unwrap(), &bx_reference_config(), true);
         assert_eq!(report.gaps, vec![(1045, 600)]);
@@ -428,11 +466,11 @@ mod tests {
     #[test]
     fn broken_files_are_rejected() {
         assert!(parse("nonsense").is_err());
-        let ok = "unix_s,s1,s2,s3,s4,s5,relay\n10,1,2,3,4,5,0\n";
+        let ok = "unix_s,s1,s2,s3,s4,s5,relay,pwm\n10,1,2,3,4,5,0,0\n";
         assert_eq!(parse(ok).unwrap().len(), 1);
-        let backwards = "unix_s,s1,s2,s3,s4,s5,relay\n10,1,2,3,4,5,0\n9,1,2,3,4,5,0\n";
+        let backwards = "unix_s,s1,s2,s3,s4,s5,relay,pwm\n10,1,2,3,4,5,0,0\n9,1,2,3,4,5,0,0\n";
         assert!(parse(backwards).unwrap_err().contains("line 3"));
-        let short = "unix_s,s1,s2,s3,s4,s5,relay\n10,1,2,3\n";
+        let short = "unix_s,s1,s2,s3,s4,s5,relay,pwm\n10,1,2,3\n";
         assert!(parse(short).is_err());
     }
 
@@ -440,10 +478,13 @@ mod tests {
     /// counted as a difference or a start.
     #[test]
     fn short_bx_runs_count_as_anti_seize() {
-        let mut text = String::from("unix_s,s1,s2,s3,s4,s5,relay\n");
+        let mut text = String::from("unix_s,s1,s2,s3,s4,s5,relay,pwm\n");
         for i in 0..20 {
             let relay = if (5..7).contains(&i) { 100 } else { 0 };
-            text.push_str(&format!("{},20,40,45,25,25,{relay}\n", 1000 + i * 5));
+            text.push_str(&format!(
+                "{},20,40,45,25,25,{relay},{relay}\n",
+                1000 + i * 5
+            ));
         }
         let report = replay(&parse(&text).unwrap(), &bx_reference_config(), true);
         assert_eq!(report.bx_anti_seize, vec![(1025, 10)]);

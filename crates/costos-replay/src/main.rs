@@ -37,6 +37,9 @@ fn print(name: &str, r: &Report) {
         r.starts.0,
         r.starts.1
     );
+    if let Some((lo, hi)) = r.bx_pwm_range {
+        println!("   BX pump speed while on: {lo}–{hi} % (PWM A)");
+    }
     for (start, len) in &r.gaps {
         println!("   gap          {} UTC, {len} s", hms(*start));
     }
