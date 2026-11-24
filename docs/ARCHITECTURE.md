@@ -1191,7 +1191,7 @@ azimuth 80° (west, turned 10° south).
 | Collector | 2037 / 1853 / 1682 W per collector at 1000 W/m² and ΔT 0 / 30 / 50 K, fitted as a quadratic, scaled to 58 tubes; heat pipes as thermal diodes (no sun: the manifold loses 1 W/K) | Data sheet | 🟢 |
 | Manifold and fluid in the collector | 15 kJ/K | Assumed | 🟡 |
 | Pipes | **DN 16 stainless corrugated twin solar pipe** (invoice: Duo-Solarleitung Edelstahlwellrohr), 2 × 25 m, **about 3 m outdoors**, standard insulation: 0.22 W/(m·K) per pipe, 0.23 l/m, indoor part at 15 °C | Owner + assumed insulation value | 🟢 |
-| Lower coil | UA 650 W/K (2.6 m²) | Assumed | 🟡 sensitivity 400–1000 |
+| Lower coil | UA 650 W/K (2.6 m²) | Assumed, checked against the recording (below): at least about 550–600 W/K | 🟢 sensitivity 400–1000 |
 | Store | Two nodes of 400 l (lower with the solar coil, upper), mixing when the lower gets warmer, 2.5 W/K standing loss each; reset every morning to the month's typical store-bottom temperature (Jul–Nov from the recording: 68 / 57 / 58 / 40 / 21 °C; Dec–Jun guessed: 21 / 21 / 22 / 30 / 40 / 50 / 60 °C) | Recording + guesses | 🟡 good in summer, optimistic in autumn and winter |
 | Flow | From the pump curve and a calibrated system curve, see below: 1.8 / 2.5 / 3.7 / 5.1 / 5.9 l/min at 20 / 30 / 50 / 80 / 100 % | Estimated from the data | 🟡 sensitivity −40 % / +50 % |
 | Incidence angle | Optional (`iam` mode): beam light weighted with transversal × longitudinal incidence angle modifiers for evacuated tubes (transversal up to 1.2 at 60–70°, as in Quaschning, *Regenerative Energiesysteme*, Bild 3.25), tubes along the slope; the beam share of G(i) is assumed (0 / 50 / 80 %) because the PVGIS file has no beam/diffuse split | Literature | 🟡 |
@@ -1219,6 +1219,23 @@ simulated mean speed is 36 %, the recorded one about 30 %, so the BX's
 *Estimated flow: the minimum band below 15 % PWM (PWM2) runs at the 20 %
 value; the one measured point is 30 %, the rest follows the pump and system
 curves.*
+
+**The coil, checked against the recording.** With the flow estimate, the
+coil's heat transfer can be read from S4 (coil inlet), S5 (coil outlet) and
+S2 (store water at the coil's middle height): effectiveness ε = (S4 − S5) /
+(S4 − S2), UA = −W · ln(1 − ε). Over 413 000 samples of steady runs (pump
+on for 20 min or more, 20–60 % PWM, S4 − S2 > 6 K), **ε is above 0.98 in
+99 % of them**, with a median of 1.33: the coil outlet S5 is usually
+*colder* than S2. The water below S2 (the coil reaches down to 300 mm, S2
+sits at 560 mm) is colder than at S2, and the fluid leaves the coil at
+about that temperature. So the coil is not a bottleneck: it gives off
+practically all the heat it can at this low flow (median 3.2 kW). The
+samples with ε < 0.98 give UA ≈ 550 W/K (p25 520, p75 600), a lower bound;
+the assumed 650 W/K fits, and the sensitivity case 1000 W/K changes the
+yield by only +0.2 %. One consequence for the model: it takes S2 as the
+coil's surroundings, while the real coil sees colder water further down,
+so the real return to the collector is colder and the **model slightly
+underestimates** the yield.
 
 **Why the daily store reset works in summer.** The heat pump only runs
 when the house needs heat and never heats hot water (installation.md,
@@ -1312,8 +1329,35 @@ better than at normal incidence (up to 1.2), along the tubes it falls off
 like a flat plate. With a west-facing roof much of the light arrives at a
 slant, hence the +2.6 % to +4.4 %.*
 
+**Minimum pump speed.** The start value and lower limit of the speed
+control, swept at ΔTset 8, 10 and 12 K (`… minspeed`):
+
+![Minimum pump speed sweep](img/sim-minspeed.svg)
+
+*Heat into the store rises with the minimum speed: at very low flow the
+fluid takes long through 2 × 25 m of pipe and the collector runs hotter.
+The pump electricity rises too, so the net result is flat from 30 to 50 %
+and worse below 30 % and at 60 %.*
+
+| Minimum speed | Flow at minimum | Heat into store (10 K) | Pump electricity | Net vs 30 % | Rating |
+|---|---|---|---|---|---|
+| 15 % | 1.5 l/min | 2068 kWh | 15.9 kWh | −6.9 kWh el | 🔴 |
+| 20 % (BX until 2026-09-16) | 1.8 l/min | 2074 kWh | 16.7 kWh | −5.7 kWh el | 🟡 |
+| **30 % (BX since 2026-09-16)** | **2.5 l/min** | **2102 kWh** | **18.9 kWh** | **0** | 🟢 **default** |
+| 40 % | 3.2 l/min | 2125 kWh | 22.7 kWh | +2.8 kWh el | 🟢 |
+| 50 % | 3.7 l/min | 2138 kWh | 28.3 kWh | +0.9 kWh el | 🟢 |
+| 60 % | 4.0 l/min | 2145 kWh | 35.8 kWh | −4.7 kWh el | 🟡 |
+
+- **The change from 20 % to 30 % on 2026-09-16 was right**: about +28 kWh
+  of heat a year for 2 kWh more pump electricity.
+- 40 % is a hair better still (+2.8 kWh el a year, under €1), within what
+  the model can resolve. CoSTOS's default minimum stays **30 %**, as on the
+  BX; 30–50 % are all fine.
+- At ΔTset 8 or 12 K the picture is the same.
+
 **Reproduce.** `python3 tools/sim/yield_sim.py pvgis.csv` (all cases),
-`… onoff` (ΔTon/ΔToff), `… iam` (incidence angle), and
+`… onoff` (ΔTon/ΔToff), `… iam` (incidence angle), `… minspeed`
+(minimum pump speed), and
 `python3 tools/sim/plots.py pvgis.csv` for the charts; the PVGIS download
 command is in the header of `yield_sim.py`. A full run takes about a
 minute.
@@ -1321,9 +1365,8 @@ minute.
 **Conclusion.** The default ΔTset for CoSTOS's speed control is **10 K**:
 as good as 8 K for the yield, the RESOL default, and the same as the BX, so
 shadow mode compares like with like. Configurable. ΔTon/ΔToff stay at the
-BX's 5 / 2 K. The pump's minimum speed is the next setting worth a sweep
-(the BX ran at 20 % until 2026-09-16, at 30 % since). Still open (10.2,
-S7): a store model that knows the heat pump (autumn and winter) and a
+BX's 5 / 2 K, the minimum pump speed at 30 %. Still open (10.2, S7): a
+store model that knows the heat pump (autumn and winter) and a
 beam/diffuse split for the incidence angle effect.
 
 ---
@@ -1452,7 +1495,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
-| S7 | Best ΔTset for the yield | **Done** (8.2): 8 and 10 K equal, default **10 K**; the range 6–14 K within ±6 kWh el a year; ΔTon/ΔToff matter little; incidence angle +2.6 %; the pipes matter most. Open: minimum pump speed sweep, a store model that knows the heat pump, beam/diffuse split | — | small | 🟢 |
+| S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset 8 and 10 K equal, default **10 K**; minimum speed 30–50 % equal, default **30 %**; ΔTon/ΔToff matter little; the coil is no bottleneck (checked against the recording); the pipes matter most. Open: beam/diffuse split from PVGIS components, a store model that knows the heat pump (S6–S8 export), spring check next year | PVGIS components file, S6–S8 export | small | 🟢 |
 | D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
