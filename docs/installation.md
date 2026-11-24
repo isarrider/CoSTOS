@@ -41,9 +41,17 @@ be BX Plus inputs S1–S8.
 | S8 | nach Haus / vor Heizung | Heating circuit: after the house, back to the heat generator | Measurement only |
 
 - **All eight sensors are Pt1000, each on its own 2-wire cable.**
+- **The other BX Plus inputs are unused**, confirmed from a live
+  vbus2influx reading (2026-11-24, before sunrise): `temperature_09`,
+  `_11`, `_12` read **999.9** (the BX value for an open input),
+  `pressure_11/12` **99.99** and `flow_rate_09/11/12` **0** (no flow or
+  pressure sensors), and `irradiation_10` **1350 W/m²** in the dark (no
+  irradiation sensor on S10; the open input reads as full scale). Relays
+  R2–R5 and PWM B are always 0. These series stay out of the replay data.
 - **Plan for CoSTOS: keep all eight Pt1000 sensors** with the HAT's
-  [PT edition](HAT-PT.md) (8 × Pt1000 on an
-  LTC2983, plus one 1-Wire bus). S1–S8 connect as they are: no new
+  [PT edition](HAT-PT.md) (8 × Pt1000, plus one 1-Wire bus; its
+  measuring front end is being redesigned from cheap basic parts,
+  [HAT D26](HAT-development.md#1-decisions)). S1–S8 connect as they are: no new
   sensors, nothing changes at the store or the pipes, and the readings
   continue the vbus2influx history seamlessly. DS18B20 probes can still be
   added on the 1W-A bus where an extra reading is wanted.
