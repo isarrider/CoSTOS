@@ -1,0 +1,15 @@
+[package]
+name = "costos-sim"
+description = "Thermal model of the CoSTOS reference solar loop, for closed-loop simulation tests of the control chain"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+costos-core.workspace = true
+costos-safety.workspace = true
+
+[lints]
+workspace = true

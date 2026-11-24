@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/costos-core", "crates/costos-safety", "crates/costos-replay"]
+members = ["crates/costos-core", "crates/costos-safety", "crates/costos-replay", "crates/costos-sim"]
 
 [workspace.package]
 version = "0.1.0"
@@ -11,6 +11,7 @@ rust-version = "1.85"
 
 [workspace.dependencies]
 costos-core = { path = "crates/costos-core" }
+costos-safety = { path = "crates/costos-safety" }
 proptest = { version = "1", default-features = false, features = ["std"] }
 
 [workspace.lints.rust]
