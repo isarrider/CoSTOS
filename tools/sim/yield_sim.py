@@ -20,14 +20,18 @@ Model (all assumptions marked; to be calibrated once the flow table exists):
   and ΔT 0/30/50 K, scaled to 58 of 60 tubes. Heat pipes are thermal
   diodes, so without sun the manifold only loses a little (1 W/K).
 - Collector manifold + fluid: 15 kJ/K (assumed).
-- Pipes: 2 × 15 m 22 mm copper, 0.25 W/(m·K), half outside (assumed).
+- Pipes: 2 × 25 m 22 mm copper (length from the owner, size assumed),
+  0.25 W/(m·K), half outside (assumed).
 - Lower coil: UA 650 W/K (2.6 m², assumed 250 W/m²K).
 - Store: two nodes of 400 l; every morning at 05:00 UTC both are reset to
   the month's typical morning temperature (from the recorded data for
   Jul-Nov, guessed for the other months), so each day starts like a real
   one in that month and the result is "heat into the store that day".
-- Flow: linear in PWM, FMAX l/min at 100 % (assumed 8), the pump stops
-  below 15 %.
+- Flow: from the pump curve (Yonos PARA ST 15/7: 7.3 m, 3.3 m³/h) and a
+  system curve whose lumped resistance is calibrated so that 30 % PWM gives
+  3.4 l/min, the flow implied by the measured transport delay at pump
+  starts (about 200 s for ~9 l of flow pipe). Table FLOW_TABLE below, scaled
+  by FMAX/7.9 for the sensitivity cases.
 - Control like the BX Plus: on at S1-S2 >= 5 K; off when S1-S2 <= 2 K and
   flow-return <= 2 K; start at 30 %, then ±1 % every 30 s to hold S1-S2 at
   ΔTset ± 1 K, 30–100 %.
@@ -35,6 +39,10 @@ Model (all assumptions marked; to be calibrated once the flow table exists):
 import numpy as np, numba, sys, csv
 
 RHO_C = 3650.0  # J/(l K), solar fluid
+
+# Flow in l/min at PWM 0, 10, ..., 100 % (ARCHITECTURE 8.2). Below 15 % the
+# pump is in its minimum band (PWM2), so the 20 % value is held down to 15 %.
+FLOW_TABLE = np.array([0.0, 2.6, 2.6, 3.4, 4.2, 4.8, 5.4, 6.1, 6.8, 7.5, 7.9])
 DT = 5.0
 
 def load_pvgis(path):
@@ -50,6 +58,15 @@ def load_pvgis(path):
 # Typical store-bottom temperature at 06:00 local per month (index = month).
 # Jul-Nov: medians of the recorded data 2026; the other months are guesses.
 MORNING = np.array([0, 21, 22, 30, 40, 50, 60, 68, 57, 58, 40, 21, 21], float)  # index = month
+
+@numba.njit(cache=False)
+def flow(pwm):
+    i = int(pwm // 10.0)
+    if i >= 10:
+        return FLOW_TABLE[10]
+    f = (pwm - 10.0 * i) / 10.0
+    return FLOW_TABLE[i] * (1.0 - f) + FLOW_TABLE[i + 1] * f
+
 
 @numba.njit(cache=False)
 def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, don=5.0, doff=2.0):
@@ -81,7 +98,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                 q = -1.0 * d
             # control (sensors: S1 = tc, S2 = tlo, S4 = tf, S5 = coil outlet)
             if on:
-                w = fmax * pwm / 100.0 / 60.0 * RHO_C
+                w = flow(pwm) * fmax / 7.9 / 60.0 * RHO_C
                 tout = tlo + (tf - tlo) * np.exp(-ua_coil / w)
             else:
                 w = 0.0
@@ -102,7 +119,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                         elif d12 < dtset - 1.0 and pwm > 30.0:
                             pwm -= 1.0
             if on:
-                w = fmax * pwm / 100.0 / 60.0 * RHO_C
+                w = flow(pwm) * fmax / 7.9 / 60.0 * RHO_C
                 tout = tlo + (tf - tlo) * np.exp(-ua_coil / w)
                 qcoil = w * (tf - tout)
                 run_s += DT
@@ -129,13 +146,13 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
 def main():
     g, ta, months, hours = load_pvgis(sys.argv[1])
     years = 4.0
-    cases = [("base", 8.0, 650.0, 15000.0, 15.0), ("low flow 5 l/min", 5.0, 650.0, 15000.0, 15.0),
-             ("high flow 12 l/min", 12.0, 650.0, 15000.0, 15.0), ("coil UA 400", 8.0, 400.0, 15000.0, 15.0),
-             ("coil UA 1000", 8.0, 1000.0, 15000.0, 15.0), ("pipes 30 m", 8.0, 650.0, 15000.0, 30.0)]
+    cases = [("base", 7.9, 650.0, 15000.0, 25.0), ("flow -40 %", 4.7, 650.0, 15000.0, 25.0),
+             ("flow +50 %", 11.9, 650.0, 15000.0, 25.0), ("coil UA 400", 7.9, 400.0, 15000.0, 25.0),
+             ("coil UA 1000", 7.9, 1000.0, 15000.0, 25.0), ("pipes 15 m", 7.9, 650.0, 15000.0, 15.0)]
     if len(sys.argv) > 2 and sys.argv[2] == "onoff":
         for don, doff in [(3, 1), (4, 1.5), (5, 2), (6, 3), (8, 4)]:
             out = np.zeros((13, 4))
-            run(g, ta, months, hours, 8.0, 8.0, 650.0, 15000.0, 15.0, out, float(don), float(doff))
+            run(g, ta, months, hours, 8.0, 7.9, 650.0, 15000.0, 25.0, out, float(don), float(doff))
             out /= years
             print(f"on {don} off {doff}: {out[:,0].sum():6.0f} kWh/yr  pump {out[:,1].sum():5.0f} h  {out[:,2].sum():5.1f} kWh_el")
         return
