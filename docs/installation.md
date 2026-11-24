@@ -194,7 +194,10 @@ store on its overview page from the same data (see
   heating water passes the upper coil on its way to the house, so the store
   and the heating exchange heat there in both directions (the heat pump
   warms the store top, or a solar-warmed store pre-heats the heating
-  water).
+  water). Seen in the recording (S6–S8, November 2026): the heat pump runs
+  in the daytime, roughly 10:00–16:00, and warms the store **top** (S3) from
+  about 21 to 42 °C; the store **bottom** (S2) stays at about 21 °C unless
+  the sun heats it (ARCHITECTURE 8.2).
 - **S2 (store bottom)** sits in the ½" sleeve at 560 mm (left), **S3 (store
   top)** in the ½" sleeve at 1270 mm (left).
 
