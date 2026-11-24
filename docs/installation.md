@@ -31,7 +31,7 @@ be BX Plus inputs S1–S8.
 
 | Input | Name in the dashboard | Position | Role |
 |---|---|---|---|
-| S1 | Temp_1_Kollektor | Collector | **Control**: pump start/stop (ΔT), collector protection |
+| S1 | Temp_1_Kollektor | Collector | **Control**: pump start/stop (ΔT), collector protection. Mounted inside the pipe insulation, not directly on the pipe (a small air gap): it reads about **8 K low** while the pump runs (ARCHITECTURE 8.4) and reacts slowly. Kept that way on purpose: the sensor sees less heat and lasts longer |
 | S2 | Temp_2_Boiler_u | Store, bottom | **Control**: ΔT reference, store maximum (BX: Smax **95 °C**; CoSTOS: 90 °C, its highest allowed value, ARCHITECTURE 11) |
 | S3 | Temp_3_Boiler_o | Store, top | Display |
 | S4 | Temp_4_Vorlauf | Solar flow (collector → store), at the store | Display; heat quantity once a flow value exists |
@@ -188,6 +188,10 @@ store on its overview page from the same data (see
 - **Upper coil: heat pump** heating water, in at 1060 mm (bottom
   connection), out at 1380 mm (top), on its way to the house: S6 measures
   the coil's inlet, S7 its outlet.
+- **S2 and S5 (coil outlet) differ by about 7 K while the pump runs**: S2
+  doesn't sit at the very bottom of the store, and the fluid still has a
+  few metres to S5. They only come close when the store is very hot
+  (owner; ARCHITECTURE 8.4).
 - **The heat pump only runs when the house needs heat.** It never heats
   domestic hot water: in the warm months it is off, and the store, and with
   it the hot water, is heated by the sun alone. In the heating season the
@@ -211,6 +215,7 @@ tubes are in place.
 |---|---|---|
 | Tubes | 30, Ø 58 mm, borosilicate glass | 58 in place |
 | Site and orientation | | Munich; facing **west, turned 10° towards south** (azimuth 80° in PVGIS terms, where 0° = south and 90° = west), tilt about **30°** |
+| Summer holidays | | The collector is **covered** during the summer holidays, when nobody uses heat, so the system **hasn't gone into stagnation for years** |
 | Shading | | **High trees directly to the south**; about 30–35° above the horizon as seen from the collector, fitted to the recorded pump hours (ARCHITECTURE 8.2). They block the low midday sun from about October to February |
 | Gross area | 4.58 m² | 9.16 m² |
 | Output (data sheet, 1000 W/m², ΔT 0 / 30 / 50 K) | 2037 / 1853 / 1682 W | about 3.9 / 3.6 / 3.3 kW with 58 tubes |
@@ -276,11 +281,15 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
   Edelstahlwellrohr), **inner diameter 15 mm, outer 21 mm**, standard
   insulation, **25 m one way** from the store to the collector, of which
   only about **3 m are outdoors**.
-- **A float-type flow indicator is installed.** Calibration: whenever the
-  pump runs, read the indicator (l/min) and note the time; the pump speed
-  at that moment comes from the PWM value in the vbus2influx data. Three
-  or four readings at different speeds (low, middle, full) make the
-  table.
+- **A float-type flow indicator is installed, but it can't be read**: its
+  glass is stained completely brown. The solar fluid was replaced in
+  **October 2025**, after flushing the loop with water for a couple of
+  days; the old fluid was very dirty. So aged fluid is not the reason for
+  the low flow now; deposits left in the station (flow setter, non-return
+  valve, strainer) still could be. The flow setter is fully open.
+  (Calibration with a readable indicator would be: read l/min while the
+  pump runs, note the time, take the PWM value from the vbus2influx data;
+  three or four speeds make the table.)
 
 ## Overtemperature protection
 
