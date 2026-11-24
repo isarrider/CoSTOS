@@ -94,11 +94,14 @@ So far:
 
 | Crate | What it does | Status |
 |---|---|---|
-| `crates/costos-core` | Control logic, `no_std`: temperature, time, sensor and duty types (the rules of ARCHITECTURE 6.1), ΔT control with hysteresis, minimum run time, collector minimum and smoothing | 🟡 started |
-| `crates/costos-safety` | Safety supervisor, `no_std`: sensor unknown → off, collector and store emergency shutdown with hysteresis, minimum off time; can only reduce the request | 🟡 started |
+| `crates/costos-core` | Control logic, `no_std`: temperature, time, sensor and duty types (the rules of ARCHITECTURE 6.1); ΔT control with the flow/return switch-off, store maximum, speed control (PI or BX-like steps), start profiles, anti-seize run and full-speed purge, and the control cycle that chains them | 🟢 milestone 1 done |
+| `crates/costos-safety` | Safety supervisor, `no_std`: sensor unknown → off, collector and store emergency shutdown with hysteresis and latch, minimum off time; can only reduce the request | 🟢 milestone 1 done |
+| `crates/costos-replay` | PC tool: replays recorded BX Plus days (`tests/replay`) through the control and lists where CoSTOS decides differently | 🟢 |
+| `crates/costos-sim` | Thermal model of the reference solar loop and closed-loop scenario tests of the whole control chain (sunny, cloudy, stagnation, sensor faults, stuck pump, restarts) | 🟢 milestone 2 done |
+| `tools/sim` | ngspice circuit simulations of the HAT, and the Python yield simulation (ARCHITECTURE 8.2) | 🟢 |
 
 ```sh
-cargo test --workspace                                   # unit and property tests
+cargo test --workspace                                   # unit, property, replay and simulation tests
 cargo clippy --workspace --all-targets -- -D warnings    # lints as in CI
 ```
 
