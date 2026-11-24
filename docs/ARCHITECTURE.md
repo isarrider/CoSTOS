@@ -1548,17 +1548,30 @@ somewhat higher; **0.45** is used. The calibrated table:
 | Flow, l/min | 0.68 | 0.81 | **1.13** | 1.67 | 2.30 | **2.66** |
 
 Good to about ±20 %. At 100 % that is about 0.3 l/(min·m²), a low-flow
-system; a throttled flow setter in the solar station would explain why the
-pump gives so little.
+system. The pipes alone should take only 1–2 m of the pump's 7 m at that
+flow, so something else throttles: the fluid was replaced in October 2025
+after a flush (it was very dirty, and the flow indicator's glass is stained
+brown), so deposits left in the station (flow setter, non-return valve,
+strainer) are the likely place. Worth a look; it changes the flow table,
+not the control logic.
 
 **Why the transport delay misled.** The pipe is 25 m one way, stainless
 corrugated with 15 mm inner diameter (owner), about 5 l plus the station.
-With 1.13 l/min the collector's hot fluid would need about 5 minutes to
-reach S4; the recording shows S4 rising by 5 K after about 3 minutes. The
-fluid in the upper part of the flow pipe (outdoors, under the roof) is
-already warmed by the collector before the pump starts, so S4 sees warm
-fluid before the collector's own fluid arrives. The delay therefore
-overestimated the flow.
+With 1.13 l/min the collector's hot fluid would need about 5 minutes on
+average to reach S4; the recording shows S4 rising by 5 K after about 3
+minutes. Two effects make the first warm fluid arrive early:
+
+- **Laminar flow.** At about 10 cm/s in a 15 mm pipe the fluid doesn't
+  mix across the pipe (Reynolds number about 700); it moves in layers,
+  the middle about twice as fast as the average. The first hot fluid
+  arrives after roughly half the mean transit time, which alone makes
+  the flow look about twice as high.
+- **Pre-warmed pipe.** The last metres next to the collector and the 3 m
+  outdoors are already warm before the pump starts, so warm fluid reaches
+  S4 before the collector's own fluid does.
+
+The store's energy balance measures the heat that actually arrived,
+whatever the flow pattern, so it is the better calibration.
 
 **What else the recording shows** (clear July days, pump running, means):
 
@@ -1568,7 +1581,15 @@ overestimated the flow.
 | S4 − S5 (flow minus return at the store) | 23.4 K | 20.7 K | 23.5 K | 22.7 K | A large spread: low flow |
 | S1 − S2 (what the ΔT control sees) | 7.3 K | 7.4 K | 7.6 K | 7.1 K | |
 | S2 − S5 (store sensor minus coil outlet) | 7.0 K | 5.6 K | 8.5 K | 6.9 K | The water around the lower coil is colder than at the S2 sensor |
-| from these: S4 − S1 | ≈ +9 K | ≈ +8 K | ≈ +7 K | ≈ +9 K | The flow at the store is **warmer than the collector sensor reads**: the sensor in its sleeve reads low |
+| from these: S4 − S1 | ≈ +9 K | ≈ +8 K | ≈ +7 K | ≈ +9 K | The flow at the store is **warmer than the collector sensor reads**: S1 sits inside the pipe insulation, not directly on the pipe (owner), so it reads low and slowly |
+
+**Consequence for the collector protection.** With S1 about 8 K low, the
+emergency stop at a displayed 130 °C acts at about 138 °C real. The owner
+keeps the sensor mounting on purpose (it lasts longer), and the collector
+is covered over the summer holidays, so it hasn't stagnated for years.
+CoSTOS gets a per-sensor offset (10.2, S4) that applies to the
+supervisor's limits as well as to the control, so the protection can work
+on the corrected value.
 
 **The simulation, calibrated.** `costos-sim` (8.3) now uses the calibrated
 table and three parameters for what the recording shows: the collector
@@ -1725,7 +1746,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S1 | ~~Speed control (PI)~~ | **Done**: `costos-core::speed`, PI (default) or BX-like steps, setpoint 10 K, minimum 30 %, start profiles; replay runs it and reports speeds | — | — | 🟢 |
 | S2 | ~~Store maximum~~ | **Done**: `costos-core::store_max`, 60 °C / 2 K by default. The reference installation's BX value is still to be read off (section 11) | — | — | 🟢 |
 | S3 | The 14 early BX stops (8.1) | Test both hypotheses in the replay: flow/return only after some minutes of running; a daily re-check at 12:00 BX time | — | small | 🟢 |
-| S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
+| S4 | Offset calibration per sensor | One offset per channel, applied before the control **and** the supervisor see the value; set against the recorded BX readings (2-wire cables, especially with H1) or from known effects (S1 reads about 8 K low, 8.4). Fits with the configuration (milestone 4) | — | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
 | S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset default **10 K**, minimum speed **30 %**, ΔTon/ΔToff 5 / 2 K; the coil is no bottleneck; incidence angle +3.8 %; trees about 30° high to the south fitted to the recorded hours, realistic year about **1900 kWh**. Open: the rest of the November gap (frost, fog, collector start), spring check next year | spring data | small | 🟢 |
@@ -1736,6 +1757,10 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 
 ## 11. Open questions
 
+- **BX ΔTsoll** (Solar → Grundeinstellung): the owner will read it off.
+  The simulation matches the recording best with a BX setpoint of about
+  12–14 K rather than 10 K (8.4); the value settles the flow table and is
+  the starting point for S10.
 - Settled: the solar pipe is **25 m one way**, stainless corrugated, inner
   diameter 15 mm, outer 21 mm (owner). The flow was recalibrated from the
   store's energy balance instead (8.4).
