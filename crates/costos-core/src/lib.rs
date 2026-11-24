@@ -36,6 +36,7 @@ pub mod output;
 pub mod sensor;
 pub mod speed;
 pub mod start_profile;
+pub mod store_max;
 pub mod temperature;
 pub mod time;
 
