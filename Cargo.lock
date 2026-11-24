@@ -55,6 +55,7 @@ name = "costos-sim"
 version = "0.1.0"
 dependencies = [
  "costos-core",
+ "costos-cycle",
  "costos-safety",
 ]
 

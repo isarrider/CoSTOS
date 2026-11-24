@@ -1,5 +1,6 @@
 //! Simulation tests (ARCHITECTURE 8, item 3): the whole control chain
-//! (`costos-core::solar` + `costos-safety`) against the thermal model of the
+//! (one `costos-cycle` second: `costos-core::solar` + `costos-safety` +
+//! monitor + heat counter) against the thermal model of the
 //! reference installation, in a closed loop, one simulated day each.
 //!
 //! Each test states what must hold and why. The thresholds are chosen from
@@ -198,6 +199,36 @@ fn full_store_and_stagnation() {
     let last = r.samples.last().unwrap();
     assert!(last.temps[0] < 120.0);
     assert!(!last.interventions.collector_emergency);
+}
+
+/// The same stagnation day with the recommended S1 offset of +8 K
+/// (ARCHITECTURE 8.4: the sensor sits inside the insulation and reads about
+/// 8 K low). The offset is applied before the supervisor (costos-cycle), so
+/// the emergency stop acts at a real 130 °C, i.e. when the sensor itself
+/// reads only 122 °C. Without the offset it would act at a real 138 °C.
+#[test]
+fn collector_offset_moves_the_emergency_stop_to_the_real_130() {
+    let mut s = Scenario::summer_day();
+    s.control.store_max.max = costos_core::Celsius::from_const(80.0);
+    s.store_start = (79.5, 80.0);
+    s.draws.clear();
+    s.offsets.collector = costos_core::Kelvin::from_const(8.0);
+    let r = run(&s);
+
+    // `temps[0]` is what the sensor reads (8 K below the fluid).
+    assert!(r.max_collector() + 8.0 > 130.0);
+    let mut acted = false;
+    for x in &r.samples {
+        if x.temps[0] + 8.0 >= 130.0 {
+            assert!(x.output.is_off(), "pump on at {} °C sensor", x.temps[0]);
+            assert!(x.interventions.collector_emergency);
+        }
+        // It acts below a sensor reading of 130 °C: that is the point.
+        if x.interventions.collector_emergency && x.temps[0] < 125.0 && x.temps[0] > 122.0 {
+            acted = true;
+        }
+    }
+    assert!(acted, "emergency never seen between 122 and 125 °C sensor");
 }
 
 /// A collector sensor wire that is broken for 2 minutes at 13:00 (a loose

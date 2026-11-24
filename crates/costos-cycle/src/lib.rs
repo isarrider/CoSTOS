@@ -166,6 +166,18 @@ impl CycleState {
         self.heat.counters
     }
 
+    /// A restart of the daemon: control and supervisor start fresh (the
+    /// supervisor latched, 4.2), while the alarms, the inhibit and the
+    /// counters are kept, as the daemon persists them.
+    #[must_use]
+    pub fn restart(self) -> Self {
+        Self {
+            solar: SolarState::default(),
+            supervisor: SupervisorState::default(),
+            ..self
+        }
+    }
+
     /// The user acknowledged the alarms: clears the latched ones and the
     /// inhibit.
     #[must_use]

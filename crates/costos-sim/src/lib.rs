@@ -14,15 +14,14 @@
 //!
 //! 1. [`plant::Plant`] gives the five sensor temperatures (S1–S5).
 //! 2. The sensor layer ([`faults`]) turns them into readings, with injected
-//!    faults where a scenario asks for them, and checks them against their
-//!    plausible ranges, as the daemon will.
-//! 3. `costos_core::solar::step` decides the requested duty: exactly the
-//!    chain the daemon will run.
-//! 4. `costos_safety::supervise_solar_pump` reduces it where needed.
-//! 5. `costos_core::monitor` checks what the pump did (alarms); if it asks
-//!    for an inhibit (repeated no circulation), the next cycle's request is
-//!    set to 0 % before the supervisor, as the daemon will do.
-//! 6. The plant gets the resulting flow (none if the pump is "stuck") for
+//!    faults where a scenario asks for them.
+//! 3. [`costos_cycle::step`] runs one control second, **the same function
+//!    the daemon calls**: sensor offsets, plausible ranges, the control
+//!    chain (`costos_core::solar`), the monitor's inhibit, the supervisor
+//!    (`costos_safety`), the plausibility checks and the heat counter.
+//!    Before `costos-cycle` existed this crate had its own copy of that
+//!    order; now a change there is tested here automatically.
+//! 4. The plant gets the resulting flow (none if the pump is "stuck") for
 //!    the next second.
 //!
 //! **What it is not.** Not a yield model: `tools/sim/yield_sim.py` with
@@ -39,12 +38,12 @@ pub mod faults;
 pub mod plant;
 pub mod weather;
 
-use costos_core::delta_t::FlowReturn;
-use costos_core::heat::{self, Counters, HeatConfig, HeatState};
-use costos_core::monitor::{self, Alarms, MonitorConfig, MonitorState};
-use costos_core::solar::{self, SolarConfig, SolarState};
-use costos_core::{Duty, PlausibleRange, Reading, Seconds, TimeOfDay};
-use costos_safety::{Interventions, SafetyConfig, SupervisorState};
+use costos_core::heat::{Counters, HeatConfig};
+use costos_core::monitor::{Alarms, MonitorConfig};
+use costos_core::solar::SolarConfig;
+use costos_core::{Duty, PlausibleRange, Seconds, TimeOfDay};
+use costos_cycle::{CycleConfig, CycleState, Offsets, Readings};
+use costos_safety::{Interventions, SafetyConfig};
 
 use crate::faults::{Fault, SensorLayer};
 use crate::plant::{Params, Plant, flow_for_duty};
@@ -84,6 +83,11 @@ pub struct Scenario {
     pub heat: HeatConfig,
     /// Feed S4/S5 to the flow/return switch-off (as on the reference BX).
     pub flow_return: bool,
+    /// Sensor offsets CoSTOS adds to the readings. The model already makes
+    /// S1 read 8 K low (`Params::collector_sensor_offset`); the scenarios
+    /// run without a correction unless they say otherwise, the
+    /// recommended setting for the reference installation is +8 K on S1.
+    pub offsets: Offsets,
     /// Hot-water draws.
     pub draws: Vec<Draw>,
     /// Faults to inject.
@@ -110,6 +114,7 @@ impl Scenario {
             monitor: MonitorConfig::DEFAULT,
             heat: HeatConfig::REFERENCE,
             flow_return: true,
+            offsets: Offsets::NONE,
             draws: vec![Draw {
                 from: 19 * 3600,
                 to: 19 * 3600 + 1800,
@@ -118,6 +123,23 @@ impl Scenario {
             faults: Vec::new(),
             restarts: Vec::new(),
             seconds: 24 * 3600,
+        }
+    }
+}
+
+impl Scenario {
+    /// The settings of one control second, as the daemon would load them.
+    #[must_use]
+    pub fn cycle_config(&self) -> CycleConfig {
+        CycleConfig {
+            solar: self.control,
+            safety: self.safety,
+            monitor: self.monitor,
+            heat: self.heat,
+            offsets: self.offsets,
+            flow_return_switch_off: self.flow_return,
+            collector_range: PlausibleRange::COLLECTOR,
+            store_range: PlausibleRange::STORE,
         }
     }
 }
@@ -219,80 +241,38 @@ pub fn run(scenario: &Scenario) -> Run {
     let ambient = weather::air_temperature(&s.day, 0.0);
     let mut plant = Plant::new(s.params, ambient, s.store_start.0, s.store_start.1);
     let mut sensors = SensorLayer::new(s.faults.clone());
-    let mut control = SolarState::default();
-    let mut supervisor = SupervisorState::default();
-    let mut monitor_state = MonitorState::default();
-    let mut inhibit = false;
-    let mut heat_state = HeatState::default();
+    let config = s.cycle_config();
+    let mut state = CycleState::default();
     let mut samples = Vec::with_capacity(s.seconds as usize);
 
     for t in 0..s.seconds {
         if s.restarts.contains(&t) {
-            control = SolarState::default();
-            supervisor = SupervisorState::default();
-            // The latched alarms are kept by the daemon across a restart
-            // (persisted with the counters), so the monitor state stays.
+            // Control and supervisor start fresh; the latched alarms and
+            // the counters are kept, as the daemon persists them.
+            state = state.restart();
         }
         #[allow(clippy::cast_precision_loss)]
         let local = t as f32;
         let temps = plant.sensors();
         let [s1, s2, s3, s4, s5] = sensors.read(t, temps);
-        let collector = PlausibleRange::COLLECTOR.check(s1);
-        let store_bottom = PlausibleRange::STORE.check(s2);
-        let store_top: Reading = PlausibleRange::STORE.check(s3);
-        let flow_return = s.flow_return.then(|| FlowReturn {
-            flow: PlausibleRange::COLLECTOR.check(s4),
-            ret: PlausibleRange::COLLECTOR.check(s5),
-        });
-        let now = Seconds::new(u64::from(t));
-        let inputs = solar::SolarInputs {
-            now,
-            time_of_day: TimeOfDay::new(t % 86_400).unwrap_or(TimeOfDay::MIDNIGHT),
-            collector,
-            store_bottom,
-            store_max_sensor: None,
-            flow_return,
+        // One control second: exactly what the daemon runs (costos-cycle).
+        let raw = Readings {
+            collector: s1,
+            store_bottom: s2,
+            store_top: Some(s3),
+            flow: Some(s4),
+            ret: Some(s5),
         };
-        let (next, out) = solar::step(&s.control, control, &inputs);
-        control = next;
-        // An inhibit from the monitor is a reduction: the request becomes
-        // 0 % before the supervisor sees it.
-        let requested = if inhibit { Duty::OFF } else { out.requested };
-        let sup_in = costos_safety::SolarInputs {
-            now,
-            requested,
-            collector,
-            store_bottom,
-            store_top: Some(store_top),
-        };
-        let (next_sup, allowed, why) =
-            costos_safety::supervise_solar_pump(&s.safety, supervisor, &sup_in);
-        supervisor = next_sup;
-        let output = allowed;
-        let readings = [collector, store_bottom, store_top, s4, s5];
-        let mon_in = monitor::MonitorInputs {
-            now,
-            time_of_day: inputs.time_of_day,
-            pump_on: !output.is_off(),
-            collector,
-            store_bottom,
-            flow: s.flow_return.then_some(PlausibleRange::COLLECTOR.check(s4)),
-            ret: s.flow_return.then_some(PlausibleRange::COLLECTOR.check(s5)),
-            delta_t: out.delta_t.delta_t,
-            store_max_reached: !out.store_max.allows_loading(),
-            sensors: &readings,
-        };
-        heat_state = heat::step(
-            &s.heat,
-            heat_state,
-            output,
-            collector,
-            Some(PlausibleRange::COLLECTOR.check(s4)),
-            Some(PlausibleRange::COLLECTOR.check(s5)),
+        let time_of_day = TimeOfDay::new(t % 86_400).unwrap_or(TimeOfDay::MIDNIGHT);
+        let (next, out) = costos_cycle::step(
+            &config,
+            state,
+            Seconds::new(u64::from(t)),
+            time_of_day,
+            &raw,
         );
-        let (next_mon, alarms, inhib) = monitor::step(&s.monitor, monitor_state, &mon_in);
-        monitor_state = next_mon;
-        inhibit = inhib;
+        state = next;
+        let output = out.duty;
 
         let flow = if sensors.pump_stuck(t) {
             0.0
@@ -309,18 +289,18 @@ pub fn run(scenario: &Scenario) -> Run {
         samples.push(Sample {
             t,
             temps,
-            requested: out.requested,
+            requested: out.solar.requested,
             output,
             flow,
-            interventions: why,
-            delta_t: out.delta_t.delta_t.map(costos_core::Kelvin::get),
-            alarms,
-            inhibit,
+            interventions: out.interventions,
+            delta_t: out.solar.delta_t.delta_t.map(costos_core::Kelvin::get),
+            alarms: out.alarms,
+            inhibit: out.inhibit,
         });
     }
     Run {
         samples,
         heat_kwh: plant.heat_into_store / 3.6e6,
-        counters: heat_state.counters,
+        counters: state.counters(),
     }
 }
