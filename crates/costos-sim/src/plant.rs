@@ -17,10 +17,10 @@
 //! | Part | Model |
 //! |---|---|
 //! | Collector | 2 × 30 tubes (58 used), data sheet 2037 / 1853 / 1682 W at 1000 W/m² and ΔT 0 / 30 / 50 K as a quadratic; heat pipes as thermal diodes (no gain: only the manifold loses 1 W/K); **40 kJ/K** (see below) |
-//! | Pipes | DN 16 corrugated, 2 × 25 m, 0.23 l/m, 0.22 W/(m·K), 3 of 25 m outdoors, indoors at 15 °C |
+//! | Pipes | stainless corrugated, inner 15 mm, 2 × 25 m, 0.20 l/m, 0.22 W/(m·K), 3 of 25 m outdoors, indoors at 15 °C |
 //! | Lower coil | UA 650 W/K: outlet = store + (inlet − store) · e^(−UA/W) |
 //! | Store | two nodes of 400 l, 2.5 W/K loss each to 20 °C, 30 W/K between them, mixed when the lower one gets warmer |
-//! | Pump | flow from the estimated table (PWM2: 1.5 l/min in the minimum band, 2.5 l/min at 30 %, 5.9 l/min at 100 %) |
+//! | Pump | flow from the calibrated table (PWM2: 0.68 l/min in the minimum band, 1.13 l/min at 30 %, 2.66 l/min at 100 %) |
 //!
 //! **Collector heat capacity.** The Python yield model uses 15 kJ/K, which
 //! only matters for the yield in the third digit. For the *control* it
@@ -32,7 +32,23 @@
 //! 35–45 kJ/K; 40 kJ/K gives a handful of starts on a clear day and changes
 //! the day's yield by under 1 %.
 //!
-//! **Sensors** as in installation.md: S1 collector (the manifold node), S2
+//! **Calibrated against the recording** (ARCHITECTURE 8.4). Three things
+//! in the real loop differ from a plain textbook model, and the recording
+//! shows each of them on clear July days (pump running, means):
+//!
+//! | Measured | Recording | Model parameter |
+//! |---|---|---|
+//! | S4 − S1 (flow at the store minus collector sensor) | about +8 K | [`Params::collector_sensor_offset`] 8 K: the collector sensor reads lower than the fluid leaving the collector |
+//! | S2 − S5 (store sensor minus coil outlet) | about 7 K | [`Params::coil_sink_offset`] 7 K: the water around the lower coil is colder than at the S2 sensor |
+//! | Heat into the store | 15–17 kWh on a clear day (store balance) | 90 % of the data sheet output |
+//! | Flow | half the first estimate (store balance) | the calibrated table |
+//!
+//! With these, a clear July day gives about 15 kWh, a mean pump speed of
+//! 38 % (recording: 31 %), S4 − S5 of 18 K (22 K) and S1 − S2 of 6.3 K
+//! (7.4 K): close, and the rest fits a flow that is a little lower still.
+//!
+//! **Sensors** as in installation.md: S1 collector (the manifold node, read
+//! `collector_sensor_offset` low), S2
 //! store bottom (lower node), S3 store top (upper node), S4 flow at the
 //! store (flow pipe node), S5 return at the store (coil outlet while
 //! flowing, the return pipe node otherwise).
@@ -44,11 +60,14 @@ const RHO_C: f32 = 3650.0;
 /// Water heat capacity per litre, J/(l·K).
 const WATER_C: f32 = 4180.0;
 
-/// Flow in l/min at 0, 10, …, 100 % PWM (ARCHITECTURE 8.2, installation.md).
-const FLOW_TABLE: [f32; 11] = [0.0, 1.5, 1.8, 2.5, 3.2, 3.7, 4.0, 4.5, 5.1, 5.6, 5.9];
+/// Flow in l/min at 0, 10, …, 100 % PWM, calibrated from the store's energy
+/// balance (ARCHITECTURE 8.4, installation.md).
+const FLOW_TABLE: [f32; 11] = [
+    0.0, 0.68, 0.81, 1.13, 1.44, 1.67, 1.80, 2.03, 2.30, 2.52, 2.66,
+];
 
 /// Pump flow in l/min for a PWM duty in %. 0 % = stopped; anything above
-/// 0 but below 10 % runs in the PWM2 minimum band (1.5 l/min).
+/// 0 but below 10 % runs in the PWM2 minimum band (0.68 l/min).
 #[must_use]
 pub fn flow_for_duty(duty: u8) -> f32 {
     if duty == 0 {
@@ -84,18 +103,32 @@ pub struct Params {
     pub ua_coil: f32,
     /// Volume of each store node, l.
     pub store_node_litres: f32,
+    /// How much colder than the lower node (S2) the water around the coil
+    /// is, K (stratification below the S2 sensor, ARCHITECTURE 8.4).
+    pub coil_sink_offset: f32,
+    /// How much lower the collector sensor S1 reads than the fluid leaving
+    /// the collector, K (sensor in a sleeve of the manifold, ARCHITECTURE 8.4).
+    pub collector_sensor_offset: f32,
 }
 
 impl Params {
     /// The reference installation (installation.md, ARCHITECTURE 8.2).
     pub const REFERENCE: Self = Self {
-        p0: 2037.0 * 2.0 * 58.0 / 60.0,
+        // 90 % of the data sheet: calibrated against clear July days of the
+        // recording (ARCHITECTURE 8.4); dirt on the tubes, the roof and the
+        // real sky make up the difference.
+        p0: 0.9 * 2037.0 * 2.0 * 58.0 / 60.0,
         k1: 4.68 * 2.0 * 58.0 / 60.0,
         k2: 0.0483 * 2.0 * 58.0 / 60.0,
         c_collector: 40_000.0,
         pipe_length: 25.0,
         ua_coil: 650.0,
         store_node_litres: 400.0,
+        // S2 − S5 while running is about 7 K in the recording.
+        coil_sink_offset: 7.0,
+        // S4 − S1 while running is about +8 K in the recording: the flow at
+        // the store is warmer than the collector sensor reads.
+        collector_sensor_offset: 8.0,
     };
 }
 
@@ -153,13 +186,14 @@ impl Plant {
             q = -dt_amb;
         }
         let w = flow_lpm / 60.0 * RHO_C; // W/K
-        let c_pipe = p.pipe_length * (0.23 * RHO_C + 0.15 * 500.0);
+        let c_pipe = p.pipe_length * (0.20 * RHO_C + 0.15 * 500.0);
         let ua_pipe = p.pipe_length * 0.22;
         let t_env = 0.12 * ta + 0.88 * 15.0;
         let c_node = p.store_node_litres * WATER_C;
 
         let (q_coil, tout) = if w > 0.0 {
-            let tout = self.store_low + (self.flow_pipe - self.store_low) * (-p.ua_coil / w).exp();
+            let sink = self.store_low - p.coil_sink_offset;
+            let tout = sink + (self.flow_pipe - sink) * (-p.ua_coil / w).exp();
             (w * (self.flow_pipe - tout), tout)
         } else {
             (0.0, self.return_pipe)
@@ -196,7 +230,7 @@ impl Plant {
     #[must_use]
     pub fn sensors(&self) -> [f32; 5] {
         [
-            self.collector,
+            self.collector - self.params.collector_sensor_offset,
             self.store_low,
             self.store_high,
             self.flow_pipe,
@@ -212,10 +246,10 @@ mod tests {
     #[test]
     fn flow_table() {
         assert!(flow_for_duty(0) <= 0.0);
-        assert!((flow_for_duty(5) - 1.5).abs() < 1e-6);
-        assert!((flow_for_duty(30) - 2.5).abs() < 1e-6);
-        assert!((flow_for_duty(35) - 2.85).abs() < 1e-3);
-        assert!((flow_for_duty(100) - 5.9).abs() < 1e-6);
+        assert!((flow_for_duty(5) - 0.68).abs() < 1e-6);
+        assert!((flow_for_duty(30) - 1.13).abs() < 1e-6);
+        assert!((flow_for_duty(35) - 1.285).abs() < 1e-3);
+        assert!((flow_for_duty(100) - 2.66).abs() < 1e-6);
     }
 
     /// With no flow on a clear summer day the collector stagnates far above

@@ -14,7 +14,10 @@ fn main() {
                 shade_factor: 0.1,
             };
         }
-        "stagnation" => s.store_start = (86.0, 88.0),
+        "stagnation" => {
+            s.control.store_max.max = costos_core::Celsius::from_const(80.0);
+            s.store_start = (79.5, 80.0);
+        }
         _ => {}
     }
     let r = run(&s);

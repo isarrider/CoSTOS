@@ -148,25 +148,29 @@ fn cloudy_day_does_not_chatter() {
 }
 
 /// A store that starts nearly full on a clear day: loading stops at the
-/// store maximum (90 °C), the collector then stagnates, the supervisor
+/// store maximum (set to 80 °C here), the collector then stagnates, the supervisor
 /// shuts the pump off at 130 °C and keeps it off until the collector has
 /// cooled by the hysteresis.
 #[test]
 fn full_store_and_stagnation() {
     let mut s = Scenario::summer_day();
-    s.store_start = (86.0, 88.0);
+    // Store maximum at 80 °C and a store already at it, so the collector
+    // stagnates on a clear day (with 90 °C the store only gets there after
+    // several such days).
+    s.control.store_max.max = costos_core::Celsius::from_const(80.0);
+    s.store_start = (79.5, 80.0);
     s.draws.clear();
     let r = run(&s);
 
     // The store maximum shows as a notice (not an alarm).
     assert!(r.first_alarm(|a| a.store_max).is_some());
-    // Store maximum: the store bottom never gets meaningfully above 90 °C.
-    assert!(r.max_store() < 90.5, "{}", r.max_store());
+    // Store maximum: the store bottom never gets meaningfully above 80 °C.
+    assert!(r.max_store() < 80.5, "{}", r.max_store());
     // While the store is at its maximum, no loading is asked for.
     assert!(
         r.samples
             .iter()
-            .filter(|x| x.temps[1] >= 90.0)
+            .filter(|x| x.temps[1] >= 80.0)
             .all(|x| x.requested.is_off() || x.requested.percent() == 100),
         "loading requested above the store maximum"
     );
@@ -417,7 +421,11 @@ fn restart_in_normal_operation() {
 #[test]
 fn restart_during_stagnation_cooldown_stays_off() {
     let mut s = Scenario::summer_day();
-    s.store_start = (86.0, 88.0);
+    // Store maximum at 80 °C and a store already at it, so the collector
+    // stagnates on a clear day (with 90 °C the store only gets there after
+    // several such days).
+    s.control.store_max.max = costos_core::Celsius::from_const(80.0);
+    s.store_start = (79.5, 80.0);
     s.draws.clear();
     // Find a moment when the collector is cooling through 125 °C.
     let probe = run(&s);
