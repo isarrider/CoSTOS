@@ -1493,8 +1493,8 @@ come first.
    data. *Done so far:* basic types, ΔT control with the flow/return
    switch-off, speed control, anti-seize run and full-speed purge, start profiles, safety supervisor,
    replay tool with seven recorded days, store maximum. *All functions of
-   milestone 1 exist*; what's left is wiring them into one cycle in the
-   daemon (milestone 2).
+   milestone 1 exist*; they are wired into one control cycle for the
+   simulation tests (milestone 2) and later the daemon (milestone 4).
 2. `costos-sim` and simulation tests in CI.
 3. HAL + Linux backend: GPIO outputs, PWM, watchdog, then the measuring
    drivers in this order: the Pt1000 front end of the PT edition (the
@@ -1582,11 +1582,13 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 
 ## 11. Open questions
 
-- **BX store maximum**: the reference installation's BX value (Smax in
-  Solar → Grundeinstellung → Speicher) and its hysteresis. The recording
-  reached 81.6 °C at S2 without the BX stopping, so it is set above that;
-  CoSTOS's default is the RESOL factory value of 60 °C, which would stop
-  loading much earlier on summer days.
+- Settled: the BX store maximum is set to **95 °C** (owner), which is why
+  the recording reached 81.6 °C at S2 without a stop. CoSTOS allows at
+  most 90 °C (`store_max`): 95 °C is the store's own rating and the
+  supervisor's emergency limit, so a store maximum there would never act
+  before the emergency stop. For the reference installation CoSTOS uses
+  **90 °C**; in the 147 recorded days the store never got above 83 °C, so
+  in practice it behaves like the BX.
 - Settled: the BX Plus switch-off rule is its flow and return sensor option
   (Solar / Expert, S4 and S5 enabled, ΔTon 5 K, ΔToff 2 K), see 8.1.
 - **Installation details**: the remaining open points in
