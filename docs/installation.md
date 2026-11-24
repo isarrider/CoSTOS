@@ -264,16 +264,18 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
   indicator or worked out from a measured heat output), and calculates
   the heat output from S4/S5 with it. The web interface marks these
   values as estimated.
-- **Estimated from the recording** (ARCHITECTURE 8.2), because the flow
-  indicator can't be read in practice: from the ~200 s the hot fluid needs
-  to reach S4 after a pump start, the pump curve and a calibrated system
-  curve, about **1.8 / 2.5 / 3.7 / 5.1 / 5.9 l/min at 20 / 30 / 50 / 80 /
-  100 % PWM**. Good to about ±30 %. This is CoSTOS's default calibration
-  table until a better one exists.
-- **Pipes:** **DN 16 stainless corrugated twin solar pipe**
-  (Duo-Solarleitung Edelstahlwellrohr, standard insulation), about **25 m**
-  one way from the store to the collector, of which only about **3 m are
-  outdoors**.
+- **Calibrated from the store's energy balance** (ARCHITECTURE 8.4), because
+  the flow indicator can't be read in practice: on 67 summer days the
+  store took about 0.37–0.45 times the heat the first estimate (from the
+  transport delay after starts) gave. Calibrated table: about **0.68 l/min
+  in the minimum band, 0.81 / 1.13 / 1.67 / 2.30 / 2.66 l/min at 20 / 30 /
+  50 / 80 / 100 % PWM**, good to about ±20 %. This is CoSTOS's default
+  calibration table until a better one exists. A throttled flow setter
+  would explain why the pump delivers so little.
+- **Pipes:** stainless corrugated twin solar pipe (Duo-Solarleitung
+  Edelstahlwellrohr), **inner diameter 15 mm, outer 21 mm**, standard
+  insulation, **25 m one way** from the store to the collector, of which
+  only about **3 m are outdoors**.
 - **A float-type flow indicator is installed.** Calibration: whenever the
   pump runs, read the indicator (l/min) and note the time; the pump speed
   at that moment comes from the PWM value in the vbus2influx data. Three
