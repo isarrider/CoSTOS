@@ -1409,9 +1409,34 @@ and worse below 30 % and at 60 %.*
   BX; 30–50 % are all fine.
 - At ΔTset 8 or 12 K the picture is the same.
 
+**Dynamic ΔTset.** Could a ΔTset that changes with the season, the store
+temperature or the sun do better than a fixed 10 K, especially in spring
+and autumn? Tested with the trees and the incidence angle (`… dynamic`):
+
+| Strategy | Heat into store | Pump electricity | Net vs fixed 10 K | Rating |
+|---|---|---|---|---|
+| Fixed 10 K | 1896 kWh | 18.4 kWh | 0 | 🟢 |
+| Best ΔTset chosen per month (upper bound of any seasonal rule) | — | — | **+0.3 kWh el** | 🟡 nothing to gain |
+| Store hot (> 50 °C): 6 K, else 12 K | 1926 kWh | 32.0 kWh | −4.9 kWh el | 🔴 |
+| Store hot: 12 K, else 6 K | 1892 kWh | 20.9 kWh | −3.4 kWh el | 🔴 |
+| Strong sun (> 600 W/m²): 6 K, else 12 K | 1933 kWh | 35.6 kWh | −6.5 kWh el | 🔴 |
+| Strong sun: 12 K, else 6 K | 1887 kWh | 16.6 kWh | −0.6 kWh el | 🟡 |
+
+**No.** The best month-by-month choice is 8 K in July, September and
+October and 10 K otherwise, and it gains 0.3 kWh of electricity a year;
+every rule that switches during the day does worse than a fixed 10 K. The
+reason is the same as for the fixed sweep: heat-pipe tubes lose almost
+nothing when they run hotter, so more flow buys little heat, while the pump
+pays for every extra percent. A dynamic ΔTset could still make sense for a
+different goal than the most heat, for example getting the store top hot
+quickly (a "target temperature" mode); that is a comfort question, not a
+yield question, and not needed while the heat pump covers the heating
+season.
+
 **Reproduce.** `python3 tools/sim/yield_sim.py pvgis.csv` (all cases),
 `… onoff` (ΔTon/ΔToff), `… iam` (incidence angle), `… minspeed`
-(minimum pump speed), and
+(minimum pump speed), `… trees` (shading fit), `… dynamic` (dynamic
+ΔTset), and
 `python3 tools/sim/plots.py pvgis.csv` for the charts; the PVGIS download
 command is in the header of `yield_sim.py`. A full run takes about a
 minute.
