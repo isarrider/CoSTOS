@@ -1173,7 +1173,14 @@ has to explain why.
 
 **Question.** Which ΔTset (the collector-minus-store-bottom difference the
 speed control holds) gives the most solar heat, especially in spring and
-autumn? And do ΔTon/ΔToff matter? Tool: `tools/sim/yield_sim.py`.
+autumn? And do ΔTon/ΔToff matter? Tools: `tools/sim/yield_sim.py` (the
+model) and `tools/sim/plots.py` (the charts below); how to run them is in
+the header of each file and in [tools/sim/README.md](../tools/sim/README.md).
+
+**Why a simulation and not the recording.** The recording has only one
+ΔTset (the BX's), no irradiance and no flow, so it can't say what another
+setting would have done. A model can, once it reproduces what the recording
+does show (pump hours, mean pump speed, transport delay).
 
 **Model.** Lumped, 5 s steps, four years of hourly PVGIS irradiance and air
 temperature (2020–2023, SARAH3) on the collector plane: Munich, tilt 30°,
@@ -1185,7 +1192,7 @@ azimuth 80° (west, turned 10° south).
 | Manifold and fluid in the collector | 15 kJ/K | Assumed | 🟡 |
 | Pipes | **DN 16 stainless corrugated twin solar pipe** (invoice: Duo-Solarleitung Edelstahlwellrohr), 2 × 25 m, **about 3 m outdoors**, standard insulation: 0.22 W/(m·K) per pipe, 0.23 l/m, indoor part at 15 °C | Owner + assumed insulation value | 🟢 |
 | Lower coil | UA 650 W/K (2.6 m²) | Assumed | 🟡 sensitivity 400–1000 |
-| Store | Two nodes of 400 l, reset every morning to the month's typical store-bottom temperature (Jul–Nov from the recording: 68 / 57 / 58 / 40 / 21 °C; other months guessed) | Recording + guesses | 🟡 |
+| Store | Two nodes of 400 l (lower with the solar coil, upper), mixing when the lower gets warmer, 2.5 W/K standing loss each; reset every morning to the month's typical store-bottom temperature (Jul–Nov from the recording: 68 / 57 / 58 / 40 / 21 °C; Dec–Jun guessed: 21 / 21 / 22 / 30 / 40 / 50 / 60 °C) | Recording + guesses | 🟡 good in summer, optimistic in autumn and winter |
 | Flow | From the pump curve and a calibrated system curve, see below: 1.8 / 2.5 / 3.7 / 5.1 / 5.9 l/min at 20 / 30 / 50 / 80 / 100 % | Estimated from the data | 🟡 sensitivity −40 % / +50 % |
 | Incidence angle | Optional (`iam` mode): beam light weighted with transversal × longitudinal incidence angle modifiers for evacuated tubes (transversal up to 1.2 at 60–70°, as in Quaschning, *Regenerative Energiesysteme*, Bild 3.25), tubes along the slope; the beam share of G(i) is assumed (0 / 50 / 80 %) because the PVGIS file has no beam/diffuse split | Literature | 🟡 |
 | Pump power | 3 W + 42 W × PWM² | Rough | 🟡 |
@@ -1206,6 +1213,23 @@ table above, about 5.9 l/min at 100 %, so roughly 0.65 l/(min·m²) at full
 speed, a usual low-flow figure for tubes. A cross-check: at ΔTset 10 K the
 simulated mean speed is 36 %, the recorded one about 30 %, so the BX's
 ΔTset is probably a little above 10 K or the flow a little higher.
+
+![Estimated solar flow per PWM](img/sim-flow.svg)
+
+*Estimated flow: the minimum band below 15 % PWM (PWM2) runs at the 20 %
+value; the one measured point is 30 %, the rest follows the pump and system
+curves.*
+
+**Why the daily store reset works in summer.** The heat pump only runs
+when the house needs heat and never heats hot water (installation.md,
+Store), so from about May to September the store is heated by the sun
+alone and cools by hot-water use and standing losses. Its morning
+temperature is then a fair summary of everything the model leaves out, and
+resetting to it each day keeps the model from drifting. In the heating
+season the heat pump's heating water passes the upper coil and warms the
+store during the day, which the model doesn't know: the store stays
+cooler in the model than in reality, so the collector looks better and the
+pump runs longer than recorded (November: 122 h simulated, 46 h recorded).
 
 **Plausibility.** About 2100 kWh/year (≈ 230 kWh per m² gross) without the
 incidence angle effect, 2150–2200 kWh with it: sensible for 9 m² of tubes
@@ -1228,6 +1252,13 @@ angle effect):**
 | 14 K | 2069 kWh | 31 % | 14.6 kWh | −33 kWh | −4.3 kWh | −5 kWh el | 🟡 |
 | 16 K | 2062 kWh | 30 % | 14.3 kWh | −40 kWh | −4.6 kWh | −7 kWh el | 🟡 pump at its 30 % minimum |
 
+![ΔTset sweep: heat, pump electricity and net](img/sim-dtset.svg)
+
+*Left: heat into the store falls steadily with ΔTset. Middle: the pump's
+electricity falls much faster, until the pump sits at its 30 % minimum
+from about 12 K. Right: the two combined, with the heat valued at what the
+heat pump would need for it (COP 3.5); 10 K is the reference, so it is 0.*
+
 - **Lower ΔTset brings slightly more heat** (4 K instead of 10 K: +3.7 %),
   but the pump electricity eats it and more. Heat-pipe tubes barely lose
   output when they run hotter, so a faster pump helps little.
@@ -1235,6 +1266,13 @@ angle effect):**
   range 6–14 K is within about ±6 kWh (around €2). The optimum sits at
   8–10 K in every sensitivity case: with 40 % less flow 10 K is 1.7 kWh
   better than 8 K, with 50 % more flow 8 K is 1.5 kWh better.
+![Net result for three flow estimates](img/sim-flow-sensitivity.svg)
+
+*The flow estimate is the least certain input (±30 %), so the sweep is
+repeated with 40 % less and 50 % more flow. The best ΔTset stays at 8–10 K
+in all three; with more flow the pump reaches its minimum earlier and
+everything above 10 K is the same.*
+
 - **Spring and autumn don't behave differently**: the relative gain from a
   low ΔTset is about the same every month. The guess that the shoulder
   months gain most is not confirmed by this model.
@@ -1248,6 +1286,37 @@ angle effect):**
 - **The biggest lever is the pipes**, not the control: 25 m instead of
   15 m costs about **13 %** of the yield (2102 instead of 2409 kWh at
   10 K).
+
+![Yield by variant at ΔTset 10 K](img/sim-variants.svg)
+
+*Every variant against the base case at ΔTset 10 K: a shorter pipe gains
+far more than any control setting; the incidence angle effect and the flow
+estimate move the total by a few percent; the coil size and ΔTon/ΔToff
+hardly matter.*
+
+![Heat into store per month](img/sim-monthly.svg)
+
+*Per month at ΔTset 10 K. March and April come out about as high as
+summer: the store is cool then (guessed 30–40 °C in the morning) and the
+west-facing tubes work well in spring sun, while from July the store is
+already hot (60–68 °C), which lowers what the collector can deliver. The
+spring and winter figures rest on guessed store temperatures and are the
+least certain; the recording starts in July, so a spring with data will
+show how good they are.*
+
+![Incidence angle modifiers](img/sim-iam.svg)
+
+*The incidence angle modifiers used in the `iam` mode (after Quaschning,
+Bild 3.25): across the tubes the round absorbers catch slanting light
+better than at normal incidence (up to 1.2), along the tubes it falls off
+like a flat plate. With a west-facing roof much of the light arrives at a
+slant, hence the +2.6 % to +4.4 %.*
+
+**Reproduce.** `python3 tools/sim/yield_sim.py pvgis.csv` (all cases),
+`… onoff` (ΔTon/ΔToff), `… iam` (incidence angle), and
+`python3 tools/sim/plots.py pvgis.csv` for the charts; the PVGIS download
+command is in the header of `yield_sim.py`. A full run takes about a
+minute.
 
 **Conclusion.** The default ΔTset for CoSTOS's speed control is **10 K**:
 as good as 8 K for the yield, the RESOL default, and the same as the BX, so
