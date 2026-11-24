@@ -34,6 +34,7 @@ pub mod anti_seize;
 pub mod delta_t;
 pub mod output;
 pub mod sensor;
+pub mod solar;
 pub mod speed;
 pub mod start_profile;
 pub mod store_max;
