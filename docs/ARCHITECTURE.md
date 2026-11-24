@@ -1565,7 +1565,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 
 | # | Topic | What is open | Depends on | Effort | Rating |
 |---|---|---|---|---|---|
-| H1 | Pt1000 front end from basic parts (HAT D13 reopened, D26) | Circuit (for example 8 dividers with 0.1 % reference resistors, a 74HC4051 multiplexer and one ADS1115, measured ratiometrically), input protection, simulation, parts list from JLCPCB basic parts, new comparison table in HAT-development 4 | — | 1–2 sessions | 🔴 no PT board is ordered before it |
+| H1 | Pt1000 front end from basic parts (HAT D13 reopened, D26) | Circuit (for example 8 dividers with 0.1 % reference resistors, a 74HC4051 multiplexer and one ADS1115, measured ratiometrically), input protection, simulation, parts list from JLCPCB basic parts, new comparison table in HAT-development 4. Once decided, update every place that still names the LTC2983 as the PT edition's chip (4.2 faults, 6.1 layout and rule 15, the size estimate in 10.1, 11 and the platform tables) | — | 1–2 sessions | 🔴 no PT board is ordered before it |
 | H2 | The 1-Wire edition's single Pt1000 input | Replace the MAX31865 with one divider channel from H1? | H1 | small | 🟡 |
 | H3 | Real prices for both editions | From the new parts lists | H1 | small | 🟡 |
 | H4 | Re-review of the HAT pull request #2 | Waiting for the fixes | — | 1 session | 🟡 |
