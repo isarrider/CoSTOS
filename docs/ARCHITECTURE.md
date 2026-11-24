@@ -1183,10 +1183,11 @@ azimuth 80° (west, turned 10° south).
 |---|---|---|---|
 | Collector | 2037 / 1853 / 1682 W per collector at 1000 W/m² and ΔT 0 / 30 / 50 K, fitted as a quadratic, scaled to 58 tubes; heat pipes as thermal diodes (no sun: the manifold loses 1 W/K) | Data sheet | 🟢 |
 | Manifold and fluid in the collector | 15 kJ/K | Assumed | 🟡 |
-| Pipes | 2 × **25 m**, 22 mm copper, 0.25 W/(m·K), half outdoors | Length from the owner; size and insulation assumed | 🟡 |
+| Pipes | **DN 16 stainless corrugated twin solar pipe** (invoice: Duo-Solarleitung Edelstahlwellrohr), 2 × 25 m, **about 3 m outdoors**, standard insulation: 0.22 W/(m·K) per pipe, 0.23 l/m, indoor part at 15 °C | Owner + assumed insulation value | 🟢 |
 | Lower coil | UA 650 W/K (2.6 m²) | Assumed | 🟡 sensitivity 400–1000 |
 | Store | Two nodes of 400 l, reset every morning to the month's typical store-bottom temperature (Jul–Nov from the recording: 68 / 57 / 58 / 40 / 21 °C; other months guessed) | Recording + guesses | 🟡 |
-| Flow | From the pump curve and a calibrated system curve, see below: 2.6 / 3.4 / 4.8 / 6.8 / 7.9 l/min at 20 / 30 / 50 / 80 / 100 % | Estimated from the data | 🟡 sensitivity −40 % / +50 % |
+| Flow | From the pump curve and a calibrated system curve, see below: 1.8 / 2.5 / 3.7 / 5.1 / 5.9 l/min at 20 / 30 / 50 / 80 / 100 % | Estimated from the data | 🟡 sensitivity −40 % / +50 % |
+| Incidence angle | Optional (`iam` mode): beam light weighted with transversal × longitudinal incidence angle modifiers for evacuated tubes (transversal up to 1.2 at 60–70°, as in Quaschning, *Regenerative Energiesysteme*, Bild 3.25), tubes along the slope; the beam share of G(i) is assumed (0 / 50 / 80 %) because the PVGIS file has no beam/diffuse split | Literature | 🟡 |
 | Pump power | 3 W + 42 W × PWM² | Rough | 🟡 |
 | Control | BX-like: on at ΔTon 5 K, off when S1 − S2 and S4 − S5 are both ≤ 2 K, start at 30 %, ±1 % every 30 s around ΔTset ± 1 K, 30–100 % | Replay data 8.1 | 🟢 |
 
@@ -1194,61 +1195,67 @@ azimuth 80° (west, turned 10° south).
 practice, so the flow is estimated from the recording itself: after a pump
 start, the hot fluid standing in the collector needs time to reach S4 at
 the store. Over 67 starts at 30 % PWM, S4 rose by 5 K a median **198 s**
-after the start (p25 179 s, p75 218 s). The flow pipe holds about 9 l
-(25 m of 22 mm copper plus the station), so with some 40 s for the
-sensor's own response the flow at 30 % is about **3.4 l/min**. The pump
-curve (Yonos PARA ST 15/7: 7.3 m, 3.3 m³/h, PWM2 minimum speed at 15 %
-taken as 30 % of maximum) and a system curve (pipes, coil, collector, and
-one lumped resistance for valves, flow indicator and station) calibrated
-to that point give the table above, about 7.9 l/min at 100 %. If the pipe
-is narrower than 22 mm, the volume and so the flow are smaller (18 mm:
-about −35 %), hence the sensitivity cases. A cross-check: at ΔTset 10 K
-the simulated mean speed is 31.6 %, the recorded one about 30 %.
+after the start (p25 179 s, p75 218 s). The flow pipe holds about 6.6 l
+(25 m of DN 16 corrugated pipe, about 10 % more volume than a smooth pipe,
+plus the station), so with some 40 s for the sensor's own response the
+flow at 30 % is about **2.5 l/min**. The pump curve (Yonos PARA ST 15/7:
+7.3 m, 3.3 m³/h, PWM2 minimum speed at 15 % taken as 30 % of maximum) and a
+system curve (corrugated pipe, coil, collector, and one lumped resistance
+for valves, flow indicator and station) calibrated to that point give the
+table above, about 5.9 l/min at 100 %, so roughly 0.65 l/(min·m²) at full
+speed, a usual low-flow figure for tubes. A cross-check: at ΔTset 10 K the
+simulated mean speed is 36 %, the recorded one about 30 %, so the BX's
+ΔTset is probably a little above 10 K or the flow a little higher.
 
-**Plausibility.** About 2050 kWh/year (≈ 225 kWh per m² gross), sensible for
-9 m² of tubes facing west with 25 m of pipe. Pump hours per month Jul–Nov:
-simulated 203 / 195 / 164 / 132 / 108 h, recorded in 2026: 242 / 201 / 186 /
-112 / 46 h. Summer fits; autumn is **overestimated**, November by far: the
-model doesn't know the heat pump warms the store during the day, nor how
-cloudy November 2026 was. Treat the autumn figures as optimistic.
+**Plausibility.** About 2100 kWh/year (≈ 230 kWh per m² gross) without the
+incidence angle effect, 2150–2200 kWh with it: sensible for 9 m² of tubes
+facing west with 25 m of pipe. Pump hours per month Jul–Nov: simulated
+214 / 205 / 174 / 143 / 122 h, recorded in 2026: 242 / 201 / 186 / 112 /
+46 h. Summer fits; autumn is **overestimated**, November by far: the model
+doesn't know the heat pump warms the store during the day, nor how cloudy
+November 2026 was. Treat the autumn figures as optimistic.
 
-**Results, base case (per year, mean of 2020–2023):**
+**Results, base case (per year, mean of 2020–2023, without incidence
+angle effect):**
 
 | ΔTset | Heat into store | Mean speed | Pump electricity | Extra heat vs 10 K | Extra electricity vs 10 K | Net, heat valued at heat-pump COP 3.5 | Rating |
 |---|---|---|---|---|---|---|---|
-| 4 K | 2114 kWh | 64 % | 46.8 kWh | +62 kWh (+3.0 %) | +32.7 kWh | −15 kWh el | 🔴 pump eats more than the gain |
-| 6 K | 2092 kWh | 47 % | 29.0 kWh | +40 kWh (+1.9 %) | +14.9 kWh | −3.5 kWh el | 🟡 |
-| **8 K** | **2068 kWh** | **36 %** | **17.6 kWh** | **+16 kWh (+0.8 %)** | **+3.5 kWh** | **+1 kWh el** | 🟢 **best, by a hair** |
-| 10 K (BX) | 2052 kWh | 32 % | 14.1 kWh | — | — | 0 | 🟢 |
-| 12 K | 2044 kWh | 30 % | 13.3 kWh | −8 kWh | −0.8 kWh | −1.5 kWh el | 🟡 |
-| 14–16 K | 2042 kWh | 30 % | 13.1 kWh | −10 kWh | −1.0 kWh | −2 kWh el | 🟡 pump sits at its 30 % minimum |
+| 4 K | 2180 kWh | 69 % | 56.7 kWh | +78 kWh (+3.7 %) | +37.8 kWh | −16 kWh el | 🔴 pump eats more than the gain |
+| 6 K | 2157 kWh | 55 % | 40.2 kWh | +55 kWh (+2.6 %) | +21.3 kWh | −6 kWh el | 🟡 |
+| 8 K | 2129 kWh | 44 % | 27.0 kWh | +27 kWh (+1.3 %) | +8.1 kWh | −0.4 kWh el | 🟢 |
+| **10 K (BX, RESOL default)** | **2102 kWh** | **36 %** | **18.9 kWh** | — | — | **0** | 🟢 **chosen** |
+| 12 K | 2082 kWh | 32 % | 15.7 kWh | −20 kWh | −3.2 kWh | −2.5 kWh el | 🟡 |
+| 14 K | 2069 kWh | 31 % | 14.6 kWh | −33 kWh | −4.3 kWh | −5 kWh el | 🟡 |
+| 16 K | 2062 kWh | 30 % | 14.3 kWh | −40 kWh | −4.6 kWh | −7 kWh el | 🟡 pump at its 30 % minimum |
 
-- **Lower ΔTset brings slightly more heat** (4 K instead of 10 K: +3 %),
+- **Lower ΔTset brings slightly more heat** (4 K instead of 10 K: +3.7 %),
   but the pump electricity eats it and more. Heat-pipe tubes barely lose
   output when they run hotter, so a faster pump helps little.
-- **Best about 8 K**, but the whole range 6–16 K is within about ±3 kWh of
-  electricity a year (well under €1). Above about 12 K the pump already
-  sits at its 30 % minimum, so ΔTset no longer does anything: the
-  minimum speed takes over as the setting that matters.
+- **8 and 10 K are equal** within 0.4 kWh of electricity a year; the whole
+  range 6–14 K is within about ±6 kWh (around €2). The optimum sits at
+  8–10 K in every sensitivity case: with 40 % less flow 10 K is 1.7 kWh
+  better than 8 K, with 50 % more flow 8 K is 1.5 kWh better.
 - **Spring and autumn don't behave differently**: the relative gain from a
   low ΔTset is about the same every month. The guess that the shoulder
   months gain most is not confirmed by this model.
-- **Sensitivity:** with 40 % less flow ΔTset matters more (4 K vs 10 K:
-  +3.8 %, but +37 kWh el; best still 8–10 K); with 50 % more flow it
-  matters not at all (the pump sits at its minimum from 8 K on). A weaker
-  coil (UA 400) costs about 1 %, a stronger one (1000) gains under 1 %;
-  the ranking stays.
-- **ΔTon/ΔToff** (at ΔTset 8 K): 3 / 1 K gives +19 kWh (+0.9 %) over 5 / 2 K
-  with 200 more pump hours; 8 / 4 K gives −46 kWh (−2.2 %). Small.
+- **Incidence angle:** tubes catch slanting light better than a flat plate
+  (transversal modifier up to 1.2), which matters for a west-facing roof.
+  With 50 % beam share it adds about **+2.6 %** (2156 instead of 2102 kWh
+  at 10 K), with 80 % about +4.4 %. It changes the totals, not the ranking
+  of ΔTset.
+- **ΔTon/ΔToff** (at ΔTset 8 K): 3 / 1 K gives +14 kWh (+0.7 %) over 5 / 2 K
+  with 180 more pump hours; 8 / 4 K gives −35 kWh (−1.6 %). Small.
 - **The biggest lever is the pipes**, not the control: 25 m instead of
-  15 m costs about **14 %** of the yield (2052 instead of 2379 kWh at
-  10 K). Pipe insulation matters more than any ΔT setting.
+  15 m costs about **13 %** of the yield (2102 instead of 2409 kWh at
+  10 K).
 
-**Conclusion.** The default ΔTset for CoSTOS's speed control becomes
-**8 K**, configurable; ΔTon/ΔToff stay at the BX's 5 / 2 K. The pump's
-minimum speed is the next setting worth a look (the BX ran at 20 % until
-2026-09-16, at 30 % since). Still open (10.2, S7): pipe size and
-insulation, and the store model in autumn and winter.
+**Conclusion.** The default ΔTset for CoSTOS's speed control is **10 K**:
+as good as 8 K for the yield, the RESOL default, and the same as the BX, so
+shadow mode compares like with like. Configurable. ΔTon/ΔToff stay at the
+BX's 5 / 2 K. The pump's minimum speed is the next setting worth a sweep
+(the BX ran at 20 % until 2026-09-16, at 30 % since). Still open (10.2,
+S7): a store model that knows the heat pump (autumn and winter) and a
+beam/diffuse split for the incidence angle effect.
 
 ---
 
@@ -1376,7 +1383,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
-| S7 | Best ΔTset for the yield | **Done, with estimated flow** (8.2): best about 8 K, the whole range 6–16 K within ±3 kWh el a year; ΔTon/ΔToff matter little; the pipes matter most. Open: pipe size and insulation, a store model that knows the heat pump (autumn/winter), and the minimum pump speed (20 % vs 30 %) as a sweep | pipe size and insulation | small | 🟢 |
+| S7 | Best ΔTset for the yield | **Done** (8.2): 8 and 10 K equal, default **10 K**; the range 6–14 K within ±6 kWh el a year; ΔTon/ΔToff matter little; incidence angle +2.6 %; the pipes matter most. Open: minimum pump speed sweep, a store model that knows the heat pump, beam/diffuse split | — | small | 🟢 |
 | D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
