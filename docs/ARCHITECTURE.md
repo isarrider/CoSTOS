@@ -1169,6 +1169,72 @@ few minutes of pumping. The replay tests in `costos-replay` keep
 every day at 99 % or more, so a change to the ΔT control that breaks this
 has to explain why.
 
+### 8.2 Yield simulation (first pass)
+
+**Question.** Which ΔTset (the collector-minus-store-bottom difference the
+speed control holds) gives the most solar heat, especially in spring and
+autumn? And do ΔTon/ΔToff matter? Tool: `tools/sim/yield_sim.py`.
+
+**Model.** Lumped, 5 s steps, four years of hourly PVGIS irradiance and air
+temperature (2020–2023, SARAH3) on the collector plane: Munich, tilt 30°,
+azimuth 80° (west, turned 10° south).
+
+| Part | Model | Source | Confidence |
+|---|---|---|---|
+| Collector | 2037 / 1853 / 1682 W per collector at 1000 W/m² and ΔT 0 / 30 / 50 K, fitted as a quadratic, scaled to 58 tubes; heat pipes as thermal diodes (no sun: the manifold loses 1 W/K) | Data sheet | 🟢 |
+| Manifold and fluid in the collector | 15 kJ/K | Assumed | 🟡 |
+| Pipes | 2 × 15 m, 22 mm copper, 0.25 W/(m·K), half outdoors | Assumed, to be measured | 🔴 |
+| Lower coil | UA 650 W/K (2.6 m²) | Assumed | 🟡 sensitivity 400–1000 |
+| Store | Two nodes of 400 l, reset every morning to the month's typical store-bottom temperature (Jul–Nov from the recording: 68 / 57 / 58 / 40 / 21 °C; other months guessed) | Recording + guesses | 🟡 |
+| Flow | Linear in PWM, 8 l/min at 100 % | Assumed until the flow table exists | 🔴 sensitivity 5–12 |
+| Pump power | 3 W + 42 W × PWM² | Rough | 🟡 |
+| Control | BX-like: on at ΔTon 5 K, off when S1 − S2 and S4 − S5 are both ≤ 2 K, start at 30 %, ±1 % every 30 s around ΔTset ± 1 K | Replay data 8.1 | 🟢 |
+
+**Plausibility.** About 2350 kWh/year (≈ 255 kWh per m² gross), sensible for
+9 m² of tubes facing west. At ΔTset 10 K the simulated mean pump speed is
+35 % (recorded: about 30 %), which fits the BX and the assumed flow. Pump
+hours per month Jul–Nov: simulated 223 / 213 / 181 / 148 / 125 h, recorded
+in 2026: 242 / 201 / 186 / 112 / 46 h. Autumn is **overestimated**,
+November by far: the model doesn't know the heat pump warms the store
+during the day, nor how cloudy November 2026 was. Treat the autumn figures
+as optimistic.
+
+**Results, base case (per year, mean of 2020–2023):**
+
+| ΔTset | Heat into store | Mean speed | Pump electricity | Extra heat vs 10 K | Extra electricity vs 10 K | Net, heat valued at heat-pump COP 3.5 | Rating |
+|---|---|---|---|---|---|---|---|
+| 4 K | 2443 kWh | 66 % | 53.5 kWh | +96 kWh (+4.1 %) | +35.3 kWh | −8 kWh el | 🔴 pump eats the gain |
+| 6 K | 2413 kWh | 51 % | 36.1 kWh | +66 kWh (+2.8 %) | +17.9 kWh | +1 kWh el | 🟡 |
+| **8 K** | **2377 kWh** | **41 %** | **23.5 kWh** | **+30 kWh (+1.3 %)** | **+5.3 kWh** | **+3 kWh el** | 🟢 **best, by a hair** |
+| 10 K (BX) | 2347 kWh | 35 % | 18.2 kWh | — | — | 0 | 🟢 |
+| 12 K | 2324 kWh | 32 % | 16.1 kWh | −23 kWh | −2.1 kWh | −4 kWh el | 🟡 |
+| 16 K | 2298 kWh | 30 % | 14.7 kWh | −49 kWh | −3.5 kWh | −10 kWh el | 🟡 |
+
+- **Lower ΔTset always brings more heat, but only a little:** 4 K instead of
+  10 K gives +4 %. With heat pipe tubes the collector's output barely
+  depends on its temperature, so a faster pump helps little.
+- **The pump's electricity eats most of it.** Valued at what the heat pump
+  would need for the same heat (COP 3.5), the best is **about 8 K**, and the
+  whole range 6–12 K is within ±5 kWh of electricity a year (about €1–2).
+- **Spring and autumn don't behave differently**: the relative gain from a
+  low ΔTset is about the same every month (March +3 %, October +5 %,
+  November +3 % for 4 K vs 10 K). The guess that the shoulder months gain
+  most is not confirmed by this model.
+- **Sensitivity:** with less flow (5 l/min at 100 %) ΔTset matters more
+  (4 K vs 10 K: +4.5 %, but 67 kWh el); with more flow (12 l/min) it hardly
+  matters at all (+3 %). A weaker coil (UA 400) or a stronger one (1000)
+  changes the totals by about 1 % and the ranking not at all.
+- **ΔTon/ΔToff** (at ΔTset 8 K): 3 / 1 K gives +15 kWh (+0.6 %) over 5 / 2 K
+  with 180 more pump hours; 8 / 4 K gives −37 kWh (−1.6 %). Again small.
+- **The biggest lever is the pipes**, not the control: 30 m instead of 15 m
+  of pipe costs about 20 % of the yield. Pipe insulation and length matter
+  more than any ΔT setting.
+
+**Conclusion (first pass).** The default ΔTset for CoSTOS's speed control
+becomes **8 K**, configurable; ΔTon/ΔToff stay at the BX's 5 / 2 K. To be
+checked again once the flow table and the pipe data exist (10.2, S7): the
+flow assumption is the one that could shift the optimum.
+
 ---
 
 ## 9. Migration from the DeltaSol BX Plus
@@ -1295,7 +1361,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
-| S7 | Best ΔTset for the speed control | Simulate the solar yield for ΔTset from about 4 to 16 K over a year, especially spring and autumn: collector curve from the data sheet, hourly irradiance and air temperature for the site (PVGIS), pipe losses, lower coil, stratified store, calibrated against the replay days. The BX value (RESOL default 10 K, data 8–10 K) is the starting point | flow calibration table (installation.md), site and pipe data, PVGIS file | 1–2 sessions | 🟡 |
+| S7 | Best ΔTset for the yield | **First pass done** (8.2): lower ΔTset gives slightly more heat, the pump electricity eats most of it, best about 8 K; ΔTon/ΔToff matter little; pipes matter most. Open: calibrate with the flow table and the real pipe data, then rerun | flow calibration table (installation.md), pipe length, size and insulation | small | 🟡 |
 | D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
