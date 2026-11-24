@@ -1,6 +1,6 @@
 """Charts for ARCHITECTURE 8.2 (yield simulation), written to docs/img/sim-*.svg.
 
-    python3 tools/sim/plots.py pvgis.csv
+    python3 tools/sim/plots.py pvgis-components.csv   # with &components=1
 
 Runs the cases it needs from yield_sim.py (about a minute) and draws six
 static SVG charts. Colours: the categorical order of the CoSTOS docs
@@ -119,6 +119,9 @@ def main():
     for share in (0.5, 0.8):
         gi = g * ys.iam_factor(ts, beam_share=share)
         variants.append((f"incidence angle, beam {share:.0%}", case(gi, ta, mo, hr, 10)[:, 0].sum()))
+    if beam is not None:
+        gi = g * ys.iam_factor(ts, beam_share=beam)
+        variants.append(("incidence angle, PVGIS split", case(gi, ta, mo, hr, 10)[:, 0].sum()))
     on = case(g, ta, mo, hr, 10, don=3.0, doff=1.0)[:, 0].sum()
     variants.append(("ΔTon/ΔToff 3/1 K", on))
     variants.sort(key=lambda v: v[1])

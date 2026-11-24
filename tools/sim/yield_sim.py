@@ -3,7 +3,7 @@
 
 Run:
     pip install numba numpy
-    LAT=48.14 LON=11.58 TILT=30 AZ=80; curl -s "https://re.jrc.ec.europa.eu/api/v5_3/seriescalc?lat=$LAT&lon=$LON&angle=$TILT&aspect=$AZ&startyear=2020&endyear=2023&outputformat=csv" -o pvgis.csv
+    LAT=48.14 LON=11.58 TILT=30 AZ=80; curl -s "https://re.jrc.ec.europa.eu/api/v5_3/seriescalc?lat=$LAT&lon=$LON&angle=$TILT&aspect=$AZ&startyear=2020&endyear=2023&components=1&outputformat=csv" -o pvgis.csv
     python3 tools/sim/yield_sim.py pvgis.csv          # all sensitivity cases
     python3 tools/sim/yield_sim.py pvgis.csv base     # base case only
     python3 tools/sim/yield_sim.py pvgis.csv onoff    # ΔTon/ΔToff sweep at ΔTset 8 K
