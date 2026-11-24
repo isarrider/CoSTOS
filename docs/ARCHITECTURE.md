@@ -718,12 +718,12 @@ can be switched off.
 
 | Check | Detects | Typical cause | Action |
 |---|---|---|---|
-| **ΔT too high** | Pump running, ΔT stays far above the setpoint for a long time, and the store bottom doesn't warm | Air in the loop, seized pump, closed valve, scaled heat exchanger | Alarm |
-| **No circulation** (CoSTOS addition) | After a pump start the collector doesn't cool within a set time (no flow sensor needed) | Dead or unpowered pump, air lock, broken PWM signal | Alarm; the pump is stopped after repeated failures so it doesn't run dry. If a solar flow sensor is configured, a second criterion as in DiSoCon2: after a grace time (the time the loop volume takes to pass, there 9 min for a 270 m loop) the flow line must be warmer than the store bottom, checked over several consecutive cycles before it counts |
-| **Night circulation** | At night, with the pump off, the collector warms while the store bottom cools | Faulty non-return valve (gravity circulation) | Alarm |
-| **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) |
-| **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) |
-| **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state |
+| **ΔT too high** | Pump running, ΔT above 50 K for 20 min, and the store bottom warmed by less than 1 K meanwhile | Air in the loop, seized pump, closed valve, scaled heat exchanger | Alarm. Implemented (`costos-core::monitor`) |
+| **No circulation** (CoSTOS addition) | **At a start:** within 10 min the collector cools by 3 K below its start value, or the flow gets 2 K warmer than the store bottom (cold fluid from the return pipe reaches the collector, hot fluid from the collector reaches the store). **While running** (flow and return sensors): in every further 10 min there is a moment with the flow 2 K above the return **and** the collector at most 10 K above the flow. The second part matters: when a pump stops mid-run, flow-over-return alone fades only over an hour or more (insulated pipes), while the collector runs away from the flow within minutes | Dead or unpowered pump, stuck rotor, air lock, broken PWM signal | Alarm. After **3 failed checks in a row** the pump is inhibited (requested 0 % before the supervisor) until the alarm is acknowledged, so it doesn't run dry. Implemented (`costos-core::monitor`). Checked against all 147 recorded days: no false alarm in 227 starts and 4,413 running windows. In the simulation a pump dead from the morning is found 10 min after its first start and inhibited within about 30 min; a pump stopping mid-run is found within two windows (≈ 23 min), well before the collector emergency |
+| **Night circulation** | Pump off between 23:00 and 05:00, and within 30 min the collector warms by 3 K while the store bottom cools by 0.5 K | Faulty non-return valve (gravity circulation) | Alarm. Implemented (`costos-core::monitor`); no hit in the recording |
+| **Flow/return swapped** | When the pump starts, the flow and return sensors respond the wrong way round | Sensors swapped at installation | Alarm (only if flow and return sensors are configured) Not implemented yet: in the recording the return sensor (S5) responds *first* after a normal start (the store coil's contents pass it), so the obvious rule would misfire; needs a closer look at recorded starts (10.2) |
+| **Store maximum reached** | Store at T_max | Full store in summer | Notice (on by default, as on the BX Plus) Implemented (`costos-core::monitor`) |
+| **Sensor fault** | Open, short, out of range, sudden jumps (5.1), and **stale** (no new reading within a timeout, for example a hung converter or 1-Wire bus) | Cable, connector, sensor | Alarm; the affected functions go to their safe state The alarm comes in the same cycle as the fault and clears after 60 s of valid readings; a fault at noon has a deadline of about 20 min before the collector stagnates (8.3). Implemented (`costos-core::monitor`) |
 | **PWM output check** (CoSTOS addition, needs the HAT's output readback) | Continuously: the line is high while 0 % is commanded, or its measured duty (edge timestamps, like the feedback input) differs from the command. At every start: **watchdog self-test**, PWM set high and the heartbeat stopped, the line must drop to 0 V within about 15 s; the watchdog readback (GPIO 20) gives the real timeout, which must lie between about 3 and 20 s | Stuck driver, AND gate or transistor; a watchdog layer that no longer cuts the output; a watchdog part that has drifted or failed (timeout outside its range); broken PWM path | Alarm. A failed self-test keeps the pump output off and the alarm active until the fault is fixed; with a permanently powered solar-profile pump that means the solar loop is not used, which is the safe side. The pump runs for at most about 15 s during the self-test |
 | **Supply under-voltage** (CoSTOS addition) | The Pi's own under-voltage flag is set (5 V rail below ≈ 4.63 V), now or since the last check | Weak or wrong supply (phone charger), long or thin USB cable, failing supply | Alarm. The HAT's pump signal is doubled from this 5 V and keeps a 2 V margin even at the flag ([HAT-1wire 11.1](HAT-1wire.md#111-rule-it-may-fail-but-it-may-not-break-anything)), but the Pi itself becomes unreliable; a pump that stops is also reported by the pump feedback |
 
@@ -1484,14 +1484,15 @@ for all of them in `cargo test --workspace`):
 
 | Scenario | What must hold | Result | Rating |
 |---|---|---|---|
-| Clear summer day | ΔT at the 10 K setpoint while controlling (mean within 0.5 K, 95 % within ±1.5 K), at most 10 starts, 14–22 kWh | ΔT held, 8 starts, 18.2 kWh, collector below 75 °C | 🟢 |
+| Clear summer day | ΔT at the 10 K setpoint while controlling (mean within 0.5 K, 95 % within ±1.5 K), at most 10 starts, 14–22 kWh, no alarm | ΔT held, 8 starts, 18.2 kWh, collector below 75 °C, no alarm | 🟢 |
 | Passing clouds (every 20 min) | Still follows the sun; minimum off time (60 s) after every stop; at most 12 starts in any hour | Holds | 🟢 |
 | Full store, then stagnation | Store bottom never above 90.5 °C (store maximum 90 °C); pump off whenever the collector is at 130 °C or more; the latch holds down to 120 °C and is released below | Holds; the collector peaks around 147 °C | 🟢 |
 | Collector sensor open for 2 min | Off in the same second, `sensor unknown`, running again afterwards | Holds | 🟢 |
 | Collector sensor open for 30 min at noon | Without flow the collector stagnates within about 20 min; when the sensor is back at > 130 °C, the emergency latch keeps the pump off for the rest of the day | Holds: **safe, but the day's heat is lost** | 🟡 see below |
 | Store sensor shorted for 10 min | Off during the fault, running again after | Holds | 🟢 |
 | Collector sensor stops updating | Pump off once the reading is stale (10 s) and from then on | Holds | 🟢 |
-| Pump stuck (signal, no flow) from 11:00 | The collector heats up and the emergency stop still cuts the signal at 130 °C | Holds; the stuck pump itself is **not detected** | 🟡 see below |
+| Pump stuck (signal, no flow) from 11:00, mid-run | "No circulation" alarm within two 10-minute windows and before the collector emergency; the emergency stop still cuts the signal at 130 °C | Alarm after ≈ 23 min | 🟢 |
+| Pump dead from the morning | "No circulation" alarm 10 min after the first start; pump inhibited after three failed checks (≈ 30 min) and stays off | Holds | 🟢 |
 | Restart at 14:00 in normal operation | Pump back within a minute, no protection trips | Holds | 🟢 |
 | Restart while the collector cools through 125 °C | Starts latched (4.2): no start into the hot collector while above 120 °C | Holds | 🟢 |
 | Overcast winter day behind the trees | No solar run; exactly one anti-seize run, 10 s at 100 % between 12:00 and 13:00 | Holds | 🟢 |
@@ -1504,9 +1505,10 @@ for all of them in `cargo test --workspace`):
   store sensor fault must raise its alarm at once (6.3), and the e-mail
   notification (6.7, milestone 9) is worth having early, already in shadow
   mode.
-- **A stuck pump is only caught by its consequence**, the collector
-  emergency. The pump feedback (5.4) will detect it directly; until then
-  the supervisor's emergency stop is the protection, and it works.
+- **A stuck pump was first only caught by its consequence**, the collector
+  emergency. The "no circulation" check now finds it from the
+  temperatures alone, within 10 minutes of a start or two windows of a
+  mid-run stop; the pump feedback (5.4) will add a direct check later.
 
 ---
 
@@ -1554,8 +1556,9 @@ come first.
    milestone 1 exist*; they are wired into one control cycle for the
    simulation tests (milestone 2) and later the daemon (milestone 4).
 2. `costos-sim` and simulation tests in CI. *Done*: the control cycle
-   (`costos-core::solar`), the plant model, fault injection and eleven
-   closed-loop scenarios (8.3).
+   (`costos-core::solar`), the plant model, fault injection and twelve
+   closed-loop scenarios (8.3), plus the plausibility checks
+   (`costos-core::monitor`) run in them.
 3. HAL + Linux backend: GPIO outputs, PWM, watchdog, then the measuring
    drivers in this order: the Pt1000 front end of the PT edition (the
    reference installation keeps its Pt1000 sensors; which chip is open
@@ -1638,6 +1641,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
 | S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset default **10 K**, minimum speed **30 %**, ΔTon/ΔToff 5 / 2 K; the coil is no bottleneck; incidence angle +3.8 %; trees about 30° high to the south fitted to the recorded hours, realistic year about **1900 kWh**. Open: the rest of the November gap (frost, fog, collector start), spring check next year | spring data | small | 🟢 |
+| S8 | "Flow/return swapped" check | Define it from recorded starts: in normal operation S5 responds first (the coil contents), so the rule must look at something else, for example which sensor approaches the collector temperature first | — | small | 🟢 |
 | D1 | ~~`AGENTS.md` / `GEMINI.md`~~ | **Done**: both point AI tools to CONTRIBUTING.md | — | — | 🟢 |
 
 ## 11. Open questions
