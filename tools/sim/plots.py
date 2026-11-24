@@ -36,9 +36,9 @@ plt.rcParams.update({
 })
 
 
-def case(g, ta, mo, hr, dtset, fmax=5.9, ua=650.0, pipe=25.0, don=5.0, doff=2.0):
+def case(g, ta, mo, hr, dtset, fmax=5.9, ua=650.0, pipe=25.0, don=5.0, doff=2.0, pmin=30.0):
     out = np.zeros((13, 4))
-    ys.run(g, ta, mo, hr, float(dtset), fmax, ua, 15000.0, pipe, out, don, doff)
+    ys.run(g, ta, mo, hr, float(dtset), fmax, ua, 15000.0, pipe, out, don, doff, pmin)
     return out / 4.0
 
 
@@ -49,7 +49,7 @@ def save(fig, name):
 
 
 def main():
-    g, ta, mo, hr, ts = ys.load_pvgis(sys.argv[1])
+    g, ta, mo, hr, ts, beam = ys.load_pvgis(sys.argv[1])
     base = {s: case(g, ta, mo, hr, s) for s in SETS}
     heat = np.array([base[s][:, 0].sum() for s in SETS])
     el = np.array([base[s][:, 2].sum() for s in SETS])
@@ -135,6 +135,31 @@ def main():
                  loc="left", fontsize=11)
     ax.grid(axis="y", visible=False)
     save(fig, "sim-variants.svg")
+
+    # 4b. Minimum pump speed at ΔTset 10 K: heat and net in two panels.
+    mins = [15, 20, 30, 40, 50, 60]
+    rm = {m: case(g, ta, mo, hr, 10, pmin=float(m)) for m in mins}
+    hm = np.array([rm[m][:, 0].sum() for m in mins])
+    em = np.array([rm[m][:, 2].sum() for m in mins])
+    i30 = mins.index(30)
+    nm = (hm - hm[i30]) / COP - (em - em[i30])
+    fig, ax = plt.subplots(1, 2, figsize=(10, 3.4))
+    fig.subplots_adjust(wspace=0.3)
+    ax[0].plot(mins, hm, color=BLUE, lw=2, marker="o", ms=6)
+    ax[0].set_title("Heat into store [kWh/year]", loc="left", fontsize=10)
+    ax[1].bar(mins, nm, width=4, color=[AQUA if v >= -0.5 else "#b9b8b0" for v in nm])
+    ax[1].axhline(0, color=INK2, lw=0.8)
+    ax[1].set_ylim(min(nm) * 1.3, max(nm) * 1.6 + 1)
+    ax[1].set_title("Net vs 30 % [kWh el/year]", loc="left", fontsize=10)
+    for x, v in zip(mins, nm):
+        ax[1].annotate(f"{v:+.1f}", (x, v), textcoords="offset points",
+                       xytext=(0, 4 if v >= -0.5 else -12), ha="center", fontsize=8, color=INK2)
+    for a in ax:
+        a.set_xlabel("Minimum pump speed [% PWM]")
+        a.set_xticks(mins)
+    fig.suptitle("Minimum pump speed at ΔTset 10 K: 30–50 % are equal, below 30 % loses heat",
+                 x=0.01, y=1.04, ha="left", fontsize=11)
+    save(fig, "sim-minspeed.svg")
 
     # 5. Flow estimate.
     pw = np.arange(0, 101, 10)

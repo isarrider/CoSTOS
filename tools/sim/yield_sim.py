@@ -8,6 +8,7 @@ Run:
     python3 tools/sim/yield_sim.py pvgis.csv base     # base case only
     python3 tools/sim/yield_sim.py pvgis.csv onoff    # ΔTon/ΔToff sweep at ΔTset 8 K
     python3 tools/sim/yield_sim.py pvgis.csv iam      # with incidence angle modifiers
+    python3 tools/sim/yield_sim.py pvgis.csv minspeed # minimum pump speed sweep
 
 The PVGIS file is not in the repository: it is the EU's data (PVGIS ©
 European Union) and one command fetches it.
@@ -46,9 +47,9 @@ import numpy as np, numba, sys, csv
 
 RHO_C = 3650.0  # J/(l K), solar fluid
 
-# Flow in l/min at PWM 0, 10, ..., 100 % (ARCHITECTURE 8.2). Below 15 % the
-# pump is in its minimum band (PWM2), so the 20 % value is held down to 15 %.
-FLOW_TABLE = np.array([0.0, 1.8, 1.8, 2.5, 3.2, 3.7, 4.0, 4.5, 5.1, 5.6, 5.9])
+# Flow in l/min at PWM 0, 10, ..., 100 % (ARCHITECTURE 8.2). 10 % stands for
+# the PWM2 minimum band (7-15 %): minimum speed, 1.5 l/min.
+FLOW_TABLE = np.array([0.0, 1.5, 1.8, 2.5, 3.2, 3.7, 4.0, 4.5, 5.1, 5.6, 5.9])
 DT = 5.0
 
 # Incidence angle modifiers for evacuated tubes (generic curves, as in
@@ -61,6 +62,9 @@ IAM_L = np.array([1.0, 1.0, 0.99, 0.98, 0.96, 0.92, 0.85, 0.7, 0.42, 0.2, 0.0])
 def iam_factor(ts, lat=48.14, lon=11.58, tilt=30.0, aspect=80.0, beam_share=0.5):
     """Per-hour factor on G(i): 1 - beam_share + beam_share * K_t * K_l.
 
+    beam_share is a number (assumed for every hour) or an array with the
+    real share per hour from a PVGIS file with components.
+
     Sun position from a simple solar-geometry formula (good to ~1°);
     PVGIS stamps are UTC at hh:10. aspect 0 = south, 90 = west.
     """
@@ -72,7 +76,9 @@ def iam_factor(ts, lat=48.14, lon=11.58, tilt=30.0, aspect=80.0, beam_share=0.5)
     n = np.array([np.sin(tr) * np.sin(az_n), np.sin(tr) * np.cos(az_n), np.cos(tr)])
     a = np.array([-np.cos(tr) * np.sin(az_n), -np.cos(tr) * np.cos(az_n), np.sin(tr)])  # up the slope
     tv = np.cross(n, a)
+    shares = np.broadcast_to(np.asarray(beam_share, float), (len(ts),))
     for i, s in enumerate(ts):
+        bs = shares[i]
         t = _dt.datetime(int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[9:11]), int(s[11:13]))
         doy = t.timetuple().tm_yday
         g = 2 * np.pi / 365 * (doy - 1 + (t.hour + t.minute / 60 - 12) / 24)
@@ -89,24 +95,42 @@ def iam_factor(ts, lat=48.14, lon=11.58, tilt=30.0, aspect=80.0, beam_share=0.5)
                        cz])
         sn = sv @ n
         if sn <= 0:
-            f[i] = 1 - beam_share
+            f[i] = 1 - bs
             continue
         th_t = np.degrees(np.arctan2(abs(sv @ tv), sn))
         th_l = np.degrees(np.arctan2(abs(sv @ a), sn))
         k = np.interp(th_t, IAM_ANG, IAM_T) * np.interp(th_l, IAM_ANG, IAM_L)
-        f[i] = 1 - beam_share + beam_share * k
+        f[i] = 1 - bs + bs * k
     return f
 
 
 def load_pvgis(path):
-    g, ta, ts = [], [], []
+    """Reads a PVGIS seriescalc CSV, with or without &components=1.
+
+    Returns G(i), T2m, month, hour (UTC), the time stamps, and the beam
+    share of G(i) per hour (None if the file has no components). With
+    components, G(i) is the sum Gb(i) + Gd(i) + Gr(i).
+    """
+    g, ta, ts, beam = [], [], [], []
+    cols = None
     with open(path) as f:
         for line in f:
-            if line[:2] == "20" and ":" in line[:14]:
-                p = line.strip().split(",")
-                ts.append(p[0]); g.append(float(p[1])); ta.append(float(p[3]))
+            if line.startswith("time,"):
+                cols = line.strip().split(",")
+                continue
+            if cols and line[:2] == "20" and ":" in line[:14]:
+                p = dict(zip(cols, line.strip().split(",")))
+                ts.append(p["time"])
+                ta.append(float(p["T2m"]))
+                if "Gb(i)" in p:
+                    gb, gd, gr = float(p["Gb(i)"]), float(p["Gd(i)"]), float(p["Gr(i)"])
+                    g.append(gb + gd + gr)
+                    beam.append(gb / (gb + gd + gr) if gb + gd + gr > 0 else 0.0)
+                else:
+                    g.append(float(p["G(i)"]))
     months = np.array([int(s[4:6]) for s in ts]); hours = np.array([int(s[9:11]) for s in ts])
-    return np.array(g), np.array(ta), months, hours, ts
+    return np.array(g), np.array(ta), months, hours, ts, (np.array(beam) if beam else None)
+
 
 # Typical store-bottom temperature at 06:00 local per month (index = month).
 # Jul-Nov: medians of the recorded data 2026; the other months are guesses.
@@ -122,7 +146,7 @@ def flow(pwm):
 
 
 @numba.njit(cache=False)
-def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, don=5.0, doff=2.0):
+def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, don=5.0, doff=2.0, pmin=30.0):
     # per-collector fit P = P0*G/1000 - k1*dT - k2*dT^2, k1=4.68 W/K, k2=0.0483 W/K²
     scale = 2.0 * 58.0 / 60.0
     p0, k1, k2 = 2037.0 * scale, 4.68 * scale, 0.0483 * scale
@@ -159,7 +183,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
             d12 = tc - tlo
             if not on:
                 if d12 >= don:
-                    on = True; pwm = 30.0; tick = 0.0
+                    on = True; pwm = pmin; tick = 0.0
             else:
                 if d12 <= doff and (tf - tout) <= doff:
                     on = False; pwm = 0.0
@@ -169,7 +193,7 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                         tick = 0.0
                         if d12 > dtset + 1.0 and pwm < 100.0:
                             pwm += 1.0
-                        elif d12 < dtset - 1.0 and pwm > 30.0:
+                        elif d12 < dtset - 1.0 and pwm > pmin:
                             pwm -= 1.0
             if on:
                 w = flow(pwm) * fmax / 5.9 / 60.0 * RHO_C
@@ -197,15 +221,28 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
 
 
 def main():
-    g, ta, months, hours, ts = load_pvgis(sys.argv[1])
+    g, ta, months, hours, ts, beam = load_pvgis(sys.argv[1])
+    if len(sys.argv) > 2 and sys.argv[2] == "minspeed":
+        # Minimum pump speed (start value and lower limit of the speed control).
+        for pmin in (15.0, 20.0, 30.0, 40.0, 50.0, 60.0):
+            for dts in (8.0, 10.0, 12.0):
+                out = np.zeros((13, 4))
+                run(g, ta, months, hours, dts, 5.9, 650.0, 15000.0, 25.0, out, 5.0, 2.0, pmin)
+                out /= 4.0
+                print(f"min {pmin:4.0f} % dTset {dts:4.1f}: {out[:,0].sum():6.0f} kWh/yr  pump {out[:,1].sum():5.0f} h"
+                      f"  {out[:,2].sum():5.1f} kWh_el  mean pwm {out[:,3].sum()/out[:,1].sum():4.1f}")
+        return
     if len(sys.argv) > 2 and sys.argv[2] == "iam":
-        for share in (0.0, 0.5, 0.8):
+        shares = [("none", 0.0), ("assumed 50 %", 0.5), ("assumed 80 %", 0.8)]
+        if beam is not None:
+            shares.append(("from PVGIS components", beam))
+        for name, share in shares:
             gi = g * iam_factor(ts, beam_share=share)
             for dts in (6.0, 8.0, 10.0):
                 out = np.zeros((13, 4))
                 run(gi, ta, months, hours, dts, 5.9, 650.0, 15000.0, 25.0, out)
                 out /= 4.0
-                print(f"beam share {share:.1f} dTset {dts:4.1f}: {out[:,0].sum():6.0f} kWh/yr  {out[:,2].sum():5.1f} kWh_el")
+                print(f"beam share {name:22s} dTset {dts:4.1f}: {out[:,0].sum():6.0f} kWh/yr  {out[:,2].sum():5.1f} kWh_el")
         return
     years = 4.0
     cases = [("base", 5.9, 650.0, 15000.0, 25.0), ("flow -40 %", 3.5, 650.0, 15000.0, 25.0),
