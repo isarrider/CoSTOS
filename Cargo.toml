@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/costos-core", "crates/costos-safety", "crates/costos-replay", "crates/costos-sim", "crates/costos-cycle", "crates/costos-config"]
+members = ["crates/costos-core", "crates/costos-safety", "crates/costos-replay", "crates/costos-sim", "crates/costos-cycle", "crates/costos-config", "crates/costosd"]
 
 [workspace.package]
 version = "0.1.0"
@@ -14,6 +14,7 @@ costos-core = { path = "crates/costos-core" }
 costos-safety = { path = "crates/costos-safety" }
 costos-cycle = { path = "crates/costos-cycle" }
 costos-config = { path = "crates/costos-config" }
+costos-sim = { path = "crates/costos-sim" }
 proptest = { version = "1", default-features = false, features = ["std"] }
 
 [workspace.lints.rust]

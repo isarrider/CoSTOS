@@ -1,0 +1,20 @@
+[package]
+name = "costosd"
+description = "The CoSTOS daemon: runs the control second by second against a backend (for now the simulator), loads the settings document, persists the counters"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+costos-core.workspace = true
+costos-safety.workspace = true
+costos-cycle.workspace = true
+costos-config.workspace = true
+costos-sim.workspace = true
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[lints]
+workspace = true
