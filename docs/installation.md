@@ -287,6 +287,9 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
   days; the old fluid was very dirty. So aged fluid is not the reason for
   the low flow now; deposits left in the station (flow setter, non-return
   valve, strainer) still could be. The flow setter is fully open.
+  **24 Nov 2026:** the glass has cleared a little. If it gets readable,
+  a few readings at known speeds would check the calibrated flow table
+  directly (8.4 derived it only from the store balance).
   (Calibration with a readable indicator would be: read l/min while the
   pump runs, note the time, take the PWM value from the vbus2influx data;
   three or four speeds make the table.)
