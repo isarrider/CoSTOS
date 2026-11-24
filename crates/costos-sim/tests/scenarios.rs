@@ -84,6 +84,22 @@ fn sunny_summer_day() {
     // a clear day is two to three times that).
     assert!((14.0..=22.0).contains(&r.heat_kwh), "{} kWh", r.heat_kwh);
 
+    // CoSTOS's own heat counter (from S4, S5 and the flow table) agrees
+    // with the model's true heat within 3 %: in the model the flow table
+    // is exact, so this checks the arithmetic and the sensor placement,
+    // not the table (which is only good to about ±30 % in reality).
+    let counted = r.counters.heat_wh as f64 / 1000.0;
+    assert!(
+        (counted / r.heat_kwh - 1.0).abs() < 0.03,
+        "counted {counted} kWh, true {} kWh",
+        r.heat_kwh
+    );
+    assert_eq!(r.counters.starts as usize, r.starts());
+    assert_eq!(r.counters.pump_seconds as usize, r.on_seconds());
+    // The pump's electricity is a small fraction of the heat: a solar
+    // yield ratio above 50 (good high-efficiency pump systems reach
+    // 50–150; here about 90).
+    assert!(r.counters.heat_wh > 50 * r.counters.pump_wh.max(1));
     // Nothing dangerous happened, and no plausibility check complained.
     assert!(r.max_collector() < 100.0);
     assert_eq!(r.first_alarm(|a| a.any_alarm()), None);

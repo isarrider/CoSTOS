@@ -40,6 +40,7 @@ pub mod plant;
 pub mod weather;
 
 use costos_core::delta_t::FlowReturn;
+use costos_core::heat::{self, Counters, HeatConfig, HeatState};
 use costos_core::monitor::{self, Alarms, MonitorConfig, MonitorState};
 use costos_core::solar::{self, SolarConfig, SolarState};
 use costos_core::{Duty, PlausibleRange, Reading, Seconds, TimeOfDay};
@@ -79,6 +80,8 @@ pub struct Scenario {
     pub safety: SafetyConfig,
     /// Settings of the plausibility checks.
     pub monitor: MonitorConfig,
+    /// Settings of the heat quantity and statistics.
+    pub heat: HeatConfig,
     /// Feed S4/S5 to the flow/return switch-off (as on the reference BX).
     pub flow_return: bool,
     /// Hot-water draws.
@@ -105,6 +108,7 @@ impl Scenario {
             control: reference_control(),
             safety: SafetyConfig::DEFAULT,
             monitor: MonitorConfig::DEFAULT,
+            heat: HeatConfig::REFERENCE,
             flow_return: true,
             draws: vec![Draw {
                 from: 19 * 3600,
@@ -160,8 +164,11 @@ pub struct Sample {
 pub struct Run {
     /// Every simulated second.
     pub samples: Vec<Sample>,
-    /// Heat into the store, kWh.
+    /// Heat into the store according to the model (the truth), kWh.
     pub heat_kwh: f64,
+    /// The counters as CoSTOS would show them (heat estimated from S4, S5
+    /// and the flow table).
+    pub counters: Counters,
 }
 
 impl Run {
@@ -216,6 +223,7 @@ pub fn run(scenario: &Scenario) -> Run {
     let mut supervisor = SupervisorState::default();
     let mut monitor_state = MonitorState::default();
     let mut inhibit = false;
+    let mut heat_state = HeatState::default();
     let mut samples = Vec::with_capacity(s.seconds as usize);
 
     for t in 0..s.seconds {
@@ -274,6 +282,14 @@ pub fn run(scenario: &Scenario) -> Run {
             store_max_reached: !out.store_max.allows_loading(),
             sensors: &readings,
         };
+        heat_state = heat::step(
+            &s.heat,
+            heat_state,
+            output,
+            collector,
+            Some(PlausibleRange::COLLECTOR.check(s4)),
+            Some(PlausibleRange::COLLECTOR.check(s5)),
+        );
         let (next_mon, alarms, inhib) = monitor::step(&s.monitor, monitor_state, &mon_in);
         monitor_state = next_mon;
         inhibit = inhib;
@@ -305,5 +321,6 @@ pub fn run(scenario: &Scenario) -> Run {
     Run {
         samples,
         heat_kwh: plant.heat_into_store / 3.6e6,
+        counters: heat_state.counters,
     }
 }
