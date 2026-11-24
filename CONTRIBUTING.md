@@ -1,7 +1,8 @@
 # Contributing to CoSTOS
 
 Read this before you send a change. It applies to people and AI
-assistants alike. The design and its reasons are in
+assistants alike; AI tools that look for `AGENTS.md` or `GEMINI.md` find a
+pointer to this page there. The design and its reasons are in
 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). This page is the short list of
 how to work in the repository; where a rule has a reason worth knowing, it
 links there.
