@@ -19,7 +19,10 @@
 //! 3. `costos_core::solar::step` decides the requested duty: exactly the
 //!    chain the daemon will run.
 //! 4. `costos_safety::supervise_solar_pump` reduces it where needed.
-//! 5. The plant gets the resulting flow (none if the pump is "stuck") for
+//! 5. `costos_core::monitor` checks what the pump did (alarms); if it asks
+//!    for an inhibit (repeated no circulation), the next cycle's request is
+//!    set to 0 % before the supervisor, as the daemon will do.
+//! 6. The plant gets the resulting flow (none if the pump is "stuck") for
 //!    the next second.
 //!
 //! **What it is not.** Not a yield model: `tools/sim/yield_sim.py` with
@@ -37,6 +40,7 @@ pub mod plant;
 pub mod weather;
 
 use costos_core::delta_t::FlowReturn;
+use costos_core::monitor::{self, Alarms, MonitorConfig, MonitorState};
 use costos_core::solar::{self, SolarConfig, SolarState};
 use costos_core::{Duty, PlausibleRange, Reading, Seconds, TimeOfDay};
 use costos_safety::{Interventions, SafetyConfig, SupervisorState};
@@ -73,6 +77,8 @@ pub struct Scenario {
     pub control: SolarConfig,
     /// Settings of the supervisor.
     pub safety: SafetyConfig,
+    /// Settings of the plausibility checks.
+    pub monitor: MonitorConfig,
     /// Feed S4/S5 to the flow/return switch-off (as on the reference BX).
     pub flow_return: bool,
     /// Hot-water draws.
@@ -98,6 +104,7 @@ impl Scenario {
             store_start: (45.0, 50.0),
             control: reference_control(),
             safety: SafetyConfig::DEFAULT,
+            monitor: MonitorConfig::DEFAULT,
             flow_return: true,
             draws: vec![Draw {
                 from: 19 * 3600,
@@ -142,6 +149,10 @@ pub struct Sample {
     pub interventions: Interventions,
     /// The ΔT the control used, if known.
     pub delta_t: Option<f32>,
+    /// Alarms and notices after this second.
+    pub alarms: Alarms,
+    /// Whether the monitor inhibits the pump from the next second on.
+    pub inhibit: bool,
 }
 
 /// Result of a run.
@@ -178,6 +189,11 @@ impl Run {
             .fold(f32::MIN, f32::max)
     }
 
+    /// First second at which `pred` holds for the alarms, if ever.
+    pub fn first_alarm(&self, pred: impl Fn(&Alarms) -> bool) -> Option<u32> {
+        self.samples.iter().find(|s| pred(&s.alarms)).map(|s| s.t)
+    }
+
     /// Highest true store bottom temperature.
     #[must_use]
     pub fn max_store(&self) -> f32 {
@@ -198,12 +214,16 @@ pub fn run(scenario: &Scenario) -> Run {
     let mut sensors = SensorLayer::new(s.faults.clone());
     let mut control = SolarState::default();
     let mut supervisor = SupervisorState::default();
+    let mut monitor_state = MonitorState::default();
+    let mut inhibit = false;
     let mut samples = Vec::with_capacity(s.seconds as usize);
 
     for t in 0..s.seconds {
         if s.restarts.contains(&t) {
             control = SolarState::default();
             supervisor = SupervisorState::default();
+            // The latched alarms are kept by the daemon across a restart
+            // (persisted with the counters), so the monitor state stays.
         }
         #[allow(clippy::cast_precision_loss)]
         let local = t as f32;
@@ -227,9 +247,12 @@ pub fn run(scenario: &Scenario) -> Run {
         };
         let (next, out) = solar::step(&s.control, control, &inputs);
         control = next;
+        // An inhibit from the monitor is a reduction: the request becomes
+        // 0 % before the supervisor sees it.
+        let requested = if inhibit { Duty::OFF } else { out.requested };
         let sup_in = costos_safety::SolarInputs {
             now,
-            requested: out.requested,
+            requested,
             collector,
             store_bottom,
             store_top: Some(store_top),
@@ -238,6 +261,22 @@ pub fn run(scenario: &Scenario) -> Run {
             costos_safety::supervise_solar_pump(&s.safety, supervisor, &sup_in);
         supervisor = next_sup;
         let output = allowed;
+        let readings = [collector, store_bottom, store_top, s4, s5];
+        let mon_in = monitor::MonitorInputs {
+            now,
+            time_of_day: inputs.time_of_day,
+            pump_on: !output.is_off(),
+            collector,
+            store_bottom,
+            flow: s.flow_return.then_some(PlausibleRange::COLLECTOR.check(s4)),
+            ret: s.flow_return.then_some(PlausibleRange::COLLECTOR.check(s5)),
+            delta_t: out.delta_t.delta_t,
+            store_max_reached: !out.store_max.allows_loading(),
+            sensors: &readings,
+        };
+        let (next_mon, alarms, inhib) = monitor::step(&s.monitor, monitor_state, &mon_in);
+        monitor_state = next_mon;
+        inhibit = inhib;
 
         let flow = if sensors.pump_stuck(t) {
             0.0
@@ -259,6 +298,8 @@ pub fn run(scenario: &Scenario) -> Run {
             flow,
             interventions: why,
             delta_t: out.delta_t.delta_t.map(costos_core::Kelvin::get),
+            alarms,
+            inhibit,
         });
     }
     Run {

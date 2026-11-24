@@ -84,8 +84,9 @@ fn sunny_summer_day() {
     // a clear day is two to three times that).
     assert!((14.0..=22.0).contains(&r.heat_kwh), "{} kWh", r.heat_kwh);
 
-    // Nothing dangerous happened.
+    // Nothing dangerous happened, and no plausibility check complained.
     assert!(r.max_collector() < 100.0);
+    assert_eq!(r.first_alarm(|a| a.any_alarm()), None);
     assert!(
         r.samples
             .iter()
@@ -141,6 +142,8 @@ fn full_store_and_stagnation() {
     s.draws.clear();
     let r = run(&s);
 
+    // The store maximum shows as a notice (not an alarm).
+    assert!(r.first_alarm(|a| a.store_max).is_some());
     // Store maximum: the store bottom never gets meaningfully above 90 °C.
     assert!(r.max_store() < 90.5, "{}", r.max_store());
     // While the store is at its maximum, no loading is asked for.
@@ -205,6 +208,8 @@ fn collector_sensor_open_briefly() {
             .filter(during)
             .all(|x| x.interventions.sensor_unknown)
     );
+    // The alarm comes in the same second as the fault.
+    assert_eq!(r.first_alarm(|a| a.sensor.is_some()), Some(13 * H));
     assert!(
         hours(&r, 13.1, 13.5).any(|x| !x.output.is_off()),
         "running again after"
@@ -308,6 +313,62 @@ fn stuck_pump_still_ends_in_the_emergency_stop() {
         r.samples
             .iter()
             .any(|x| x.interventions.collector_emergency)
+    );
+    // The monitor's "no circulation" (checked in 10-minute windows while
+    // running) reports the stuck pump within two windows at most, and
+    // before the collector reaches its emergency limit.
+    let alarm = r.first_alarm(|a| a.no_circulation).expect("no alarm");
+    let emergency = r
+        .samples
+        .iter()
+        .find(|x| x.interventions.collector_emergency)
+        .unwrap()
+        .t;
+    assert!(
+        alarm <= 11 * H + 25 * 60,
+        "alarm only {} s after 11:00",
+        alarm - 11 * H
+    );
+    assert!(alarm < emergency);
+}
+
+/// A pump that is dead from the morning: the first start gets the "no
+/// circulation" alarm 10 minutes later, and after three failed checks
+/// in a row the monitor inhibits the pump signal (it would only run dry).
+#[test]
+fn dead_pump_is_found_at_the_first_start_and_inhibited() {
+    let mut s = Scenario::summer_day();
+    s.faults.push(Fault {
+        target: Target::Pump,
+        kind: Kind::Stuck,
+        from: 0,
+        until: None,
+    });
+    let r = run(&s);
+    let first_start = r.samples.iter().find(|x| !x.output.is_off()).unwrap().t;
+    let alarm = r.first_alarm(|a| a.no_circulation).expect("no alarm");
+    assert!(
+        alarm <= first_start + 601,
+        "alarm {} s after the start",
+        alarm - first_start
+    );
+    let inhibited = r
+        .samples
+        .iter()
+        .find(|x| x.inhibit)
+        .expect("never inhibited")
+        .t;
+    assert!(
+        inhibited <= first_start + 31 * 60,
+        "inhibit {} s after the start",
+        inhibited - first_start
+    );
+    // Once inhibited, the signal stays off.
+    assert!(
+        r.samples
+            .iter()
+            .filter(|x| x.t > inhibited)
+            .all(|x| x.output.is_off())
     );
 }
 
