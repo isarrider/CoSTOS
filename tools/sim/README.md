@@ -16,3 +16,12 @@ cases (needs `ngspice` and a C compiler).
 The pump input is modelled as a resistor and an LED, like the
 optocoupler inside the pump: 2.2 kΩ for a normal pump, 470 Ω as a stress
 case (about 10 mA).
+
+## Yield simulation (`yield_sim.py`)
+
+Not a circuit simulation: a lumped thermal model of the reference
+installation's solar loop (collector, pipes, lower coil, two-node store)
+with a BX-like control, driven by hourly PVGIS irradiance. It answers
+"which ΔTset (and ΔTon/ΔToff) gives the most solar heat?" Assumptions,
+results and limits: [ARCHITECTURE 8.2](../../docs/ARCHITECTURE.md#82-yield-simulation-first-pass).
+How to run it: see the header of `yield_sim.py`.
