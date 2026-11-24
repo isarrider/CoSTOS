@@ -256,12 +256,13 @@ demineralised water with corrosion inhibitors, frost protection to −32 °C.
 - **Estimated from the recording** (ARCHITECTURE 8.2), because the flow
   indicator can't be read in practice: from the ~200 s the hot fluid needs
   to reach S4 after a pump start, the pump curve and a calibrated system
-  curve, about **2.6 / 3.4 / 4.8 / 6.8 / 7.9 l/min at 20 / 30 / 50 / 80 /
-  100 % PWM**. Good to about ±30 %; a narrower pipe than the assumed
-  22 mm means less flow. This is CoSTOS's default calibration table until
-  a better one exists.
-- **Pipes:** about **25 m** one way from the store to the collector (size
-  and insulation not yet known).
+  curve, about **1.8 / 2.5 / 3.7 / 5.1 / 5.9 l/min at 20 / 30 / 50 / 80 /
+  100 % PWM**. Good to about ±30 %. This is CoSTOS's default calibration
+  table until a better one exists.
+- **Pipes:** **DN 16 stainless corrugated twin solar pipe**
+  (Duo-Solarleitung Edelstahlwellrohr, standard insulation), about **25 m**
+  one way from the store to the collector, of which only about **3 m are
+  outdoors**.
 - **A float-type flow indicator is installed.** Calibration: whenever the
   pump runs, read the indicator (l/min) and note the time; the pump speed
   at that moment comes from the PWM value in the vbus2influx data. Three
