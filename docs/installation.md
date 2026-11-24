@@ -188,6 +188,13 @@ store on its overview page from the same data (see
 - **Upper coil: heat pump** heating water, in at 1060 mm (bottom
   connection), out at 1380 mm (top), on its way to the house: S6 measures
   the coil's inlet, S7 its outlet.
+- **The heat pump only runs when the house needs heat.** It never heats
+  domestic hot water: in the warm months it is off, and the store, and with
+  it the hot water, is heated by the sun alone. In the heating season the
+  heating water passes the upper coil on its way to the house, so the store
+  and the heating exchange heat there in both directions (the heat pump
+  warms the store top, or a solar-warmed store pre-heats the heating
+  water).
 - **S2 (store bottom)** sits in the ½" sleeve at 560 mm (left), **S3 (store
   top)** in the ½" sleeve at 1270 mm (left).
 
