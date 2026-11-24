@@ -11,7 +11,7 @@
 //! |---|---|---|---|
 //! | Sensor fault | Any configured sensor has no valid value | Cable, connector, sensor, hung bus | Alarm at once; clears after 60 s valid |
 //! | Store maximum | The store maximum is reached | Full store in summer | Notice |
-//! | No circulation | **At a start:** within 10 min, neither has the collector cooled by 3 K below its start value, nor (with a flow sensor) has the flow got 2 K warmer than the store bottom. **While running** (with flow and return sensors): in each further 10 min, the flow was never 2 K warmer than the return | Dead or unpowered pump, stuck rotor, air lock, broken PWM line | Alarm; after 3 failed checks in a row the pump is inhibited until the alarm is acknowledged |
+//! | No circulation | **At a start:** within 10 min, neither has the collector cooled by 3 K below its start value, nor (with a flow sensor) has the flow got 2 K warmer than the store bottom. **While running** (with flow and return sensors): in each further 10 min, there was no moment with the flow at least 2 K warmer than the return **and** the collector at most 10 K warmer than the flow | Dead or unpowered pump, stuck rotor, air lock, broken PWM line | Alarm; after 3 failed checks in a row the pump is inhibited until the alarm is acknowledged |
 //! | ΔT too high | Running, ΔT above 50 K for 20 min, and the store bottom warmed by less than 1 K meanwhile | Air in the loop, closed valve, scaled coil, pump far too slow | Alarm |
 //! | Night circulation | Pump off between 23:00 and 05:00, and within 30 min the collector warmed by 3 K while the store bottom cooled by 0.5 K | Faulty non-return valve (gravity circulation) | Alarm |
 //!
@@ -24,13 +24,21 @@
 //! the flow sensor at the store. If neither happens, nothing is moving.
 //!
 //! While the pump runs, the collector settles and no longer cools, so the
-//! start criterion can't be repeated; but heat only reaches the store
-//! while fluid moves, so flow minus return must stay above 2 K at least
-//! now and then. Checked against the recording (ARCHITECTURE 8.1): of 227
-//! starts, 183 showed circulation within 10 minutes and 44 were shorter
-//! than 10 minutes (no verdict), **none would have raised the alarm**; of
-//! 4,413 ten-minute windows during runs, **none** lacked a flow-over-return
-//! of 2 K. The other checks raised nothing either over the 147 days.
+//! start criterion can't be repeated. Two things hold in a moving loop:
+//! the flow is warmer than the return (heat goes into the store), and the
+//! collector is only a little warmer than the flow (the fluid arrives
+//! within minutes). When the pump stops turning, the flow-over-return
+//! alone fades only slowly (both insulated pipes cool with a time constant
+//! of over an hour, the simulation showed no alarm for over an hour), but
+//! the collector runs away from the flow within minutes. So both must hold
+//! together at some moment in every window.
+//!
+//! Checked against the recording (ARCHITECTURE 8.1): of 227 starts, 183
+//! showed circulation within 10 minutes and 44 were shorter than 10
+//! minutes (no verdict), **none would have raised the alarm**; in all 4,413
+//! ten-minute windows during runs the running criterion held (the
+//! collector was never more than 7.6 K above the flow for a whole window).
+//! The other checks raised nothing either over the 147 days.
 //!
 //! **Not here yet:** "flow and return swapped". In the recording the
 //! return sensor (S5) responds *first* after a normal start (the store's
@@ -53,8 +61,11 @@ pub struct MonitorConfig {
     /// No circulation: or the flow must get this much warmer than the store bottom.
     pub circulation_flow_over_store: Kelvin,
     /// No circulation while running: the flow must get this much warmer
-    /// than the return at least once per window.
+    /// than the return at least once per window ...
     pub circulation_flow_over_return: Kelvin,
+    /// ... at a moment when the collector is at most this much warmer than
+    /// the flow.
+    pub circulation_collector_over_flow: Kelvin,
     /// No circulation: failed starts in a row before the pump is inhibited.
     pub circulation_failures_to_inhibit: u8,
     /// ΔT too high: threshold.
@@ -83,6 +94,7 @@ impl MonitorConfig {
         circulation_collector_drop: Kelvin::from_const(3.0),
         circulation_flow_over_store: Kelvin::from_const(2.0),
         circulation_flow_over_return: Kelvin::from_const(2.0),
+        circulation_collector_over_flow: Kelvin::from_const(10.0),
         circulation_failures_to_inhibit: 3,
         delta_t_high: Kelvin::from_const(50.0),
         delta_t_high_for: Seconds::new(1200),
@@ -283,7 +295,12 @@ pub fn step(
                 // While running, with flow and return sensors: flow over
                 // return at least once per window.
                 if let (Some(Ok(f)), Some(Ok(r))) = (inputs.flow, inputs.ret) {
-                    if f.get() - r.get() >= config.circulation_flow_over_return.get() {
+                    let collector_close = collector.is_some_and(|c| {
+                        c - f.get() <= config.circulation_collector_over_flow.get()
+                    });
+                    if f.get() - r.get() >= config.circulation_flow_over_return.get()
+                        && collector_close
+                    {
                         s.window_seen = true;
                     }
                     if now.saturating_since(s.window_start) >= config.circulation_window {
@@ -485,9 +502,16 @@ mod tests {
         let mut s = MonitorState::default();
         let mut first_alarm = None;
         for t in 0..3600 {
-            let mut i = base(t, true, 60.0 - (t.min(200) as f32) / 40.0, 45.0);
-            // Circulating for 20 minutes (flow 8 K over return), then stuck.
-            let (f, r) = if t < 1200 { (55.0, 47.0) } else { (30.0, 30.0) };
+            // Circulating for 20 minutes (collector 55 °C, flow 8 K over
+            // return), then stuck: the collector runs away, the pipes keep
+            // their difference for a long time.
+            let col = if t < 1200 {
+                55.0
+            } else {
+                55.0 + (t - 1200) as f32 / 60.0
+            };
+            let mut i = base(t, true, col, 45.0);
+            let (f, r) = (54.0, 46.0);
             i.flow = Some(c(f));
             i.ret = Some(c(r));
             let (ns, a, _) = step(&cfg, s, &i);
