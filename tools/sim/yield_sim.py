@@ -10,6 +10,7 @@ Run:
     python3 tools/sim/yield_sim.py pvgis.csv iam      # with incidence angle modifiers
     python3 tools/sim/yield_sim.py pvgis.csv minspeed # minimum pump speed sweep
     python3 tools/sim/yield_sim.py pvgis.csv trees    # fit the tree shading
+    python3 tools/sim/yield_sim.py pvgis.csv dynamic  # dynamic ΔTset rules
 
 The PVGIS file is not in the repository: it is the EU's data (PVGIS ©
 European Union) and one command fetches it.
@@ -232,9 +233,20 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
                     tick += DT
                     if tick >= 30.0:
                         tick = 0.0
-                        if d12 > dtset + 1.0 and pwm < 100.0:
+                        # Dynamic ΔTset rules (ARCHITECTURE 8.2), selected by
+                        # negative codes; a positive dtset is a fixed value.
+                        ds = dtset
+                        if dtset == -1.0:    # hot store (> 50 °C): 6 K, else 12 K
+                            ds = 6.0 if tlo > 50.0 else 12.0
+                        elif dtset == -2.0:  # hot store: 12 K, else 6 K
+                            ds = 12.0 if tlo > 50.0 else 6.0
+                        elif dtset == -3.0:  # strong sun (> 600 W/m²): 6 K, else 12 K
+                            ds = 6.0 if G > 600.0 else 12.0
+                        elif dtset == -4.0:  # strong sun: 12 K, else 6 K
+                            ds = 12.0 if G > 600.0 else 6.0
+                        if d12 > ds + 1.0 and pwm < 100.0:
                             pwm += 1.0
-                        elif d12 < dtset - 1.0 and pwm > pmin:
+                        elif d12 < ds - 1.0 and pwm > pmin:
                             pwm -= 1.0
             if on:
                 w = flow(pwm) * fmax / 5.9 / 60.0 * RHO_C
@@ -278,6 +290,33 @@ def main():
             print(f"trees {h:4.0f}°: {out[:,0].sum():6.0f} kWh/yr  pump hours Jul-Nov "
                   + " ".join(f"{out[m,1]:4.0f}" for m in range(7, 12))
                   + f"  mean |error| Jul-Oct {err*100:4.1f} %  (recorded 242 201 186 112)")
+        return
+    if len(sys.argv) > 2 and sys.argv[2] == "dynamic":
+        # Dynamic ΔTset against a fixed 10 K, with incidence angle and trees.
+        if beam is None:
+            sys.exit("the dynamic mode needs a PVGIS file with &components=1")
+        gi = g * iam_factor(ts, beam_share=beam) * shade_factor(ts, beam)[0]
+        res = {}
+        for code, name in [(10.0, "fixed 10 K"), (-1.0, "hot store > 50 °C: 6 K, else 12 K"),
+                           (-2.0, "hot store: 12 K, else 6 K"), (-3.0, "strong sun > 600 W/m²: 6 K, else 12 K"),
+                           (-4.0, "strong sun: 12 K, else 6 K")]:
+            out = np.zeros((13, 4))
+            run(gi, ta, months, hours, code, 5.9, 650.0, 15000.0, 25.0, out)
+            res[name] = out / 4.0
+        ref = res["fixed 10 K"]
+        for name, o in res.items():
+            net = (o[:, 0].sum() - ref[:, 0].sum()) / 3.5 - (o[:, 2].sum() - ref[:, 2].sum())
+            print(f"{name:40s} {o[:,0].sum():6.0f} kWh/yr  {o[:,2].sum():5.1f} kWh_el  net vs 10 K {net:+5.1f} kWh el")
+        # Upper bound of a month-by-month ΔTset.
+        fixed = {}
+        for d in (4, 6, 8, 10, 12, 14, 16):
+            out = np.zeros((13, 4))
+            run(gi, ta, months, hours, float(d), 5.9, 650.0, 15000.0, 25.0, out)
+            fixed[d] = out / 4.0
+        best = 0.0
+        for m in range(1, 13):
+            best += max((fixed[d][m, 0] - fixed[10][m, 0]) / 3.5 - (fixed[d][m, 2] - fixed[10][m, 2]) for d in fixed)
+        print(f"best possible ΔTset per month: net vs 10 K {best:+.1f} kWh el/year")
         return
     if len(sys.argv) > 2 and sys.argv[2] == "minspeed":
         # Minimum pump speed (start value and lower limit of the speed control).
