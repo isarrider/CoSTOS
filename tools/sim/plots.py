@@ -78,16 +78,25 @@ def main():
                  x=0.01, y=1.04, ha="left", fontsize=11)
     save(fig, "sim-dtset.svg")
 
-    # 2. Monthly heat at 10 K.
+    # 2. Monthly heat at 10 K: unshaded vs with the trees (needs components).
     m10 = base[10][1:13, 0]
-    fig, ax = plt.subplots(figsize=(8, 3.2))
-    ax.bar(MONTHS, m10, color=BLUE, width=0.7)
-    for i, v in enumerate(m10):
-        if i in (0, 5, 10):
-            ax.annotate(f"{v:.0f}", (i, v), textcoords="offset points", xytext=(0, 3),
-                        ha="center", fontsize=8, color=INK2)
-    ax.set_title("Heat into store per month at ΔTset 10 K [kWh], mean 2020–2023",
-                 loc="left", fontsize=11)
+    fig, ax = plt.subplots(figsize=(9, 3.4))
+    x = np.arange(12)
+    if beam is not None:
+        gi = g * ys.iam_factor(ts, beam_share=beam)
+        f, _ = ys.shade_factor(ts, beam)
+        mi = case(gi, ta, mo, hr, 10)[1:13, 0]
+        mt = case(gi * f, ta, mo, hr, 10)[1:13, 0]
+        ax.bar(x - 0.2, mi, width=0.38, color="#9ec5f4", label=f"no shading ({mi.sum():.0f} kWh/year)")
+        ax.bar(x + 0.2, mt, width=0.38, color=BLUE,
+               label=f"trees 30° high to the south ({mt.sum():.0f} kWh/year)")
+        ax.legend(frameon=False, fontsize=8, loc="upper right")
+        title = "Heat into store per month at ΔTset 10 K [kWh], with incidence angle, mean 2020–2023"
+    else:
+        ax.bar(x, m10, color=BLUE, width=0.7)
+        title = "Heat into store per month at ΔTset 10 K [kWh], mean 2020–2023"
+    ax.set_xticks(x, MONTHS)
+    ax.set_title(title, loc="left", fontsize=11)
     save(fig, "sim-monthly.svg")
 
     # 3. Sensitivity of the net result to the flow estimate.
@@ -122,6 +131,8 @@ def main():
     if beam is not None:
         gi = g * ys.iam_factor(ts, beam_share=beam)
         variants.append(("incidence angle, PVGIS split", case(gi, ta, mo, hr, 10)[:, 0].sum()))
+        f, _ = ys.shade_factor(ts, beam)
+        variants.append(("incidence angle + trees 30° south", case(gi * f, ta, mo, hr, 10)[:, 0].sum()))
     on = case(g, ta, mo, hr, 10, don=3.0, doff=1.0)[:, 0].sum()
     variants.append(("ΔTon/ΔToff 3/1 K", on))
     variants.sort(key=lambda v: v[1])
@@ -133,8 +144,8 @@ def main():
     for i, v in enumerate(vals):
         ax.annotate(f"{v:.0f} ({(v / b0 - 1) * 100:+.1f} %)", (v, i), textcoords="offset points",
                     xytext=(4, 0), va="center", fontsize=8, color=INK2)
-    ax.set_xlim(1800, max(vals) * 1.08)
-    ax.set_title("Heat into store at ΔTset 10 K [kWh/year] by variant: the pipe matters most",
+    ax.set_xlim(1700, max(vals) * 1.08)
+    ax.set_title("Heat into store at ΔTset 10 K [kWh/year] by variant: the trees and the pipe matter most",
                  loc="left", fontsize=11)
     ax.grid(axis="y", visible=False)
     save(fig, "sim-variants.svg")

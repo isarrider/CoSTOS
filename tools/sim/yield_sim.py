@@ -9,6 +9,7 @@ Run:
     python3 tools/sim/yield_sim.py pvgis.csv onoff    # ΔTon/ΔToff sweep at ΔTset 8 K
     python3 tools/sim/yield_sim.py pvgis.csv iam      # with incidence angle modifiers
     python3 tools/sim/yield_sim.py pvgis.csv minspeed # minimum pump speed sweep
+    python3 tools/sim/yield_sim.py pvgis.csv trees    # fit the tree shading
 
 The PVGIS file is not in the repository: it is the EU's data (PVGIS ©
 European Union) and one command fetches it.
@@ -102,6 +103,46 @@ def iam_factor(ts, lat=48.14, lon=11.58, tilt=30.0, aspect=80.0, beam_share=0.5)
         k = np.interp(th_t, IAM_ANG, IAM_T) * np.interp(th_l, IAM_ANG, IAM_L)
         f[i] = 1 - bs + bs * k
     return f
+
+
+def sun_az_el(ts, lat=48.14, lon=11.58):
+    """Sun azimuth (degrees from north, clockwise) and elevation per PVGIS
+    time stamp (UTC, hh:10), simple solar geometry good to about 1°."""
+    import datetime as _dt
+    lr = np.radians(lat)
+    az = np.zeros(len(ts)); el = np.zeros(len(ts))
+    for i, s in enumerate(ts):
+        t = _dt.datetime(int(s[0:4]), int(s[4:6]), int(s[6:8]), int(s[9:11]), int(s[11:13]))
+        doy = t.timetuple().tm_yday
+        g = 2 * np.pi / 365 * (doy - 1 + (t.hour + t.minute / 60 - 12) / 24)
+        decl = 0.006918 - 0.399912 * np.cos(g) + 0.070257 * np.sin(g) - 0.006758 * np.cos(2 * g) + 0.000907 * np.sin(2 * g)
+        eqt = 229.18 * (0.000075 + 0.001868 * np.cos(g) - 0.032077 * np.sin(g) - 0.014615 * np.cos(2 * g) - 0.040849 * np.sin(2 * g))
+        ha = np.radians((t.hour * 60 + t.minute + eqt + 4 * lon) / 4 - 180)
+        cz = np.sin(lr) * np.sin(decl) + np.cos(lr) * np.cos(decl) * np.cos(ha)
+        el[i] = np.degrees(np.arcsin(np.clip(cz, -1, 1)))
+        e = -np.cos(decl) * np.sin(ha)
+        n = np.sin(decl) * np.cos(lr) - np.cos(decl) * np.cos(ha) * np.sin(lr)
+        az[i] = (np.degrees(np.arctan2(e, n)) + 360) % 360
+    return az, el
+
+
+# Trees directly south of the house (owner), height fitted to the recorded
+# pump hours of July-October 2026 (ARCHITECTURE 8.2): 30° above the horizon
+# from south-east to south-west.
+TREES = (30.0, 135.0, 225.0)
+
+
+def shade_factor(ts, beam, trees=TREES):
+    """Per-hour factor on G(i) for a horizon obstacle: while the sun is in the
+    azimuth sector and below the obstacle's elevation, the beam part of the
+    light is blocked and only the diffuse part reaches the tubes. The small
+    loss of diffuse light from the sky the trees hide is ignored."""
+    h, a1, a2 = trees
+    az, el = sun_az_el(ts)
+    blocked = (az >= a1) & (az <= a2) & (el > 0) & (el < h)
+    f = np.ones(len(ts))
+    f[blocked] = 1.0 - beam[blocked]
+    return f, blocked
 
 
 def load_pvgis(path):
@@ -222,6 +263,22 @@ def run(g, ta, months, hours, dtset, fmax, ua_coil, c_col, pipe_len, out_month, 
 
 def main():
     g, ta, months, hours, ts, beam = load_pvgis(sys.argv[1])
+    if len(sys.argv) > 2 and sys.argv[2] == "trees":
+        # Fit of the tree height to the recorded pump hours (needs components).
+        if beam is None:
+            sys.exit("the trees mode needs a PVGIS file with &components=1")
+        rec = {7: 242, 8: 201, 9: 186, 10: 112}
+        gi = g * iam_factor(ts, beam_share=beam)
+        for h in (0.0, 15.0, 20.0, 25.0, 30.0, 35.0):
+            f, _ = shade_factor(ts, beam, (h, 135.0, 225.0))
+            out = np.zeros((13, 4))
+            run(gi * f, ta, months, hours, 10.0, 5.9, 650.0, 15000.0, 25.0, out)
+            out /= 4.0
+            err = np.mean([abs(out[m, 1] - r) / r for m, r in rec.items()])
+            print(f"trees {h:4.0f}°: {out[:,0].sum():6.0f} kWh/yr  pump hours Jul-Nov "
+                  + " ".join(f"{out[m,1]:4.0f}" for m in range(7, 12))
+                  + f"  mean |error| Jul-Oct {err*100:4.1f} %  (recorded 242 201 186 112)")
+        return
     if len(sys.argv) > 2 and sys.argv[2] == "minspeed":
         # Minimum pump speed (start value and lower limit of the speed control).
         for pmin in (15.0, 20.0, 30.0, 40.0, 50.0, 60.0):
