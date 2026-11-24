@@ -1278,18 +1278,45 @@ Aug +2 %, Sep −6 %, Oct +28 %, Nov well over +100 %). What it is *not*:
   DWD figures), so a real October should beat the PVGIS average, not fall
   30 % short of it.
 
-What it might be, in order of likelihood:
+What it is: **high trees directly to the south of the house** (owner). In
+autumn and winter the sun stays low and passes behind them around midday;
+PVGIS only knows the terrain horizon, not trees. The model blocks the beam
+part of the light (from the PVGIS split) while the sun is between south-east
+and south-west (135–225°) and below the trees; the tree height above the
+horizon is fitted to the recorded pump hours (`… trees`):
 
-| Candidate | Why it fits | How to check | Rating |
-|---|---|---|---|
-| **Shading at low sun** (trees, buildings, roof parts to the south-west and west) | The gap grows exactly as the sun gets lower; PVGIS only knows the terrain horizon, not buildings or trees | The owner knows the surroundings; a horizon profile can be given to PVGIS (`userhorizon=`) | 🔴 most likely |
-| Frost, dew or snow on the tubes | Evacuated tubes don't melt snow or frost off themselves; mornings in Oct/Nov | Compare mornings with frost against others | 🟡 |
-| Collector behaviour at low irradiance (heat pipes need a little heat to start, the manifold has to warm up) | Matters most on weak days | A start threshold in the model | 🟡 |
-| Fog or high fog in the Munich area in November | Local, not in the satellite data | — | 🟡 |
+| Trees (elevation) | Heat into store | Pump hours Jul / Aug / Sep / Oct / Nov | Mean error Jul–Oct | Rating |
+|---|---|---|---|---|
+| none | 2181 kWh | 210 / 200 / 171 / 141 / 121 | 11.9 % | 🔴 October and November far too high |
+| 20° | 2062 kWh | 210 / 200 / 171 / 141 / 110 | 11.9 % | 🔴 |
+| 25° | 1979 kWh | 210 / 200 / 171 / 138 / 98 | 11.3 % | 🟡 |
+| **30°** | **1896 kWh** | **210 / 200 / 171 / 121 / 97** | **7.6 %** | 🟢 **used** |
+| 35° | 1813 kWh | 210 / 200 / 168 / 110 / 97 | 6.2 % | 🟢 fits October best |
+| recorded 2026 | — | 242 / 201 / 186 / 112 / 46 (to the 24th) | — | |
 
-Until that is known, **treat the October to February figures as
-optimistic**. The ranking of ΔTset and of the minimum speed doesn't
-depend on them: it is the same in every month.
+Trees about **30–35° high** explain October; 30° is used (for example 15 m
+high trees about 25 m away). Summer is untouched, because the sun then
+stands far above the trees at midday and the collector faces west.
+November is still too high (97 h against about 58 h for a full month at
+the recorded rate): frost, fog or a collector that needs a little heat to
+get going may account for the rest. With the trees, the model's year is
+about **1900 kWh**, and the months from November to February lose most of
+their yield:
+
+![Heat into store per month, without and with the trees](img/sim-monthly.svg)
+
+*Per month at ΔTset 10 K, with the incidence angle effect: without shading
+(light) and with trees 30° high to the south (dark). March and April come
+out about as high as summer: the store is cool then (guessed 30–40 °C in
+the morning) and the sun already stands above the trees, while from July
+the store is already hot (60–68 °C). The spring figures rest on guessed
+store temperatures; the recording starts in July.*
+
+**The recommendations hold with the trees**: at ΔTset 6 / 8 / 10 / 12 K the
+heat is 1934 / 1912 / 1887 / 1866 kWh and the pump electricity 38.1 / 26.8 /
+18.3 / 14.6 kWh, so 10 K is best (8 K −1.4, 12 K −2.3 kWh el a year); minimum
+speed 20 / 30 / 40 %: 1867 / 1887 / 1902 kWh, 16.6 / 18.3 / 21.2 kWh el, so
+30–40 % stay equal and 20 % stays worse.
 
 **Results, base case (per year, mean of 2020–2023, without incidence
 angle effect):**
@@ -1342,20 +1369,11 @@ everything above 10 K is the same.*
 
 ![Yield by variant at ΔTset 10 K](img/sim-variants.svg)
 
-*Every variant against the base case at ΔTset 10 K: a shorter pipe gains
+*Every variant against the base case at ΔTset 10 K: the trees cost about
+10 % (incidence angle included) and a shorter pipe would gain about 15 %,
 far more than any control setting; the incidence angle effect and the flow
 estimate move the total by a few percent; the coil size and ΔTon/ΔToff
 hardly matter.*
-
-![Heat into store per month](img/sim-monthly.svg)
-
-*Per month at ΔTset 10 K. March and April come out about as high as
-summer: the store is cool then (guessed 30–40 °C in the morning) and the
-west-facing tubes work well in spring sun, while from July the store is
-already hot (60–68 °C), which lowers what the collector can deliver. The
-spring and winter figures rest on guessed store temperatures and are the
-least certain; the recording starts in July, so a spring with data will
-show how good they are.*
 
 ![Incidence angle modifiers](img/sim-iam.svg)
 
@@ -1401,9 +1419,10 @@ minute.
 **Conclusion.** The default ΔTset for CoSTOS's speed control is **10 K**:
 as good as 8 K for the yield, the RESOL default, and the same as the BX, so
 shadow mode compares like with like. Configurable. ΔTon/ΔToff stay at the
-BX's 5 / 2 K, the minimum pump speed at 30 %. Still open (10.2, S7): why
-autumn is overestimated (most likely shading at low sun), and a check of
-the spring figures once there is spring data.
+BX's 5 / 2 K, the minimum pump speed at 30 %. The realistic year for this
+installation is about **1900 kWh** of solar heat into the store (trees
+included). Still open (10.2, S7): the rest of the November gap, and a check
+of the spring figures once there is spring data.
 
 ---
 
@@ -1531,7 +1550,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
-| S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset 8 and 10 K equal, default **10 K**; minimum speed 30–50 % equal, default **30 %**; ΔTon/ΔToff matter little; the coil is no bottleneck; incidence angle +3.8 % with the real PVGIS split; the heat pump only warms the store top. Open: the autumn overestimate (most likely shading at low sun: horizon profile), spring check next year | shading to the south-west and west | small | 🟢 |
+| S7 | Best ΔTset for the yield | **Done** (8.2): ΔTset default **10 K**, minimum speed **30 %**, ΔTon/ΔToff 5 / 2 K; the coil is no bottleneck; incidence angle +3.8 %; trees about 30° high to the south fitted to the recorded hours, realistic year about **1900 kWh**. Open: the rest of the November gap (frost, fog, collector start), spring check next year | spring data | small | 🟢 |
 | D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
