@@ -32,7 +32,7 @@ be BX Plus inputs S1–S8.
 | Input | Name in the dashboard | Position | Role |
 |---|---|---|---|
 | S1 | Temp_1_Kollektor | Collector | **Control**: pump start/stop (ΔT), collector protection |
-| S2 | Temp_2_Boiler_u | Store, bottom | **Control**: ΔT reference, store maximum |
+| S2 | Temp_2_Boiler_u | Store, bottom | **Control**: ΔT reference, store maximum (BX: Smax **95 °C**; CoSTOS: 90 °C, its highest allowed value, ARCHITECTURE 11) |
 | S3 | Temp_3_Boiler_o | Store, top | Display |
 | S4 | Temp_4_Vorlauf | Solar flow (collector → store), at the store | Display; heat quantity once a flow value exists |
 | S5 | Temp_5_Rücklauf | Solar return (store → collector), at the store | Display; heat quantity once a flow value exists |
