@@ -163,6 +163,22 @@ pub struct HeatState {
     was_on: bool,
 }
 
+impl HeatState {
+    /// A state that continues from saved counters (after a restart); the
+    /// parts below one watt-hour start at zero, which loses less than 1 Wh
+    /// per counter, and the next cycle counts as "pump was off before".
+    #[must_use]
+    pub const fn from_counters(counters: Counters) -> Self {
+        Self {
+            counters,
+            heat_j: 0.0,
+            loss_j: 0.0,
+            pump_j: 0.0,
+            was_on: false,
+        }
+    }
+}
+
 /// Joules per watt-hour.
 const J_PER_WH: f32 = 3600.0;
 
