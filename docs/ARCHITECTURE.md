@@ -1295,6 +1295,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
 | S6 | ~~Export the BX PWM A series~~ | **Done**: PWM A is the eighth column of the replay days, and the findings are in 8.1. The speed is compared once S1 exists | — | — | 🟢 |
+| S7 | Best ΔTset for the speed control | Simulate the solar yield for ΔTset from about 4 to 16 K over a year, especially spring and autumn: collector curve from the data sheet, hourly irradiance and air temperature for the site (PVGIS), pipe losses, lower coil, stratified store, calibrated against the replay days. The BX value (RESOL default 10 K, data 8–10 K) is the starting point | flow calibration table (installation.md), site and pipe data, PVGIS file | 1–2 sessions | 🟡 |
 | D1 | `AGENTS.md` / `GEMINI.md` | Short files that point AI tools to CONTRIBUTING.md | decision | tiny | 🟢 |
 
 ## 11. Open questions
