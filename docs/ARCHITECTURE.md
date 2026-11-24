@@ -697,7 +697,7 @@ config:
 | **ΔT control** | Pump ON when T(collector) − T(store bottom) ≥ ΔT_on (for example 6 K), OFF when ≤ ΔT_off (for example 4 K). Hysteresis plus minimum run time. **Collector minimum temperature** (optional, default on, 10 °C as on the BX Plus): no start below it, even when ΔT is met. The control loop uses a lightly smoothed ΔT (moving average over a few samples, as DiSoCon2 does) so single noisy readings don't toggle the pump; raw values still go to VictoriaMetrics. **Flow/return switch-off** (optional, as the BX Plus "flow sensor / return sensor" option): with a solar flow and return sensor, a running pump stops only once flow − return has fallen to ΔT_off as well, so it keeps running while the loop still carries heat into the store (8.1). A fault on flow or return only drops this extra condition and raises an alarm; the control then falls back to the plain collector difference, which stops earlier, never later. |
 | **Speed control** | While on, the PWM duty is driven to keep ΔT (collector minus store bottom) at a **setpoint, default 10 K**, between a **minimum speed, default 30 %**, and the maximum (both defaults from the yield simulation, 8.2; a dynamic setpoint was simulated and gains nothing). Two controllers: a **PI controller** (default; 2 %/K proportional, 0.02 %/(K·s) integral, so at 2 K off it moves about 1 % every 25 s, as calm as the BX; the integral is clamped to the speed range against windup, rule 19) or **BX-like steps** (1 % every 30 s whenever ΔT is more than 1 K off the setpoint, as the replay data shows the BX doing), so shadow mode can compare like with like. A start first runs the pump's **start profile**, one of three: *kick* (default: 100 % for 5 s, then control; the sudden flow moves trapped air), *ramp* (soft start from 0 in steps of, say, 10 %/s up to the minimum, as DiSoCon2 does) or *soft kick* (ramp up to 100 %, hold 5 s, then control: no bang, but still a moment at full flow). Control then begins at the minimum speed, as on the BX. Ramp and soft kick are for hydraulics that knock or bang on a hard start; the pump motor itself doesn't need them, high-efficiency pumps soft-start internally. Code: `costos-core::speed`. |
 | **Anti-seize run and full-speed purge** | Two parts, both configurable. **Anti-seize:** if a pump has been idle for more than 24 h, it runs for 10 s at 100 %, started at midday (12:00 local time, never at night). This replaces the BX Plus "blocking protection" (daily at 12:00 for 10 s, skipped if the pump already ran that day), which in 147 days of replay data ran only 4 times. **Full-speed purge:** with speed control a pump rarely reaches 100 %, which is what flushes air and deposits out. If a pump hasn't been at 100 % for 7 days, its next normal start begins with 60 s at 100 % (the *kick* start profile, extended). It only happens while there is solar gain anyway, so it costs no heat; a timed weekly 100 % run was rejected because in winter it would move store heat out to the cold collector. Both runs reach 100 % the way the pump's **start profile** says (kick: at once; ramp and soft kick: in steps), and the time at 100 % counts from the first second at full speed. |
-| **Store maximum** | Stops loading at T(store) ≥ T_max. Emergency stop at the hard limit (enforced by the supervisor as well). |
+| **Store maximum** | Stops loading when the configured store sensor (reference installation: S2, store bottom, as on the BX Plus) reaches T_max, **default 60 °C** (RESOL factory value, settable 20–90 °C), and resumes once it has cooled by the **hysteresis, default 2 K**. An unknown store temperature blocks loading. Its result is ANDed with the ΔT control before the speed control: pump on = ΔT says on **and** the store isn't full. The emergency stop at the hard limit is the supervisor's (4.2), independent of this. Code: `costos-core::store_max`. |
 | **Collector emergency shutdown** | Enforced in the supervisor (section 4.2). |
 | **Collector cooling / recooling** | Optional: lets the store take extra heat to keep the collector out of stagnation, and cools the store back down at night. |
 | **Tube collector function** | Optional: short periodic pump runs so a sensor in an evacuated tube collector sees the real temperature. |
@@ -1492,7 +1492,9 @@ come first.
    and collector emergency shutdown. Tests and a replay tool for vbus2influx
    data. *Done so far:* basic types, ΔT control with the flow/return
    switch-off, speed control, anti-seize run and full-speed purge, start profiles, safety supervisor,
-   replay tool with seven recorded days. *Open:* store maximum.
+   replay tool with seven recorded days, store maximum. *All functions of
+   milestone 1 exist*; what's left is wiring them into one cycle in the
+   daemon (milestone 2).
 2. `costos-sim` and simulation tests in CI.
 3. HAL + Linux backend: GPIO outputs, PWM, watchdog, then the measuring
    drivers in this order: the Pt1000 front end of the PT edition (the
@@ -1570,7 +1572,7 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 | H3 | Real prices for both editions | From the new parts lists | H1 | small | 🟡 |
 | H4 | Re-review of the HAT pull request #2 | Waiting for the fixes | — | 1 session | 🟡 |
 | S1 | ~~Speed control (PI)~~ | **Done**: `costos-core::speed`, PI (default) or BX-like steps, setpoint 10 K, minimum 30 %, start profiles; replay runs it and reports speeds | — | — | 🟢 |
-| S2 | Store maximum | Milestone 1 | — | small | 🟡 |
+| S2 | ~~Store maximum~~ | **Done**: `costos-core::store_max`, 60 °C / 2 K by default. The reference installation's BX value is still to be read off (section 11) | — | — | 🟢 |
 | S3 | The 14 early BX stops (8.1) | Test both hypotheses in the replay: flow/return only after some minutes of running; a daily re-check at 12:00 BX time | — | small | 🟢 |
 | S4 | Offset calibration per sensor | One offset per channel, set against the recorded BX readings; needed for 2-wire cables, especially with H1 | H1 | small | 🟡 |
 | S5 | ~~Start profiles and the purge~~ | **Done**: kick, ramp and soft kick (`start_profile`); anti-seize and purge follow the profile. The normal start uses it with the speed control (S1) | — | — | 🟢 |
@@ -1580,6 +1582,11 @@ sessions. 🔴 blocks other work, 🟡 needed, 🟢 nice to have.
 
 ## 11. Open questions
 
+- **BX store maximum**: the reference installation's BX value (Smax in
+  Solar → Grundeinstellung → Speicher) and its hysteresis. The recording
+  reached 81.6 °C at S2 without the BX stopping, so it is set above that;
+  CoSTOS's default is the RESOL factory value of 60 °C, which would stop
+  loading much earlier on summer days.
 - Settled: the BX Plus switch-off rule is its flow and return sensor option
   (Solar / Expert, S4 and S5 enabled, ΔTon 5 K, ΔToff 2 K), see 8.1.
 - **Installation details**: the remaining open points in
