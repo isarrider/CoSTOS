@@ -32,6 +32,7 @@
 
 pub mod anti_seize;
 pub mod delta_t;
+pub mod monitor;
 pub mod output;
 pub mod sensor;
 pub mod solar;
