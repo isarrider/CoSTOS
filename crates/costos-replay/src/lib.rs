@@ -32,6 +32,8 @@
 //! use `std` (rule 1 applies to `costos-core` and `costos-safety` only).
 
 use costos_core::delta_t::{self, DeltaTConfig, DeltaTState, FlowReturn};
+use costos_core::output::Duty;
+use costos_core::speed::{self, SpeedConfig, SpeedState};
 use costos_core::{Celsius, Kelvin, PlausibleRange, Reading, Seconds, SensorFault};
 
 /// Rows further apart than this mark a recording gap.
@@ -50,6 +52,18 @@ pub const MIN_DIFFERENCE: u64 = 6;
 /// BX relay runs shorter than this are its anti-seize run ("blocking
 /// protection", 10 s by default), not a solar decision.
 pub const ANTI_SEIZE_MAX: u64 = 30;
+
+/// 2026-09-16 00:00 local time (Europe/Berlin): from then on the BX's
+/// minimum pump speed is 30 %, before it was 20 % (ARCHITECTURE 8.1).
+pub const BX_MIN_30_FROM: u64 = 1_789_509_600;
+
+/// The speed control that does what the BX did on the day starting at `t`:
+/// BX-like steps from its minimum speed of that time (20 % or 30 %).
+#[must_use]
+pub fn bx_speed_config(t: u64) -> SpeedConfig {
+    let min = if t >= BX_MIN_30_FROM { 30 } else { 20 };
+    SpeedConfig::bx_like(Duty::clamped(min))
+}
 
 /// One row of a replay file: Unix time, S1–S5 in °C, relay in percent.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -177,9 +191,34 @@ pub struct Report {
     /// 10 s once a day *while the pump was running*, so the maximum on
     /// such days is 100 % (ARCHITECTURE 8.1).
     pub bx_pwm_range: Option<(u8, u8)>,
+    /// Seconds in which both pumps ran and the BX speed is known, so the
+    /// speeds could be compared.
+    pub speed_seconds: u64,
+    /// Sums over those seconds: BX speed, CoSTOS speed, absolute
+    /// difference, all in %.
+    pub speed_sums: (u64, u64, u64),
 }
 
 impl Report {
+    /// Mean speeds (BX, CoSTOS) and mean absolute difference in % over the
+    /// seconds both pumps ran; `None` if they never ran together.
+    #[must_use]
+    pub fn speed_means(&self) -> Option<(f64, f64, f64)> {
+        if self.speed_seconds == 0 {
+            return None;
+        }
+        // Sums of at most 100 per second: exact in f64 for any recording.
+        #[allow(clippy::cast_precision_loss)]
+        let n = self.speed_seconds as f64;
+        #[allow(clippy::cast_precision_loss)]
+        let (a, b, c) = (
+            self.speed_sums.0 as f64,
+            self.speed_sums.1 as f64,
+            self.speed_sums.2 as f64,
+        );
+        Some((a / n, b / n, c / n))
+    }
+
     /// Share of compared seconds with the same decision, in percent.
     #[must_use]
     pub fn agreement_percent(&self) -> f64 {
@@ -230,9 +269,23 @@ fn anti_seize_marks(relay: &[Option<bool>], t0: u64, report: &mut Report) -> Vec
 
 /// Replays `rows` through the ΔT control with `config`; with
 /// `flow_return`, S4 and S5 feed the flow/return switch-off
-/// ([`delta_t::FlowReturn`]).
+/// ([`delta_t::FlowReturn`]). The speed is controlled like the BX of that
+/// day ([`bx_speed_config`]).
 #[must_use]
 pub fn replay(rows: &[Row], config: &DeltaTConfig, flow_return: bool) -> Report {
+    let speed_config = bx_speed_config(rows.first().map_or(0, |r| r.t));
+    replay_with_speed(rows, config, flow_return, &speed_config)
+}
+
+/// As [`replay`], with a given speed control, for example CoSTOS's own
+/// default PI controller instead of the BX-like steps.
+#[must_use]
+pub fn replay_with_speed(
+    rows: &[Row],
+    config: &DeltaTConfig,
+    flow_return: bool,
+    speed_config: &SpeedConfig,
+) -> Report {
     let mut report = Report::default();
     let (Some(first), Some(last)) = (rows.first(), rows.last()) else {
         return report;
@@ -267,6 +320,7 @@ pub fn replay(rows: &[Row], config: &DeltaTConfig, flow_return: bool) -> Report 
     let anti_seize = anti_seize_marks(&relay, t0, &mut report);
 
     let mut state = DeltaTState::default();
+    let mut speed_state = SpeedState::default();
     let mut previous: Option<(bool, bool)> = None;
     let mut open: Option<Difference> = None;
     for (index, row) in held.iter().enumerate() {
@@ -274,6 +328,7 @@ pub fn replay(rows: &[Row], config: &DeltaTConfig, flow_return: bool) -> Report 
         let Some(row) = row else {
             // Gap: fresh state afterwards, and no start counted across it.
             state = DeltaTState::default();
+            speed_state = SpeedState::default();
             previous = None;
             close(&mut open, t, &mut report);
             continue;
@@ -294,6 +349,14 @@ pub fn replay(rows: &[Row], config: &DeltaTConfig, flow_return: bool) -> Report 
         state = next;
         let bx_on = row.relay > 0;
         let ours = out.pump_on;
+        let (next_speed, our_speed, _) = speed::step(
+            speed_config,
+            speed_state,
+            Seconds::new(t),
+            ours,
+            out.delta_t,
+        );
+        speed_state = next_speed;
 
         // BX anti-seize seconds: CoSTOS's decision still counts for its
         // own statistics, but there is nothing to compare.
@@ -317,6 +380,15 @@ pub fn replay(rows: &[Row], config: &DeltaTConfig, flow_return: bool) -> Report 
         }
         if bx_on {
             report.on_seconds.0 = report.on_seconds.0.saturating_add(1);
+        }
+        // Speed comparison: both running, and the BX speed recorded (the
+        // first sample of a BX run often still shows 0 %).
+        if bx_on && ours && row.pwm > 0 {
+            let (a, b) = (u64::from(row.pwm), u64::from(our_speed.percent()));
+            report.speed_seconds = report.speed_seconds.saturating_add(1);
+            report.speed_sums.0 = report.speed_sums.0.saturating_add(a);
+            report.speed_sums.1 = report.speed_sums.1.saturating_add(b);
+            report.speed_sums.2 = report.speed_sums.2.saturating_add(a.abs_diff(b));
         }
         if bx_on && row.pwm > 0 {
             report.bx_pwm_range = Some(match report.bx_pwm_range {
@@ -460,6 +532,21 @@ mod tests {
         assert_eq!(report.compared, 92);
         assert_eq!(report.differences.len(), 1);
         assert_eq!(report.differences[0].start, 1645);
+    }
+
+    /// The speed comparison runs, and CoSTOS's default PI controller stays
+    /// in its range on a sunny day. The speeds themselves are not
+    /// asserted: replay is open loop (the recorded temperatures don't react
+    /// to CoSTOS's speed), so it can't show whether a speed control holds
+    /// ΔT; that is for the yield simulation and shadow mode (ARCHITECTURE
+    /// 8.1).
+    #[test]
+    fn speed_comparison_runs() {
+        let rows = day("2026-07-09");
+        let r = replay_with_speed(&rows, &bx_reference_config(), true, &SpeedConfig::DEFAULT);
+        let (_, ours, _) = r.speed_means().unwrap();
+        assert!(r.speed_seconds > 9 * 3600);
+        assert!((30.0..=100.0).contains(&ours), "{ours}");
     }
 
     /// Broken files fail loudly with a line number.
