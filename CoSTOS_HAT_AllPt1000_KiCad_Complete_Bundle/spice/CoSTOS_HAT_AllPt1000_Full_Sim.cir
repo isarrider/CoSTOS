@@ -1,0 +1,349 @@
+* ============================================================================
+* CoSTOS All-Pt1000 HAT (8x Switched-Mux on Dual-Tier 2x8P Fixed Screw J6 DG350D, Zero 1-Wire) - Full ngspice-39 Suite
+* Uses official vendor TI/MicroSim .SUBCKT LM393 (C7955) + 6-point Pt1000 sweep (-20..+200 C, OPEN, SHORT).
+* NOTE: For real-time UNSCALED 34 s Watchdog & 1 kHz runaway rejection (exact BOM values, 0x scaling), run CoSTOS_HAT_AllPt1000_Watchdog_RealTime.cir.
+* Run: ngspice -b CoSTOS_HAT_AllPt1000_Full_Sim.cir
+* ============================================================================
+
+.options reltol=1e-3 abstol=1e-11 vntol=1e-5 gmin=1e-11 method=gear maxord=2 gminsteps=0
+
+* ---- Audited JLCPCB Device Models (Tier 1+2: C7955 LM393DR2G, C105432 S8550 Basic, C181103 TL431 Basic) ----
+.model MMBT3904 NPN(IS=6.734f BF=220 VAF=74 IKF=0.066 CJE=4.5p CJC=3.6p TF=300p TR=200n)
+.model S8550    PNP(IS=5.0f   BF=160 VAF=25 IKF=0.500 CJE=18p  CJC=12p  TF=800p TR=300n)
+.model D1N4148W D(IS=2.52n RS=0.568 N=1.752 BV=100 IBV=100u CJO=4p TT=6n)
+.model DSS14    D(IS=8u RS=0.12 N=1.08 BV=40 IBV=500u CJO=110p)
+.model DLED_G   D(IS=1e-22 N=2.0 RS=12.0 BV=5.0 IBV=10u CJO=15p)
+.model DLED_R   D(IS=1e-20 N=2.0 RS=10.0 BV=5.0 IBV=10u CJO=15p)
+.model Q2N7002  NMOS(LEVEL=1 VTO=1.8 KP=0.25 RD=1.5 RS=1.5 CBD=15p CBS=20p)
+.model QAO3400A NMOS(LEVEL=1 VTO=1.05 KP=18.0 RD=0.018 RS=0.015 CBD=180p CBS=350p CGSO=450p CGDO=120p)
+.model QAO3401A PMOS(LEVEL=1 VTO=-0.95 KP=14.0 RD=0.025 RS=0.020 CBD=200p CBS=400p CGSO=500p CGDO=140p)
+
+* Realistic TL431 Precision Shunt Regulator Macromodel (C181103 Basic: 1=REF 2=ANODE 3=CATHODE)
+.SUBCKT TL431 1 2 3
+  Iref  1 2 DC 2u
+  Roff  3 2 20Meg
+  B_err err 2 V = 400 * (v(1,2) - 2.495)
+  D_on  err drv DTL
+  R_z   drv 2   10k
+  B_ik  3 2 I = (v(drv,2) > 0) ? min(0.15, (v(drv,2) / 0.3)) : 0
+  D_rev 2 3 DTL
+.MODEL DTL D(IS=1e-14 N=1.0 RS=0.2)
+.ENDS TL431
+
+* Official Vendor Texas Instruments / MicroSim LM393 Dual Differential Comparator Macromodel
+* Connections:     non-inverting input (1)
+*                  | inverting input (2)
+*                  | | positive power supply (3)
+*                  | | | negative power supply / GND (4)
+*                  | | | | open-collector output (5)
+.SUBCKT LM393 1 2 3 4 5
+  F1    9 3  V1  1
+  IEE   3 7  DC  100.0E-6
+  VI1   21 1  DC  .75
+  VI2   22 2  DC  .75
+  Q1    9 21 7  QIN
+  Q2    8 22 7  QIN
+  Q3    9 8  4  QMO
+  Q4    8 8  4  QMI
+.MODEL QIN PNP(IS=800.0E-18 BF=2.000E3)
+.MODEL QMI NPN(IS=800.0E-18 BF=1002)
+.MODEL QMO NPN(IS=800.0E-18 BF=1000 CJC=1E-15 TR=807.4E-9)
+  E1    10 4 9 4 1
+  V1    10 11 DC 0
+  Q5    5 11 4  QOC
+.MODEL QOC NPN(IS=800.0E-18 BF=20.29E3 CJC=1E-15 TF=942.6E-12 TR=543.8E-9)
+  DP    4 3  DX
+  RP    3 4  46.3E3
+.MODEL DX D(IS=800.0E-18)
+.ENDS LM393
+
+* ---- Shared Raspberry Pi 5 Header Supply Rails ----
+Vpi5v  v5_pi  0 DC 5.05
+Vpi3v3 v33_pi 0 DC 3.30 AC 1.0
+
+* ============================================================================
+* SUBSYSTEM 06: Direct D18 +5V_HAT Entry (No eFuse) + TL431 3.67V Clamp + +3V3_ANA Pi-Filter
+* ============================================================================
+Rpi_hdr v5_pi  v5_hat 0.04
+C2AB    v5_hat 0      26u IC=5.04
+C601    v5_hat 0      100n
+R1_pwr  v5_hat pwr_la 2.2k
+D2_pwr  pwr_la 0      DLED_G
+Rhat_q  v5_hat 0      240
+
+* +3V3_ANA Pi-Filter & Pi-OFF TL431 3.67V Clamp (D9 C181103 Basic + R605=4.7k / R606=10k)
+R605 v33_pi  d9_ref  4.7k
+R606 d9_ref  0       10k
+X_D9 d9_ref  0       v33_pi TL431
+R602 v33_pi  v33_ana 10
+C604 v33_ana 0       10u
+C603 v33_ana 0       100n
+Rana_ld v33_ana 0    750
+
+* ============================================================================
+* SUBSYSTEM 02: Pump PWM Supply (Rev E CMOS AO3401A/AO3400A + C20 Basic X7R + R60A||B 50R)
+* ============================================================================
+R54   v5_hat u3_p   100k
+R55   u3_p   0      47k
+R56   drv_b  u3_p   100k
+R58   drv_b  u3_n   15k
+C20   u3_n   0      1n IC=0
+R59   v5_hat drv_b  1.5k
+X_U3A u3_p   u3_n   v5_hat 0 drv_b LM393
+R60A  v5_hat drv_ps 100
+R60B  v5_hat drv_ps 100
+M_Q17 drv_sw drv_b  drv_ps drv_ps QAO3401A
+M_Q18 drv_sw drv_b  0      0      QAO3400A
+C22   drv_sw drv_a  4.7u
+R_drva drv_a 0      100Meg
+D21   v5_hat drv_a  DSS14
+D22   drv_a  v_drv  DSS14
+C23   v_drv  0      10u IC=8.0
+R61   v_drv  vdrv_la 10k
+D33   vdrv_la 0      DLED_G
+
+* ============================================================================
+* SUBSYSTEM 05: Class-B Pump PWM (Basic S8550 + R9A+B=200R) + WD-AND Cutoff
+* ============================================================================
+Vpwm1 pwm1_g 0 PULSE(0 3.3 1m 200n 200n 1m 2m)
+Vwdok wd_ok  0 PWL(0 3.25 21.99m 3.25 22.00m 0 25m 0)
+R33   pwm1_g q4_b   10k
+Q4    q4_c   q4_b   q4_e  MMBT3904
+M_Q5  q4_e   wd_ok  0     0 QAO3400A
+R35   q4_c   q8_b   4.7k
+R36   v_drv  q8_b   4.7k
+Q8    ndrv   q8_b   v_drv S8550
+R37   ndrv   0      2.2k
+Q6    v_drv  ndrv   p_in  MMBT3904
+Q7    0      ndrv   p_in  S8550
+D4a   p_in   v_drv  D1N4148W
+D4b   0      p_in   D1N4148W
+R9A   p_in   p_mid  100
+R9B   p_mid  j2_pwm 100
+R38   j2_pwm 0      4.7k
+Cpump j2_pwm 0      600p
+Rpump j2_pwm 0      2.2k
+* Clamped Readback RB1 (GPIO6)
+R31   j2_pwm rb1    22k
+R32   rb1    0      10k
+D18   rb1    v33_pi D1N4148W
+
+* Populated REL1 Driver (Matched to D25: Q12 +5V_REL, Q10/Q11 + R501A||R501B=5.0R, D6 SS14, D7/R17)
+* Nominal 70 mA coil ON 2..12ms -> D6 flyback clamp @ 12ms -> ON 14..26ms w/ J4 short @ 16..19ms -> WD cuts Q12 @ 22ms!
+Vrel1_g  rel1_in  0 PWL(0 0 2m 0 2.001m 3.3 12m 3.3 12.001m 0 14m 0 14.001m 3.3 26m 3.3 26.001m 0)
+Vwdrel_n wd_rel_g 0 PWL(0 0.08 21.99m 0.08 22.00m 5.05 28m 5.05)
+M_Q12    v5_rel   wd_rel_g v5_hat v5_hat QAO3401A
+R16_pd   rel1_in  0        100k
+R15      rel1_in  rel1_g   10k
+M_Q10    rel1_out rel1_g   rel1_s 0      QAO3400A
+Q11      rel1_g   rel1_s   0      MMBT3904
+R501A    rel1_s   0        10
+R501B    rel1_s   0        10
+D6       rel1_out v5_rel   DSS14
+D7       v5_rel   rel1_lk  DLED_G
+R17      rel1_lk  rel1_out 2.2k
+* 5V 70 mA relay coil (L=35mH, R=71.4 Ohm) + dead-short switch across J4 at t=16..19ms
+Rcoil_r  v5_rel   coil_m   71.4
+Lcoil    coil_m   rel1_out 35m
+Vrel_sh  sw_rsh   0        PULSE(0 5 16m 5u 5u 3m 50m)
+S_rel_sh v5_rel   rel1_out sw_rsh 0 SW_RSH
+.model SW_RSH SW(Ron=0.05 Roff=10Meg Vt=2.5 Vh=-0.5)
+
+* ============================================================================
+* SUBSYSTEM 01: Pt1000 Collector Bridge + Official TI LM393 72 Hz Ramp Slicer
+* ============================================================================
+R107  v33_ana pt_th  390k
+R108  pt_th   0      100k
+R109  pt_osc  pt_th  150k
+R111  v33_ana pt_osc 4.7k
+R106  pt_osc  pt_rmp 390k
+C101  pt_rmp  0      10n IC=0.45
+C102  pt_rmp  0      10n IC=0.45
+X_U1B pt_th   pt_rmp v5_hat 0 pt_osc LM393
+
+* Single-Reel 1.00k 1% Basic Network (C17513): R101=4x1k (4.00k), R102=1.00k, R103=2x1k (2.00k)
+* Ramp Caps C101/C102 = 2x10nF 50V X7R Basic (C1710); ESD/EMI = C106/C105 100nF 50V Basic (C49678) + D8/D8B dual 1N4148W
+R101A v33_ana pt_n1  1.00k
+R101B pt_n1   pt_n2  1.00k
+R101C pt_n2   pt_n3  1.00k
+R101D pt_n3   pt_div 1.00k
+C106  pt_div  0      100n IC=0.67
+R102  pt_div  ref_lo 1.00k
+M_Q2  ref_lo  0      0 0 QAO3400A
+R103A pt_div  ref_m  1.00k
+R103B ref_m   ref_hi 1.00k
+M_Q3  ref_hi  0      0 0 QAO3400A
+Rpt1  pt_div  pt1_b  1000.0
+Ccab1 pt1_b   0      1.5n IC=0.033
+C105  pt1_b   0      100n IC=0.033
+R105A pt1_b   pt1_d  100
+R105B pt1_b   pt1_d  100
+M_Q1  pt1_d   v33_pi 0 0 QAO3400A
+R104  pt_div  pt_sns 10k
+C103  pt_sns  0      100n IC=0.67
+D8    pt_sns  v33_pi D1N4148W
+D8B   0       pt_sns D1N4148W
+R110  v33_ana duty   4.7k
+X_U1A pt_sns  pt_rmp v5_hat 0 duty LM393
+
+* ============================================================================
+* SUBSYSTEM 04: All-Pt1000 Edition (Zero 1-Wire — 7x Extra Switched-Mux Ch2..8)
+* ============================================================================
+* Channels 2..8 attached in parallel to pt_div (with 20m 1.5nF cables, Basic C105B-H 100nF 50V ESD/EMI caps, & 2x100R Basic = 50R pairs)
+Rpt2   pt_div pt2_b 921.6
+Ccab2  pt2_b  0     1.5n IC=0.67
+C105B  pt2_b  0     100n IC=0.67
+R105BA pt2_b  pt2_d 100
+R105BB pt2_b  pt2_d 100
+M_Q1B  pt2_d  0     0 0 QAO3400A
+Rpt3   pt_div pt3_b 1077.9
+Ccab3  pt3_b  0     1.5n IC=0.67
+C105C  pt3_b  0     100n IC=0.67
+R105CA pt3_b  pt3_d 100
+R105CB pt3_b  pt3_d 100
+M_Q1C  pt3_d  0     0 0 QAO3400A
+Rpt4   pt_div pt4_b 1194.0
+Ccab4  pt4_b  0     1.5n IC=0.67
+C105D  pt4_b  0     100n IC=0.67
+R105DA pt4_b  pt4_d 100
+R105DB pt4_b  pt4_d 100
+M_Q1D  pt4_d  0     0 0 QAO3400A
+Rpt5   pt_div pt5_b 1385.1
+Ccab5  pt5_b  0     1.5n IC=0.67
+C105E  pt5_b  0     100n IC=0.67
+R105EA pt5_b  pt5_d 100
+R105EB pt5_b  pt5_d 100
+M_Q1E  pt5_d  0     0 0 QAO3400A
+Rpt6   pt_div pt6_b 1573.3
+Ccab6  pt6_b  0     1.5n IC=0.67
+C105F  pt6_b  0     100n IC=0.67
+R105FA pt6_b  pt6_d 100
+R105FB pt6_b  pt6_d 100
+M_Q1F  pt6_d  0     0 0 QAO3400A
+Rpt7   pt_div pt7_b 1758.6
+Ccab7  pt7_b  0     1.5n IC=0.67
+C105G  pt7_b  0     100n IC=0.67
+R105GA pt7_b  pt7_d 100
+R105GB pt7_b  pt7_d 100
+M_Q1G  pt7_d  0     0 0 QAO3400A
+Rpt8   pt_div pt8_b 1831.9
+Ccab8  pt8_b  0     1.5n IC=0.67
+C105H  pt8_b  0     100n IC=0.67
+R105HA pt8_b  pt8_d 100
+R105HB pt8_b  pt8_d 100
+M_Q1H  pt8_d  0     0 0 QAO3400A
+
+* ============================================================================
+* SUBSYSTEM 03: Hardware Watchdog Dual Schmitt (U4A/U4B — Quick Co-Sim Check)
+* NOTE: This 28 ms full-board transient runs at 2 us timesteps for the 60 kHz
+* charge pump; for REAL-TIME UNSCALED 34 s Watchdog verification at exact BOM
+* values (R301=4.7k, C16=100n, C17/C19=1u, C18=38u, R49||R50=500k, 20 Hz + 1 kHz),
+* run the companion deck CoSTOS_HAT_AllPt1000_Watchdog_RealTime.cir!
+* ============================================================================
+V5wd  v5_wd  0 DC 4.86
+Vwd_hb wd_hb 0 PULSE(0 3.3 0 500n 500n 25u 50u)
+S_wd_halt wd_hb wd_in sw_wd_run 0 SW_WD
+Vwd_run sw_wd_run 0 PULSE(5 0 6m 5u 5u 30m 50m)
+.model SW_WD SW(Ron=10 Roff=10Meg Vt=2.5 Vh=-0.5)
+R301  wd_in  wd_lpf 4.7
+C16   wd_lpf 0      100n
+C17   wd_lpf wd_mid 1n
+R_wd_dc wd_mid 0    100Meg
+C19   wd_mid wd_pmp 1n
+D20   0      wd_pmp D1N4148W
+D19   wd_pmp wd_cap D1N4148W
+C18   wd_cap 0      38n IC=0
+R4950 wd_cap 0      500k
+R320  v33_ana u4a_p 100k
+R321  u4a_p   0     47k
+R325  u4a_o   u4a_p 220k
+R310  v5_wd   u4a_o 10k
+X_U4A u4a_p   wd_cap v5_wd 0 u4a_o LM393
+R323  v33_ana u4b_p 100k
+R322  u4b_p   0     47k
+R324  u4b_o   u4b_p 100k
+R311  v33_pi  u4b_o 10k
+X_U4B u4b_p   wd_cap v5_wd 0 u4b_o LM393
+* Watchdog Green OK LED (D3) + Red FAULT LED (D36 via Q23 AO3400A, 0 uA load on u4b_o)
+D3    v33_pi  wd_lk  DLED_G
+R305  wd_lk   u4b_o  1.5k
+R314  v5_wd   wd_fa  2.2k
+D36   wd_fa   wd_fk  DLED_R
+M_Q23 wd_fk   u4b_o  0 0 QAO3400A
+
+* ============================================================================
+* CONTROL SCRIPT - TRANSIENT + MULTI-TEMP PT1000 SWEEP + AC RIPPLE CHECK
+* ============================================================================
+.control
+  set filetype=ascii
+  echo "=== 1. Running 28 ms Full-Board Transient (all_pt1000, Official TI LM393) ==="
+  tran 2u 28m uic
+  meas tran v5_nom    FIND v(v5_hat)  AT=10m
+  meas tran i5_nom    FIND i(Vpi5v)   AT=10m
+  let i_rel_ma = (v(rel1_s) / 5.0) * 1000
+  let i_d7_ma  = (v(rel1_lk) - v(rel1_out)) / 2.2
+  meas tran v5_rel_on FIND v(v5_rel)   AT=10m
+  meas tran v5_rel_wd FIND v(v5_rel)   AT=24m
+  meas tran i_rel_nom FIND i_rel_ma    AT=10m
+  meas tran i_rel_sh  FIND i_rel_ma    AT=18m
+  meas tran i_rel_wd  FIND i_rel_ma    AT=24m
+  meas tran v_rel_fly MAX  v(rel1_out) FROM=11.9m TO=13.5m
+  meas tran i_d7_on   FIND i_d7_ma     AT=10m
+  let i_d33_ma = (v(v_drv) - v(vdrv_la)) / 10
+  let i_d3_ma  = (v(wd_lk) - v(u4b_o)) / 1.5
+  let i_d36_ma = (v(v5_wd) - v(wd_fa)) / 2.2
+  meas tran v_drv_ss  AVG  v(v_drv)     FROM=8m TO=10m
+  meas tran i_d33_ok  AVG  i_d33_ma     FROM=8m TO=10m
+  meas tran v_pwm_hi  MAX  v(j2_pwm)    FROM=8m TO=10m
+  meas tran v_rb1_hi  MAX  v(rb1)       FROM=8m TO=10m
+  meas tran v_pwm_wd0 MAX  v(j2_pwm)    FROM=22.5m TO=25m
+  meas tran v_pt_0c   FIND v(pt_sns)    AT=10m
+  meas tran rmp_min   MIN  v(pt_rmp)    FROM=2m TO=16m
+  meas tran rmp_max   MAX  v(pt_rmp)    FROM=2m TO=16m
+  meas tran duty_0c   AVG  v(duty)      FROM=2m TO=16m
+  meas tran v_u3_lo   MIN  v(drv_b)     FROM=8m TO=10m
+  meas tran v_pt_8ch   FIND v(pt_sns)   AT=10m
+  meas tran v_wd_peak MAX  v(wd_cap)    FROM=4m TO=6m
+  meas tran t_rel_off WHEN v(u4a_o)=2.5 RISE=1 TD=6m
+  meas tran t_wd_off  WHEN v(u4b_o)=1.6 RISE=1 TD=6m
+  meas tran v_wdrb_ok FIND v(u4b_o)     AT=5m
+  meas tran v_wdrb_fl FIND v(u4b_o)     AT=27m
+  meas tran i_d3_ok   FIND i_d3_ma      AT=5m
+  meas tran i_d36_ok  FIND i_d36_ma     AT=5m
+  meas tran i_d3_flt  FIND i_d3_ma      AT=27m
+  meas tran i_d36_flt FIND i_d36_ma     AT=27m
+
+  echo "=== 2. Running Multi-Temperature Pt1000 Sweep (-20C, 0C, +100C, +200C, OPEN, SHORT) ==="
+  * Disable astable positive feedback during DC OP sweep & AC analysis for clean 1-step DC convergence
+  alter @R56[resistance] = 100Meg
+  alter @R109[resistance] = 100Meg
+  alter @R324[resistance] = 100Meg
+  alter @R325[resistance] = 100Meg
+  alter Rpt1 = 921.6
+  op
+  print v(pt_sns)
+  alter Rpt1 = 1000.0
+  op
+  print v(pt_sns)
+  alter Rpt1 = 1385.1
+  op
+  print v(pt_sns)
+  alter Rpt1 = 1758.6
+  op
+  print v(pt_sns)
+  alter Rpt1 = 100Meg
+  op
+  print v(pt_sns)
+  alter Rpt1 = 0.1
+  op
+  print v(pt_sns)
+  alter Rpt1 = 1000.0
+
+  echo "=== 3. Running AC Analysis on +3V3_ANA Pi-Filter (10 Hz - 1 MHz) ==="
+  ac dec 20 10 1Meg
+  meas ac atten_100k FIND vdb(v33_ana) AT=100k
+
+  echo "=== FULL-BOARD NGSPICE-39 VERIFICATION COMPLETE (all_pt1000) ==="
+  quit 0
+.endc
+.end

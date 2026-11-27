@@ -1,0 +1,133 @@
+{
+  "board": {
+    "design_settings": {
+      "defaults": {
+        "board_outline_line_width": 0.15,
+        "copper_line_width": 0.25,
+        "copper_text_size_h": 1.5,
+        "copper_text_size_v": 1.5,
+        "copper_text_thickness": 0.3,
+        "silk_line_width": 0.15,
+        "silk_text_size_h": 1,
+        "silk_text_size_v": 1,
+        "silk_text_thickness": 0.15
+      },
+      "rules": {
+        "min_clearance": 0.15,
+        "min_copper_edge_clearance": 0.25,
+        "min_hole_clearance": 0.2,
+        "min_hole_to_hole": 0.25,
+        "min_silk_clearance": 0.15,
+        "min_through_hole_diameter": 0.3,
+        "min_track_width": 0.15,
+        "min_via_annular_width": 0.1,
+        "min_via_diameter": 0.45,
+        "solder_mask_clearance": 0.05
+      }
+    },
+    "layer_presets": []
+  },
+  "meta": {
+    "filename": "CoSTOS_HAT_AllPt1000.kicad_pro",
+    "version": 1
+  },
+  "net_settings": {
+    "classes": [
+      {
+        "bus_width": 12,
+        "clearance": 0.15,
+        "diff_pair_gap": 0.2,
+        "diff_pair_via_gap": 0.2,
+        "diff_pair_width": 0.2,
+        "name": "Default",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.2,
+        "via_diameter": 0.5,
+        "via_drill": 0.3
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.15,
+        "diff_pair_gap": 0.2,
+        "diff_pair_via_gap": 0.2,
+        "diff_pair_width": 0.2,
+        "name": "Power",
+        "pcb_color": "rgba(220, 38, 38, 0.850)",
+        "schematic_color": "rgba(220, 38, 38, 0.850)",
+        "track_width": 0.5,
+        "via_diameter": 0.5,
+        "via_drill": 0.3
+      }
+    ],
+    "netclass_patterns": [
+      {
+        "netclass": "Power",
+        "pattern": "+5V*"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+3V3*"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "+V_DRV"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "AGND"
+      }
+    ]
+  },
+  "schematic": {
+    "drawing": {
+      "default_line_thickness": 6,
+      "default_text_size": 50,
+      "pin_symbol_size": 25
+    },
+    "legacy_lib_dir": "",
+    "legacy_lib_list": [],
+    "meta": {
+      "version": 1
+    }
+  },
+  "sheets": [
+    [
+      "c0570500-000b-4000-8000-000000000001",
+      "Root"
+    ],
+    [
+      "c0570500-0010-4000-8000-000000000001",
+      "01. Pt1000 Collector (Rev D — 100% Basic)"
+    ],
+    [
+      "c0570500-0020-4000-8000-000000000001",
+      "02. Pump Supply (Rev E CMOS — 100% Basic)"
+    ],
+    [
+      "c0570500-0030-4000-8000-000000000001",
+      "03. Hardware Watchdog (Rev B — 100% Basic)"
+    ],
+    [
+      "c0570500-0040-4000-8000-000000000001",
+      "04. Pt1000 Mux Bank (Ch 2-8, 100% Basic, Zero 1-Wire)"
+    ],
+    [
+      "c0570500-0050-4000-8000-000000000001",
+      "05. Output Stage: PWM, FB1/RB1 & REL1 SMD (100% Basic)"
+    ],
+    [
+      "c0570500-0060-4000-8000-000000000001",
+      "06. Power Entry (D18 Direct +5V — 100% Basic) & Pi J1"
+    ]
+  ],
+  "text_variables": {
+    "BOARD_REV": "Rev B/D/E All-Pt1000 (8x Mux, DG350D 2x8P Fixed Screw)",
+    "PARTS_COUNT": "179 (162 SMD / 32 Reels + 17 THT)",
+    "DNP_LIST": "J4 THT Terminal Only (REL1 SMD Pop.), J3 PUMP2, J5 REL2, U_ID EEPROM"
+  }
+}

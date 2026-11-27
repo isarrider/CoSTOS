@@ -1,0 +1,129 @@
+* ============================================================================
+* CoSTOS Hardware Watchdog — REAL-TIME UNSCALED ngspice-39 Verification
+* ZERO time scaling! Exact BOM component values & official vendor TI LM393:
+*   R301 = 4.7 kOhm, C16 = 100 nF, C17 = C19 = 1 uF,
+*   C18  = 38 uF (2x22 uF 1206 X5R @ ~2.2 V DC bias), R49 || R50 = 1M || 1M = 500 kOhm
+* Test 1: 20 Hz Heartbeat for 10.0 s (steady state), then Pi halts at t = 10.0 s -> run to 34.0 s
+* Test 2: Runaway 1 kHz software loop for 4.0 s -> prove V(wd_cap) stays far below 1.54 V threshold
+* Run: ngspice -b CoSTOS_HAT_RevB_Watchdog_RealTime.cir
+* ============================================================================
+
+.options reltol=1e-3 abstol=1e-11 vntol=1e-5 gmin=1e-11 method=gear maxord=2
+
+* Official Vendor Texas Instruments / MicroSim LM393 Dual Differential Comparator Macromodel
+* Connections:     non-inverting input (1)
+*                  | inverting input (2)
+*                  | | positive power supply (3)
+*                  | | | negative power supply / GND (4)
+*                  | | | | open-collector output (5)
+.SUBCKT LM393 1 2 3 4 5
+  F1    9 3  V1  1
+  IEE   3 7  DC  100.0E-6
+  VI1   21 1  DC  .75
+  VI2   22 2  DC  .75
+  Q1    9 21 7  QIN
+  Q2    8 22 7  QIN
+  Q3    9 8  4  QMO
+  Q4    8 8  4  QMI
+.MODEL QIN PNP(IS=800.0E-18 BF=2.000E3)
+.MODEL QMI NPN(IS=800.0E-18 BF=1002)
+.MODEL QMO NPN(IS=800.0E-18 BF=1000 CJC=1E-15 TR=807.4E-9)
+  E1    10 4 9 4 1
+  V1    10 11 DC 0
+  Q5    5 11 4  QOC
+.MODEL QOC NPN(IS=800.0E-18 BF=20.29E3 CJC=1E-15 TF=942.6E-12 TR=543.8E-9)
+  DP    4 3  DX
+  RP    3 4  46.3E3
+.MODEL DX D(IS=800.0E-18)
+.ENDS LM393
+
+.model D1N4148W D(IS=2.52n RS=0.568 N=1.752 BV=100 IBV=100u CJO=4p TT=6n)
+.model DLED_G   D(IS=1e-22 N=2.0 RS=12.0 BV=5.0 IBV=10u CJO=15p)
+.model DLED_R   D(IS=1e-20 N=2.0 RS=10.0 BV=5.0 IBV=10u CJO=15p)
+.model QAO3400A NMOS(LEVEL=1 VTO=1.05 KP=18.0 RD=0.018 RS=0.015 CBD=180p CBS=350p CGSO=450p CGDO=120p)
+.model QAO3401A PMOS(LEVEL=1 VTO=-0.95 KP=14.0 RD=0.025 RS=0.020 CBD=200p CBS=400p CGSO=500p CGDO=140p)
+.model S8550    PNP(IS=5.0f BF=160 VAF=25 IKF=0.500 CJE=18p CJC=12p TF=800p TR=300n)
+.model SW_WD    SW(Ron=10 Roff=10Meg Vt=2.5 Vh=-0.5)
+
+V5wd   v5_wd   0 DC 5.05
+V33ana v33_ana 0 DC 3.26
+V33pi  v33_pi  0 DC 3.30
+
+* Real 20 Hz GPIO 24 heartbeat (50 ms period, 25 ms pulse) gated OFF at t = 10.0 s
+Vwd_hb wd_hb 0 PULSE(0 3.3 0 10u 10u 25m 50m)
+S_halt wd_hb wd_in sw_run 0 SW_WD
+Vrun   sw_run 0 PULSE(5 0 10.0 10u 10u 40.0 80.0)
+
+* Exact unscaled BOM values (R301=4.7k, C16=100n, C17=C19=1u, C18=38u, R49=R50=1Meg)
+R301   wd_in  wd_lpf 4.7k
+C16    wd_lpf 0      100n
+C17    wd_lpf wd_mid 1u
+R_mid  wd_mid 0      100Meg
+C19    wd_mid wd_pmp 1u
+D20    0      wd_pmp D1N4148W
+D19    wd_pmp wd_cap D1N4148W
+C18    wd_cap 0      38u IC=0
+R49    wd_cap 0      1Meg
+R50    wd_cap 0      1Meg
+
+* U4A Schmitt Trigger (REL1 cutoff stage: R320=100k, R321=47k, R325=220k, R310=10k)
+R320   v33_ana u4a_p 100k
+R321   u4a_p   0     47k
+R325   u4a_o   u4a_p 220k
+R310   v5_wd   u4a_o 10k
+X_U4A  u4a_p   wd_cap v5_wd 0 u4a_o LM393
+* Populated Q12 AO3401A high-side +5V_REL switch loaded by 71.4 Ohm (70 mA) relay coil
+M_Q12  v5_rel  u4a_o v5_wd v5_wd QAO3401A
+R_rel  v5_rel  0     71.4
+
+* U4B Schmitt Trigger (PUMP1 cutoff stage: R323=100k, R322=47k, R324=100k, R311=10k)
+R323   v33_ana u4b_p 100k
+R322   u4b_p   0     47k
+R324   u4b_o   u4b_p 100k
+R311   v33_pi  u4b_o 10k
+X_U4B  u4b_p   wd_cap v5_wd 0 u4b_o LM393
+
+* Green WD_OK LED (D3) + Red WD_FAULT LED (D36 via Q23 AO3400A, 0 uA load on WD_RB)
+D3     v33_pi  wd_lk  DLED_G
+R305   wd_lk   u4b_o  1.5k
+R314   v5_wd   wd_fa  2.2k
+D36    wd_fa   wd_fk  DLED_R
+M_Q23  wd_fk   u4b_o  0 0 QAO3400A
+
+* Q15 Inverter (WD_RB -> WD_OK gate of Q5 — Basic S8550 C105432)
+R312   u4b_o   q15_b  10k
+Q15    wd_ok   q15_b  v33_pi S8550
+R313   wd_ok   0      100k
+
+.control
+  set filetype=ascii
+  echo "=== Test 1: Real-Time 34 s Unscaled 20 Hz Heartbeat & Halt (Official TI LM393 + Q12 +5V_REL) ==="
+  tran 5m 34.0 uic
+  let i_d3_ma  = (v(wd_lk) - v(u4b_o)) / 1.5
+  let i_d36_ma = (v(v5_wd) - v(wd_fa)) / 2.2
+  meas tran v_wd_ss     MAX  v(wd_cap)  FROM=8.0 TO=10.0
+  meas tran t_wd_arm    WHEN v(wd_ok)=1.65 RISE=1
+  meas tran t_rel_abs   WHEN v(v5_rel)=2.5 FALL=1 TD=10.0
+  meas tran t_wd_abs    WHEN v(u4b_o)=1.65 RISE=1 TD=10.0
+  meas tran v_5rel_run  FIND v(v5_rel)  AT=9.0
+  meas tran v_5rel_hlt  FIND v(v5_rel)  AT=32.0
+  meas tran v_wdok_run  FIND v(wd_ok)   AT=9.0
+  meas tran v_wdok_hlt  FIND v(wd_ok)   AT=32.0
+  meas tran i_d3_run    FIND i_d3_ma    AT=9.0
+  meas tran i_d36_hlt   FIND i_d36_ma   AT=32.0
+  let rel_timeout_s  = t_rel_abs - 10.0
+  let pump_timeout_s = t_wd_abs - 10.0
+  print rel_timeout_s pump_timeout_s
+
+  echo "=== Test 2: Real-Time 4 s Unscaled 1 kHz Runaway Software Loop Rejection ==="
+  alter @Vwd_hb[pulse] = [ 0 3.3 0 1u 1u 500u 1m ]
+  alter @Vrun[pulse]   = [ 5 5 0 1u 1u 10 20 ]
+  tran 200u 4.0 uic
+  meas tran v_run1k_max MAX v(wd_cap) FROM=10m TO=4.0
+  meas tran v_5rel_1k   MAX v(v5_rel) FROM=10m TO=4.0
+  meas tran v_wdok_1k   MAX v(wd_ok)  FROM=10m TO=4.0
+
+  echo "=== REAL-TIME UNSCALED WATCHDOG VERIFICATION COMPLETE ==="
+  quit 0
+.endc
+.end

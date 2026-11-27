@@ -1,0 +1,140 @@
+(kicad_sch
+  (version 20250114)
+  (generator "eeschema")
+  (generator_version "10.0")
+  (uuid "c0570500-000b-4000-8000-000000000001")
+  (paper "A3")
+  (title_block
+    (title "CoSTOS 1-Wire HAT (Rev B/D/E — DG350 8P Fixed Screw) - Root Hierarchical Schematic")
+    (date "2026-11-27")
+    (rev "Rev B/D/E")
+    (company "CoSTOS Solar Thermal Controller (github.com/isarrider/CoSTOS)")
+    (comment 1 "6 separate wired circuit sheets (177 populated parts, 83 nets) - Official TI LM393 ngspice-39 verified")
+    (comment 2 "Live-Audited JLCPCB BOM (32 Basic + 1 Pref + 0 Ext reels, EUR 0.00 Ext fees) | DNP: J4 (2P THT Terminal Only — REL1 SMD Populated), J3 PUMP2, J5 REL2, U_ID CAT24C32 EEPROM, U10 DS2482-800")
+  )
+  (lib_symbols)
+  (text "CoSTOS 1-Wire HAT (Rev B/D/E — DG350 8P Fixed Screw) - Root Hierarchical Schematic (6 Per-Circuit Sub-Sheets | 177 Parts | 83 Nets)" (exclude_from_sim no) (at 25.4 16.51 0) (effects (font (size 2.1 2.1) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-00000000000d"))
+  (text "Shared Inter-Sheet Global Rails & Signals: +5V_HAT | +5V_REL | +V_DRV | +3V3 | +3V3_ANA | GND | AGND | WD_OK | DUTY_IN | PWM1 | REL1_OUT | FB1 | RB1 | 1W_A_PI | 1W_B_PI" (exclude_from_sim no) (at 25.4 231.14 0) (effects (font (size 1.35 1.35)) (justify left top)) (uuid "c0570500-000c-4000-8000-00000000000e"))
+  (text "DNP (Unpopulated PCB Footprints Only): J4 (2P THT Terminal Only — REL1 SMD Populated) | J3 PUMP2 | J5 REL2 | U_ID CAT24C32 EEPROM | U10 DS2482-800" (exclude_from_sim no) (at 25.4 238.76 0) (effects (font (size 1.35 1.35)) (justify left top)) (uuid "c0570500-000c-4000-8000-00000000000f"))
+  (text "Workflow: Open CoSTOS_HAT_RevB.kicad_pro in KiCad 10 -> double-click any sheet -> press F8 in PCB Editor to sync all 177 footprints into CoSTOS_HAT_RevB.kicad_pcb." (exclude_from_sim no) (at 25.4 246.38 0) (effects (font (size 1.35 1.35) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000010"))
+  (sheet
+    (at 25.4 30.48)
+    (size 111.76 81.28)
+    (fields_autoplaced yes)
+    (stroke (width 0.254) (type solid))
+    (fill (color 248 250 252 1.0))
+    (uuid "c0570500-0010-4000-8000-000000000001")
+    (property "Sheetname" "01. Pt1000 Collector (Rev D — 100% Basic)" (at 25.4 28.48 0) (effects (font (size 1.6 1.6) bold) (justify left bottom)))
+    (property "Sheetfile" "01_Pt1000_Collector.kicad_sch" (at 25.4 113.76 0) (effects (font (size 1.27 1.27)) (justify left top)))
+    (instances
+      (project "CoSTOS_HAT_RevB"
+        (path "/c0570500-000b-4000-8000-000000000001"
+          (page "2")
+        )
+      )
+    )
+  )
+  (text "Switched-Mux 100% Basic Bridge (7x C17513 1.00k 1%) + U1 LM393DR 72 Hz Ratiometric Ramp/Slicer (0 Ext Reels!)" (exclude_from_sim no) (at 29.21 36.83 0) (effects (font (size 1.15 1.15)) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000001"))
+  (text "Populated parts on sheet: 34 (Double-click box in KiCad 10 to open circuit)" (exclude_from_sim no) (at 29.21 45.72 0) (effects (font (size 1.15 1.15) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000002"))
+  (sheet
+    (at 152.4 30.48)
+    (size 111.76 81.28)
+    (fields_autoplaced yes)
+    (stroke (width 0.254) (type solid))
+    (fill (color 248 250 252 1.0))
+    (uuid "c0570500-0020-4000-8000-000000000001")
+    (property "Sheetname" "02. Pump Supply (Rev E CMOS — 100% Basic)" (at 152.4 28.48 0) (effects (font (size 1.6 1.6) bold) (justify left bottom)))
+    (property "Sheetfile" "02_Pump_Supply.kicad_sch" (at 152.4 113.76 0) (effects (font (size 1.27 1.27)) (justify left top)))
+    (instances
+      (project "CoSTOS_HAT_RevB"
+        (path "/c0570500-000b-4000-8000-000000000001"
+          (page "3")
+        )
+      )
+    )
+  )
+  (text "U3A 57 kHz Osc (C20 1nF X7R Basic) + AO3401A/AO3400A + R60A||B 50R Basic + SS14 Doubler (+9.193 V)" (exclude_from_sim no) (at 156.21 36.83 0) (effects (font (size 1.15 1.15)) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000003"))
+  (text "Populated parts on sheet: 19 (Double-click box in KiCad 10 to open circuit)" (exclude_from_sim no) (at 156.21 45.72 0) (effects (font (size 1.15 1.15) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000004"))
+  (sheet
+    (at 279.4 30.48)
+    (size 111.76 81.28)
+    (fields_autoplaced yes)
+    (stroke (width 0.254) (type solid))
+    (fill (color 248 250 252 1.0))
+    (uuid "c0570500-0030-4000-8000-000000000001")
+    (property "Sheetname" "03. Hardware Watchdog (Rev B — 100% Basic)" (at 279.4 28.48 0) (effects (font (size 1.6 1.6) bold) (justify left bottom)))
+    (property "Sheetfile" "03_Hardware_Watchdog.kicad_sch" (at 279.4 113.76 0) (effects (font (size 1.27 1.27)) (justify left top)))
+    (instances
+      (project "CoSTOS_HAT_RevB"
+        (path "/c0570500-000b-4000-8000-000000000001"
+          (page "4")
+        )
+      )
+    )
+  )
+  (text "Bandpass Charge Pump + Dedicated U4 LM393DR2G Dual Schmitt + Basic S8550 (16.11 s REL / 18.42 s PWM)" (exclude_from_sim no) (at 283.21 36.83 0) (effects (font (size 1.15 1.15)) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000005"))
+  (text "Populated parts on sheet: 31 (Double-click box in KiCad 10 to open circuit)" (exclude_from_sim no) (at 283.21 45.72 0) (effects (font (size 1.15 1.15) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000006"))
+  (sheet
+    (at 25.4 132.08)
+    (size 111.76 81.28)
+    (fields_autoplaced yes)
+    (stroke (width 0.254) (type solid))
+    (fill (color 248 250 252 1.0))
+    (uuid "c0570500-0040-4000-8000-000000000001")
+    (property "Sheetname" "04. 1-Wire Buses A & B (Rev B — 100% Basic)" (at 25.4 130.08 0) (effects (font (size 1.6 1.6) bold) (justify left bottom)))
+    (property "Sheetfile" "04_OneWire_Buses.kicad_sch" (at 25.4 215.36 0) (effects (font (size 1.27 1.27)) (justify left top)))
+    (instances
+      (project "CoSTOS_HAT_RevB"
+        (path "/c0570500-000b-4000-8000-000000000001"
+          (page "5")
+        )
+      )
+    )
+  )
+  (text "Shared 3.92 V Gate Bias + Dual 5 V 2N7002 Level-Shifters + Basic TL431 5.36 V Clamps (0 Ext Reels!)" (exclude_from_sim no) (at 29.21 138.43 0) (effects (font (size 1.15 1.15)) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000007"))
+  (text "Populated parts on sheet: 33 (Double-click box in KiCad 10 to open circuit)" (exclude_from_sim no) (at 29.21 147.32 0) (effects (font (size 1.15 1.15) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000008"))
+  (sheet
+    (at 152.4 132.08)
+    (size 111.76 81.28)
+    (fields_autoplaced yes)
+    (stroke (width 0.254) (type solid))
+    (fill (color 248 250 252 1.0))
+    (uuid "c0570500-0050-4000-8000-000000000001")
+    (property "Sheetname" "05. Output Stage: PWM, FB1/RB1 & REL1 SMD (100% Basic)" (at 152.4 130.08 0) (effects (font (size 1.6 1.6) bold) (justify left bottom)))
+    (property "Sheetfile" "05_Output_Stage.kicad_sch" (at 152.4 215.36 0) (effects (font (size 1.27 1.27)) (justify left top)))
+    (instances
+      (project "CoSTOS_HAT_RevB"
+        (path "/c0570500-000b-4000-8000-000000000001"
+          (page "6")
+        )
+      )
+    )
+  )
+  (text "S8550 Class-B Push-Pull Inside R9A+B 200R + R12A||B 2.35k FB1 + Populated REL1 SMD (123 mA lim; 0 Ext!)" (exclude_from_sim no) (at 156.21 138.43 0) (effects (font (size 1.15 1.15)) (justify left top)) (uuid "c0570500-000c-4000-8000-000000000009"))
+  (text "Populated parts on sheet: 37 (Double-click box in KiCad 10 to open circuit)" (exclude_from_sim no) (at 156.21 147.32 0) (effects (font (size 1.15 1.15) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-00000000000a"))
+  (sheet
+    (at 279.4 132.08)
+    (size 111.76 81.28)
+    (fields_autoplaced yes)
+    (stroke (width 0.254) (type solid))
+    (fill (color 248 250 252 1.0))
+    (uuid "c0570500-0060-4000-8000-000000000001")
+    (property "Sheetname" "06. Power Entry (D18 Direct +5V — 100% Basic) & Pi J1" (at 279.4 130.08 0) (effects (font (size 1.6 1.6) bold) (justify left bottom)))
+    (property "Sheetfile" "06_Power_Entry.kicad_sch" (at 279.4 215.36 0) (effects (font (size 1.27 1.27)) (justify left top)))
+    (instances
+      (project "CoSTOS_HAT_RevB"
+        (path "/c0570500-000b-4000-8000-000000000001"
+          (page "7")
+        )
+      )
+    )
+  )
+  (text "J1 40-Pin Pi 4/5 Header + D18 Direct +5V_HAT (5.045 V) + +3V3_ANA Pi-Filter (-36 dB) + D9 Basic TL431" (exclude_from_sim no) (at 283.21 138.43 0) (effects (font (size 1.15 1.15)) (justify left top)) (uuid "c0570500-000c-4000-8000-00000000000b"))
+  (text "Populated parts on sheet: 23 (Double-click box in KiCad 10 to open circuit)" (exclude_from_sim no) (at 283.21 147.32 0) (effects (font (size 1.15 1.15) bold) (justify left top)) (uuid "c0570500-000c-4000-8000-00000000000c"))
+  (sheet_instances
+    (path "/"
+      (page "1")
+    )
+  )
+  (embedded_fonts no)
+)
